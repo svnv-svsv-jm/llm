@@ -3,12 +3,16 @@
 __all__ = ["nb_init"]
 
 import os, sys
+import typing as ty
 from loguru import logger
 import warnings
 import pyrootutils
 
 
-def nb_init(logger_level: str = "INFO", add_std: bool = False) -> None:
+def nb_init(
+    logger_level: str = "INFO",
+    sink: ty.TextIO = sys.stderr,
+) -> None:
     """Disables warnings and correctly finds the root directory of the project. Very handy when running notebooks.
 
     Args:
@@ -25,7 +29,7 @@ def nb_init(logger_level: str = "INFO", add_std: bool = False) -> None:
     )
     os.chdir(root)
     logger.remove()
-    logger.add(sys.stderr, level=logger_level, format="{level} | {function} | {message}")
+    logger.add(sink, level=logger_level, format="{level} | {function} | {message}")
     logger.info(f"Set current dir to {os.path.basename(root)}")
     logger.info(f"You are using Python {sys.version}")
     logger.debug("You will see DEBUG messages.")
