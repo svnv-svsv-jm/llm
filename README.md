@@ -16,4 +16,4 @@ make install
 
 ## Usage
 
-See [examples](./examples).
+See [examples](./examples) and [tutorials](./tutorials).
