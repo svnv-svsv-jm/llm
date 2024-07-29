@@ -2,6 +2,10 @@
 
 This repository shows you how one can locally build a RAG from some documents in a folder for a pre-trained LLM.
 
+## Contributing
+
+See [here](./contributing.md).
+
 ## Pre-requisites
 
 - Python and a virtual environment
