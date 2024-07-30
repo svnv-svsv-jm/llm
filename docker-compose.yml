@@ -86,7 +86,7 @@ services:
 
   notebook-gpu:
     image: ${IMAGE}
-    container_name: notebook-${UNIQUE-0}
+    container_name: notebook-gpu-${UNIQUE-0}
     entrypoint: /workdir/scripts/entrypoint.sh
     command: /${PROJECT_NAME}/bin/python -m jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''
     ports: #server:container
