@@ -1,6 +1,7 @@
 __all__ = ["DRIVER_TYPE", "create_driver"]
 
 import typing as ty
+from loguru import logger
 
 from selenium.webdriver import Chrome, ChromeOptions, FirefoxOptions, Firefox
 from selenium.webdriver import Chrome, Firefox
@@ -34,21 +35,27 @@ def create_driver(
     Returns:
         Firefox | Chrome: The web driver.
     """
+    logger.trace("Creating web driver")
     options = ChromeOptions() if not use_firefox else FirefoxOptions()
 
     # Parse arguments
     for arg in args:
+        logger.trace(f"Adding argument {arg}")
         options.add_argument(arg)
     if disable_notifications:
+        logger.trace("disable-notifications")
         options.add_argument("disable-notifications")
     if headless:
+        logger.trace("--headless")
         options.add_argument("--headless")
 
     # Create driver
     if isinstance(options, ChromeOptions):
+        logger.trace(f"Creating driver {Chrome}")
         return Chrome(options=options)
 
     if isinstance(options, FirefoxOptions):
+        logger.trace(f"Creating driver {Firefox}")
         return Firefox(options=options)
 
     # Error if not supported

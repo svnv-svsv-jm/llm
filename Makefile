@@ -51,6 +51,9 @@ install-init:
 install: install-init
 	$(PYTHON_EXEC) poetry install --no-cache
 
+lock: install-init
+	$(PYTHON_EXEC) poetry lock
+
 
 # -----------
 # testing
