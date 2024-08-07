@@ -14,6 +14,7 @@ pyrootutils.setup_root(
 )
 
 import torch
+from torch.quantization import quantize_dynamic
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -24,7 +25,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableSerializable, RunnablePassthrough
-from transformers.utils import generic
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from transformers import pipeline
 from optimum.quanto import QuantizedModelForCausalLM, qint4
@@ -132,27 +132,53 @@ def bnb_config() -> BitsAndBytesConfig | None:
 def load_model(
     model_name: str,
     bnb_config: BitsAndBytesConfig | None = None,
+    quantize: bool = True,
+    quantize_w_torch: bool = True,
+    device: torch.device = None,
+    token: str | None = None,
+    revision: str = "float16",
 ) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
     """Helper to load and quantize a model."""
     logger.debug(f"Loading model '{model_name}'...")
-    try:
-        model = QuantizedModelForCausalLM.from_pretrained(f"models/{model_name}")
-    except:
-        model = AutoModelForCausalLM.from_pretrained(
+
+    # Token
+    if token is None:
+        token = os.environ["HUGGINGFACE_TOKEN"]
+
+    # Load model
+    def load() -> AutoModelForCausalLM:
+        return AutoModelForCausalLM.from_pretrained(
             model_name,
             quantization_config=bnb_config,
-            token=os.environ["HUGGINGFACE_TOKEN"],
-            revision="float16",
+            token=token,
+            revision=revision,
+            device_map=device,
         )
-        # Quantize with Optimum?
-        if torch.backends.mps.is_available():
-            model = QuantizedModelForCausalLM.quantize(model, weights=qint4, exclude="lm_head")
-            model.save_pretrained(f"models/{model_name}")
-    if isinstance(model, QuantizedModelForCausalLM):
-        model = model._wrapped
+
+    if quantize and not quantize_w_torch:
+        try:
+            model = QuantizedModelForCausalLM.from_pretrained(f"models/{model_name}")
+        except:
+            model = load()
+    else:
+        model = load()
     logger.debug(f"Loaded model '{model}'...")
+
+    # Quantize
+    if quantize:
+        if quantize_w_torch:
+            logger.debug("Quantizing with `torch.quantization.quantize_dynamic`...")
+            model = quantize_dynamic(model, dtype=torch.qint8)
+        else:
+            logger.debug(f"Quantizing with {QuantizedModelForCausalLM}...")
+            model = QuantizedModelForCausalLM.quantize(model, weights=qint4, exclude="lm_head")
+            logger.debug("Saving pretrained quantized model.")
+            model.save_pretrained(f"models/{model_name}")
+        logger.debug(f"Quantized {model_name}")
+
+    # Tokenizer
     logger.debug(f"Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(model_name, token=os.environ["HUGGINGFACE_TOKEN"])
+    tokenizer = AutoTokenizer.from_pretrained(model_name, token=token)
     logger.debug(f"Loaded tokenizer '{tokenizer}'...")
     return model, tokenizer
 
