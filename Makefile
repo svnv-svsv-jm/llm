@@ -45,11 +45,12 @@ IMAGE_PYTHON=/venv/bin/python
 # dev dependencies
 install-init:
 	$(PYTHON_EXEC) pip install --upgrade pip
-	$(PYTHON_EXEC) pip install --upgrade poetry
+	$(PYTHON_EXEC) pip install --upgrade poetry poetry-plugin-export
 	$(PYTHON_EXEC) poetry self update
 
 install: install-init
 	$(PYTHON_EXEC) poetry install --no-cache
+	$(PYTHON_EXEC) poetry export -f requirements.txt --output requirements.txt
 
 lock: install-init
 	$(PYTHON_EXEC) poetry lock

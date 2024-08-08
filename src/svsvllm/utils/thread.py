@@ -21,20 +21,30 @@ class CommandTimer:
         self.start_time: float
         self.timer_thread: threading.Thread
 
+    def format_elapsed_time(self, seconds: float) -> str:
+        """Format elapsed time."""
+        days = seconds // (24 * 3600)
+        seconds = seconds % (24 * 3600)
+        hours = seconds // 3600
+        seconds %= 3600
+        minutes = seconds // 60
+        seconds %= 60
+        return f"{int(days):02}:{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+
     def print_elapsed_time(self, start_time: float) -> None:
         """Show elapsed time."""
         while not self.stop_thread:
-            elapsed_time = time.time() - start_time
-            print(f"\rElapsed time: {elapsed_time:.2f} seconds", end="")
+            elapsed_time = self.format_elapsed_time(time.time() - start_time)
+            print(f"\rElapsed time: {elapsed_time} seconds", end="")
             time.sleep(self.sleep)
 
     def start(self) -> None:
         """Start the timer thread."""
         self.stop_thread = False
         self.start_time = time.time()
-        # Start a thread to print the elapsed time
         self.timer_thread = threading.Thread(
-            target=self.print_elapsed_time, args=(self.start_time,)
+            target=self.print_elapsed_time,
+            args=(self.start_time,),
         )
         self.timer_thread.start()
 

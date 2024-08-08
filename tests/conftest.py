@@ -14,7 +14,6 @@ pyrootutils.setup_root(
 )
 
 import torch
-from torch.quantization import quantize_dynamic
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -27,9 +26,11 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableSerializable, RunnablePassthrough
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from transformers import pipeline
-from optimum.quanto import QuantizedModelForCausalLM, qint4
+from optimum.quanto import QuantizedModelForCausalLM
 
 from svsvllm.scraping.driver import create_driver, DRIVER_TYPE
+from svsvllm.loaders import load_model
+from svsvllm.rag import ITALIAN_PROMPT_TEMPLATE
 
 
 @pytest.fixture
@@ -129,67 +130,18 @@ def bnb_config() -> BitsAndBytesConfig | None:
     return bnb_config
 
 
-def load_model(
-    model_name: str,
-    bnb_config: BitsAndBytesConfig | None = None,
-    quantize: bool = True,
-    quantize_w_torch: bool = True,
-    device: torch.device = None,
-    token: str | None = None,
-    revision: str = "float16",
-) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
-    """Helper to load and quantize a model."""
-    logger.debug(f"Loading model '{model_name}'...")
-
-    # Token
-    if token is None:
-        token = os.environ["HUGGINGFACE_TOKEN"]
-
-    # Load model
-    def load() -> AutoModelForCausalLM:
-        return AutoModelForCausalLM.from_pretrained(
-            model_name,
-            quantization_config=bnb_config,
-            token=token,
-            revision=revision,
-            device_map=device,
-        )
-
-    if quantize and not quantize_w_torch:
-        try:
-            model = QuantizedModelForCausalLM.from_pretrained(f"models/{model_name}")
-        except:
-            model = load()
-    else:
-        model = load()
-    logger.debug(f"Loaded model '{model}'...")
-
-    # Quantize
-    if quantize:
-        if quantize_w_torch:
-            logger.debug("Quantizing with `torch.quantization.quantize_dynamic`...")
-            model = quantize_dynamic(model, dtype=torch.qint8)
-        else:
-            logger.debug(f"Quantizing with {QuantizedModelForCausalLM}...")
-            model = QuantizedModelForCausalLM.quantize(model, weights=qint4, exclude="lm_head")
-            logger.debug("Saving pretrained quantized model.")
-            model.save_pretrained(f"models/{model_name}")
-        logger.debug(f"Quantized {model_name}")
-
-    # Tokenizer
-    logger.debug(f"Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(model_name, token=token)
-    logger.debug(f"Loaded tokenizer '{tokenizer}'...")
-    return model, tokenizer
-
-
 @pytest.fixture
 def cerbero(
     bnb_config: BitsAndBytesConfig | None,
 ) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
     """Cerbero."""
     model_name = "galatolo/cerbero-7b"  # Italian
-    model, tokenizer = load_model(model_name, bnb_config=bnb_config)
+    model, tokenizer = load_model(
+        model_name,
+        bnb_config=bnb_config,
+        quantize=True,
+        quantize_w_torch=False,
+    )
     return model, tokenizer
 
 
@@ -219,31 +171,13 @@ def cerbero_pipeline(
 
 
 @pytest.fixture
-def italian_prompt_template() -> str:
-    """Italian prompt template for the LLM."""
-    return """
-<|system|>
-Rispondi alla domanda con la tua conoscenza. Usa il seguente contesto per aiutarti:
-
-{context}
-
-</s>
-<|user|>
-{question}
-</s>
-<|assistant|>
-"""
-
-
-@pytest.fixture
 def llm_chain_cerbero(
     cerbero_pipeline: HuggingFacePipeline,
-    italian_prompt_template: str,
 ) -> RunnableSerializable:
     """LLM chain for Cerbero."""
     prompt = PromptTemplate(
         input_variables=["context", "question"],
-        template=italian_prompt_template,
+        template=ITALIAN_PROMPT_TEMPLATE,
     )
     llm_chain = prompt | cerbero_pipeline | StrOutputParser()
     logger.debug(f"LLM chain: {llm_chain}")
