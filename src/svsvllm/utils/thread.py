@@ -8,13 +8,17 @@ import threading
 class CommandTimer:
     """Run a command and time it."""
 
-    def __init__(self, sleep: float = 5) -> None:
+    def __init__(self, name: str = "no-process-name", sleep: float = 5) -> None:
         """
         Args:
+            name (str, optional):
+                The name of the process.
+
             sleep (float, optional):
                 Sleep time in seconds, between two prints.
                 Defaults to `5`.
         """
+        self.name = name
         self.sleep = sleep
         # Private
         self.stop_thread = False
@@ -35,7 +39,7 @@ class CommandTimer:
         """Show elapsed time."""
         while not self.stop_thread:
             elapsed_time = self.format_elapsed_time(time.time() - start_time)
-            print(f"\rElapsed time: {elapsed_time} seconds", end="")
+            print(f"\r[{self.name}] Elapsed time: {elapsed_time} seconds", end="")
             time.sleep(self.sleep)
 
     def start(self) -> None:
@@ -53,7 +57,7 @@ class CommandTimer:
         self.stop_thread = True
         self.timer_thread.join()
         elapsed_time = time.time() - self.start_time
-        print(f"\nCommand completed in {elapsed_time:.2f} seconds")
+        print(f"\nCommand {self.name} completed in {elapsed_time:.2f} seconds")
 
     def run(self, command: ty.Callable, *args: ty.Any, **kwargs: ty.Any) -> ty.Any:
         """Time a command to run."""

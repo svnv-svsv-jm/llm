@@ -19,18 +19,19 @@ from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.faiss import FAISS
 from langchain_community.document_loaders.directory import DirectoryLoader
-from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.prompts import PromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableSerializable, RunnablePassthrough
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-from transformers import pipeline
+from transformers import (
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    BitsAndBytesConfig,
+    LlamaTokenizer,
+    MixtralForCausalLM,
+)
 from optimum.quanto import QuantizedModelForCausalLM
 
 from svsvllm.scraping.driver import create_driver, DRIVER_TYPE
-from svsvllm.loaders import load_model
-from svsvllm.rag import ITALIAN_PROMPT_TEMPLATE
+from svsvllm.loaders import load_model, load_documents
+from svsvllm.rag import create_rag_database
 
 
 @pytest.fixture
@@ -65,43 +66,24 @@ def device() -> torch.device:
 
 
 @pytest.fixture
-def directory_loader() -> DirectoryLoader:
-    """`DirectoryLoader` object."""
-    loader = DirectoryLoader(
-        path=os.path.join("res", "documents"),
-        glob="*.pdf",
-        recursive=True,
-    )
-    logger.debug(f"Loader: {loader}")
-    return loader
+def docs_path() -> str:
+    """Path to foler with documents."""
+    path = os.path.join("res", "documents")
+    return path
 
 
 @pytest.fixture
-def documents(directory_loader: DirectoryLoader) -> ty.List[Document]:
+def documents(docs_path: str) -> ty.List[Document]:
     """Loaded documents."""
-    docs: ty.List[Document] = directory_loader.load()
+    docs: ty.List[Document] = load_documents(docs_path)
     return docs
 
 
 @pytest.fixture
-def chunked_docs(documents: ty.List[Document]) -> ty.List[Document]:
-    """Chunked documents."""
-    splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=30)
-    chunked_docs = splitter.split_documents(documents)
-    return chunked_docs
-
-
-@pytest.fixture
-def embeddings() -> HuggingFaceEmbeddings:
-    """For all model names, see: https://www.sbert.net/docs/pretrained_models.html."""
-    return HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
-
-
-@pytest.fixture
-def database(chunked_docs: ty.List[Document], embeddings: HuggingFaceEmbeddings) -> FAISS:
+def database(docs_path: str) -> FAISS:
     """Database for the RAG."""
     logger.debug("Database for documents...")
-    db = FAISS.from_documents(chunked_docs, embedding=embeddings)
+    db = create_rag_database(docs_path)
     return db
 
 
@@ -146,54 +128,17 @@ def cerbero(
 
 
 @pytest.fixture
-def cerbero_pipeline(
-    cerbero: ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer],
-    device: torch.device,
-) -> HuggingFacePipeline:
-    """Cerbero pipeline."""
-    logger.debug("Pipeline...")
-    model, tokenizer = cerbero
-    # with patch.object(QuantizedModelForCausalLM, "__module__", return_value="torch"):
-    pipe = pipeline(
-        model=model,
-        tokenizer=tokenizer,
-        task="text-generation",
-        temperature=0.2,
-        do_sample=True,
-        repetition_penalty=1.1,
-        return_full_text=False,
-        max_new_tokens=500,
-        device=device,
+def mistral_small(
+    bnb_config: BitsAndBytesConfig | None,
+) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
+    """Small mistral."""
+    model_name = "NousResearch/Nous-Hermes-2-Mistral-7B-DPO"
+    model, tokenizer = load_model(
+        model_name,
+        bnb_config=bnb_config,
+        quantize=True,
+        quantize_w_torch=False,
+        model_class=MixtralForCausalLM,
+        tokenizer_class=LlamaTokenizer,
     )
-    llm = HuggingFacePipeline(pipeline=pipe)
-    logger.debug(f"Pipeline: {llm}")
-    return llm
-
-
-@pytest.fixture
-def llm_chain_cerbero(
-    cerbero_pipeline: HuggingFacePipeline,
-) -> RunnableSerializable:
-    """LLM chain for Cerbero."""
-    prompt = PromptTemplate(
-        input_variables=["context", "question"],
-        template=ITALIAN_PROMPT_TEMPLATE,
-    )
-    llm_chain = prompt | cerbero_pipeline | StrOutputParser()
-    logger.debug(f"LLM chain: {llm_chain}")
-    return llm_chain
-
-
-@pytest.fixture
-def llm_chain_cerbero_w_rag(
-    llm_chain_cerbero: RunnableSerializable,
-    database: FAISS,
-) -> RunnableSerializable:
-    """LLM chain for Cerbero."""
-    retriever = database.as_retriever()
-    rag_chain: RunnableSerializable = {
-        "context": retriever,
-        "question": RunnablePassthrough(),
-    } | llm_chain_cerbero
-    logger.debug(f"LLM+RAG chain: {rag_chain}")
-    return rag_chain
+    return model, tokenizer

@@ -2,6 +2,7 @@ __all__ = ["load_documents"]
 
 import os
 from typing import List
+from loguru import logger
 from langchain_community.document_loaders.directory import DirectoryLoader
 from langchain_community.document_loaders.pdf import PyPDFLoader
 from langchain_community.document_loaders.text import TextLoader
@@ -46,6 +47,6 @@ def load_documents(path: str) -> List[Document]:
 
     docs = []
     for file_type, loader in loaders.items():
-        print(f"Loading {file_type} files")
+        logger.info(f"Loading {file_type} files...")
         docs.extend(loader.load())
     return docs

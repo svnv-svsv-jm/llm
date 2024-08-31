@@ -9,3 +9,5 @@ Models to test:
 - [Fauno](https://huggingface.co/andreabac3/Fauno-Italian-LLM-7B)
 - [Umberto](https://github.com/musixmatchresearch/umberto)
 - [Cerbero](https://github.com/galatolofederico/cerbero-7b)
+
+Test on Colab, quick and dirty.

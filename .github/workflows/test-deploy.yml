@@ -39,12 +39,16 @@ jobs:
           force: true
           tags: true
 
+      - name: Get project name from pyproject.toml
+        id: get_name
+        run: echo "NAME=$(python -c 'import toml; print(toml.load(\"pyproject.toml\")[\"tool\"][\"poetry\"][\"name\"])')" >> $GITHUB_ENV
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: python -c "import pkg_resources; print(pkg_resources.get_distribution('svsv-llm').version)"
-          release_name: python -c "import pkg_resources; print(pkg_resources.get_distribution('svsv-llm').version)"
+          tag_name: python -c "import pkg_resources; print(pkg_resources.get_distribution('${{ env.NAME }}').version)"
+          release_name: python -c "import pkg_resources; print(pkg_resources.get_distribution('${{ env.NAME }}').version)"
           draft: false
           prerelease: false
         env:
