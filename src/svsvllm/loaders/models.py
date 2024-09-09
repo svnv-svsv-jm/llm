@@ -63,7 +63,12 @@ def load_model(
 
     # Tokenizer
     logger.debug(f"Loading tokenizer...")
-    tokenizer = tokenizer_class.from_pretrained(model_name, trust_remote_code=True, token=token)
+    tokenizer = tokenizer_class.from_pretrained(
+        model_name,
+        trust_remote_code=True,
+        token=token,
+        # use_fast=False,
+    )
     logger.debug(f"Loaded tokenizer '{tokenizer}'...")
 
     # Load model

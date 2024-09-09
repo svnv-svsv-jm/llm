@@ -51,6 +51,7 @@ libmagic = "^1.0"
 python-magic = "^0.4.27"
 chardet = "^5.2.0"
 toml = "^0.10.2"
+sentencepiece = "^0.2.0"
 
 [tool.poetry.extras]
 gpu = ["faiss-gpu"]

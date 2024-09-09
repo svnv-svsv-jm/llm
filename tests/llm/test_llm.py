@@ -19,8 +19,9 @@ from svsvllm.rag import ITALIAN_PROMPT_TEMPLATE
 @pytest.mark.parametrize(
     "model_name, quantize, quantize_w_torch",
     [
+        # ("BEE-spoke-data/smol_llama-101M-GQA", True, True),
+        ("meta-llama/Meta-Llama-3.1-8B-Instruct", True, True),
         ("TinyLlama/TinyLlama_v1.1", True, True),
-        ("BEE-spoke-data/smol_llama-101M-GQA", True, False),
     ],
 )
 def test_llm(
