@@ -13,7 +13,9 @@ pyrootutils.setup_root(
     cwd=True,
 )
 
+from pathlib import Path
 import torch
+from torch.backends import quantized
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -32,12 +34,15 @@ from optimum.quanto import QuantizedModelForCausalLM
 from svsvllm.scraping.driver import create_driver, DRIVER_TYPE
 from svsvllm.loaders import load_model, load_documents
 from svsvllm.rag import create_rag_database
+from svsvllm.utils import find_device
 
 
 @pytest.fixture
 def artifact_location() -> str:
     """Location for test artifacts."""
-    return "pytest_artifacts"
+    loc = "pytest_artifacts"
+    Path(loc).mkdir(exist_ok=True, parents=True)
+    return loc
 
 
 @pytest.fixture
@@ -60,7 +65,7 @@ def web_driver() -> ty.Generator[DRIVER_TYPE, None, None]:
 @pytest.fixture
 def device() -> torch.device:
     """Torch device."""
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("mps")
+    device = find_device()
     logger.debug(f"Device: {device}")
     return device
 
@@ -142,3 +147,17 @@ def mistral_small(
         tokenizer_class=LlamaTokenizer,
     )
     return model, tokenizer
+
+
+@pytest.fixture
+def patch_torch_quantized_engine(device: torch.device) -> ty.Generator:
+    """Workaround to try quantization on Mac M1."""
+    if device == torch.device("mps"):
+        try:
+            with patch.object(quantized, "engine", new_value="qnnpack"):
+                assert quantized.engine == "qnnpack"
+                yield True
+        except:
+            yield True
+    else:
+        yield False

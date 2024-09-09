@@ -11,7 +11,7 @@ See [here](./contributing.md).
 - Python and a virtual environment
 - `poetry`
 - `make`
-- HuggingFace token declared in a `.env` file.
+- `HUGGINGFACE_TOKEN` declared in a `.env` file.
 
 ## Installation
 

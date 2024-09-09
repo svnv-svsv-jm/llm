@@ -5,11 +5,13 @@ import typing as ty
 from loguru import logger
 
 import torch
-from torch.quantization import quantize_dynamic
+from torch.quantization import quantize_dynamic, get_default_qconfig
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from optimum.quanto import QuantizedModelForCausalLM, qint4
 
-from svsvllm.utils import CommandTimer
+from svsvllm.utils import CommandTimer, get_default_backend
+
+DEFAULT_BACKEND = get_default_backend()
 
 
 def load_model(
@@ -22,6 +24,7 @@ def load_model(
     revision: str | None = None,
     model_class: ty.Type[AutoModelForCausalLM] = AutoModelForCausalLM,
     tokenizer_class: ty.Type[AutoTokenizer] = AutoTokenizer,
+    backend: str = DEFAULT_BACKEND,
 ) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
     """Load LLM.
 
@@ -43,6 +46,10 @@ def load_model(
         model_class (ty.Type[AutoModelForCausalLM], optional): _description_. Defaults to `AutoModelForCausalLM`.
 
         tokenizer_class (ty.Type[AutoTokenizer], optional): _description_. Defaults to `AutoTokenizer`.
+
+        backend (str):
+            A string representing the target backend.
+            Currently supports `x86`, `fbgemm`, `qnnpack` and `onednn`.
 
     Returns:
         ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]: _description_
@@ -89,8 +96,19 @@ def load_model(
     # Quantize
     if quantize:
         if quantize_w_torch:
+            # Also see: https://github.com/pytorch/pytorch/issues/123507
             logger.debug("Quantizing with `torch.quantization.quantize_dynamic`...")
-            model = quantize_dynamic(model, dtype=torch.qint8)
+            # Define the qconfig (using 'fbgemm' or 'qnnpack' configuration)
+            qconfig = get_default_qconfig(backend)
+            qconfig_spec = {torch.nn.Module: qconfig}
+            logger.debug(f"Configuration: {qconfig_spec}")
+            # Apply the qconfig to the model
+            # model.qconfig = qconfig
+            model = quantize_dynamic(
+                model,
+                dtype=torch.qint8,
+                qconfig_spec=qconfig_spec,
+            )
         else:
             if not already_quantoed:
                 logger.debug(f"Quantizing with {QuantizedModelForCausalLM}...")

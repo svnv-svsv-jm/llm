@@ -39,7 +39,7 @@ class CommandTimer:
         """Show elapsed time."""
         while not self.stop_thread:
             elapsed_time = self.format_elapsed_time(time.time() - start_time)
-            print(f"\r[{self.name}] Elapsed time: {elapsed_time} seconds", end="")
+            print(f"\r[{self.name}] Elapsed time (DD:HH:mm:ss): {elapsed_time}", end="")
             time.sleep(self.sleep)
 
     def start(self) -> None:
