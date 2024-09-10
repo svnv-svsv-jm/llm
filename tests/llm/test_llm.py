@@ -19,25 +19,22 @@ from svsvllm.utils import CommandTimer
 from svsvllm.loaders import llm_chain, load_model
 from svsvllm.rag import ITALIAN_PROMPT_TEMPLATE
 
-# torch.backends.quantized.engine = 'qnnpack'
-
 
 @pytest.mark.parametrize(
     "model_name, quantize, quantize_w_torch, model_class, tokenizer_class",
     [
-        # ("BEE-spoke-data/smol_llama-101M-GQA", True, True),
+        ("BEE-spoke-data/smol_llama-101M-GQA", True, True, None, None),
         # ("meta-llama/Meta-Llama-3.1-8B-Instruct", True, True), # Gated repo...
         # ("galatolo/cerbero-7b", True, True, None, None),  # Very big...
-        ("andreabac3/Fauno-Italian-LLM-7B", True, True, None, None),
+        # ("andreabac3/Fauno-Italian-LLM-7B", True, True, None, None),  # Broken on HuggingFace
         # ("Musixmatch/umberto-commoncrawl-cased-v1", True, True, None, None),
-        (
-            "NousResearch/Nous-Hermes-2-Mistral-7B-DPO",
-            True,
-            True,
-            MixtralForCausalLM,
-            LlamaTokenizer,
-        ),
-        ("TinyLlama/TinyLlama_v1.1", True, True, None, None),
+        # (
+        #     "NousResearch/Nous-Hermes-2-Mistral-7B-DPO",  # Too big...
+        #     True,
+        #     True,
+        #     MixtralForCausalLM,
+        #     LlamaTokenizer,
+        # ),
     ],
 )
 def test_llm(

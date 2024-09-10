@@ -6,7 +6,7 @@ import torch
 from svsvllm.utils import find_device
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def device() -> torch.device:
     """Torch device."""
     device = find_device()

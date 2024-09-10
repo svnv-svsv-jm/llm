@@ -52,6 +52,8 @@ python-magic = "^0.4.27"
 chardet = "^5.2.0"
 toml = "^0.10.2"
 sentencepiece = "^0.2.0"
+llama-cpp-python = "^0.2.90"
+huggingface-hub = "^0.24.6"
 
 [tool.poetry.extras]
 gpu = ["faiss-gpu"]

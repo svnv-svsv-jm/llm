@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def artifact_location() -> str:
     """Location for test artifacts."""
     loc = "pytest_artifacts"
@@ -11,7 +11,7 @@ def artifact_location() -> str:
     return loc
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def docs_path() -> str:
     """Path to foler with documents."""
     path = os.path.join("res", "documents")

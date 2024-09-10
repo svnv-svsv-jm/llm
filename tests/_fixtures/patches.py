@@ -7,7 +7,7 @@ from torch.backends import quantized
 
 
 @pytest.fixture
-def patch_torch_quantized_engine(device: torch.device) -> ty.Generator:
+def patch_torch_quantized_engine(device: torch.device) -> ty.Generator[bool, None, None]:
     """Workaround to try quantization on Mac M1."""
     if device == torch.device("mps"):
         try:

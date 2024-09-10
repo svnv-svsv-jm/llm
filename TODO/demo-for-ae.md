@@ -8,7 +8,7 @@ Show we can set up a RAG+LLM to answer questions about legal stuff, loading the 
 
 Models to test:
 
-- [Fauno](https://huggingface.co/andreabac3/Fauno-Italian-LLM-7B)
+- [Fauno](https://huggingface.co/andreabac3/Fauno-Italian-LLM-7B): Got the error `OSError: andreabac3/Fauno-Italian-LLM-7B does not appear to have a file named config.json. Checkout 'https://huggingface.co/andreabac3/Fauno-Italian-LLM-7B/tree/main' for available files.`... What?
 - ~~[Umberto](https://github.com/musixmatchresearch/umberto)~~: This seems to be a model for masking...
 - [Cerbero](https://github.com/galatolofederico/cerbero-7b)
 

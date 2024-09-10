@@ -10,14 +10,14 @@ from svsvllm.loaders import load_documents
 from svsvllm.rag import create_rag_database
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def documents(docs_path: str) -> ty.List[Document]:
     """Loaded documents."""
     docs: ty.List[Document] = load_documents(docs_path)
     return docs
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def database(docs_path: str) -> FAISS:
     """Database for the RAG."""
     logger.debug("Database for documents...")
@@ -25,7 +25,7 @@ def database(docs_path: str) -> FAISS:
     return db
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def retriever(database: FAISS) -> VectorStoreRetriever:
     """`VectorStoreRetriever` object."""
     logger.debug("Retriever...")
