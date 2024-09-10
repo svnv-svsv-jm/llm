@@ -6,7 +6,13 @@ import sys, os
 import yaml
 
 import torch
-from transformers import BitsAndBytesConfig
+from transformers import (
+    BitsAndBytesConfig,
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    LlamaTokenizer,
+    MixtralForCausalLM,
+)
 from langchain_community.vectorstores.faiss import FAISS
 
 from svsvllm.utils import CommandTimer
@@ -17,11 +23,21 @@ from svsvllm.rag import ITALIAN_PROMPT_TEMPLATE
 
 
 @pytest.mark.parametrize(
-    "model_name, quantize, quantize_w_torch",
+    "model_name, quantize, quantize_w_torch, model_class, tokenizer_class",
     [
         # ("BEE-spoke-data/smol_llama-101M-GQA", True, True),
-        ("meta-llama/Meta-Llama-3.1-8B-Instruct", True, True),
-        ("TinyLlama/TinyLlama_v1.1", True, True),
+        # ("meta-llama/Meta-Llama-3.1-8B-Instruct", True, True), # Gated repo...
+        # ("galatolo/cerbero-7b", True, True, None, None),  # Very big...
+        ("andreabac3/Fauno-Italian-LLM-7B", True, True, None, None),
+        # ("Musixmatch/umberto-commoncrawl-cased-v1", True, True, None, None),
+        (
+            "NousResearch/Nous-Hermes-2-Mistral-7B-DPO",
+            True,
+            True,
+            MixtralForCausalLM,
+            LlamaTokenizer,
+        ),
+        ("TinyLlama/TinyLlama_v1.1", True, True, None, None),
     ],
 )
 def test_llm(
@@ -33,6 +49,8 @@ def test_llm(
     quantize_w_torch: bool,
     patch_torch_quantized_engine: bool,
     device: torch.device,
+    model_class: type[AutoModelForCausalLM] | None,
+    tokenizer_class: type[AutoTokenizer] | None,
 ) -> None:
     """Test we can run a simple example."""
     # Load model
@@ -41,6 +59,8 @@ def test_llm(
         bnb_config=bnb_config,
         quantize=quantize,
         quantize_w_torch=quantize_w_torch,
+        model_class=model_class,
+        tokenizer_class=tokenizer_class,
     )
 
     # Question

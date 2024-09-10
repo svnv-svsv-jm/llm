@@ -22,8 +22,8 @@ def load_model(
     device: torch.device = None,
     token: str | None = None,
     revision: str | None = None,
-    model_class: ty.Type[AutoModelForCausalLM] = AutoModelForCausalLM,
-    tokenizer_class: ty.Type[AutoTokenizer] = AutoTokenizer,
+    model_class: ty.Type[AutoModelForCausalLM] | None = None,
+    tokenizer_class: ty.Type[AutoTokenizer] | None = None,
     backend: str = DEFAULT_BACKEND,
 ) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
     """Load LLM.
@@ -60,6 +60,12 @@ def load_model(
     # HuggingFace token or it won't download
     if token is None:
         token = os.environ["HUGGINGFACE_TOKEN"]
+
+    # Sanitize inputs
+    if model_class is None:
+        model_class = AutoModelForCausalLM
+    if tokenizer_class is None:
+        tokenizer_class = AutoTokenizer
 
     # Tokenizer
     logger.debug(f"Loading tokenizer...")
