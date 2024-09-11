@@ -1895,6 +1895,22 @@ test-full = ["adlfs", "aiohttp (!=4.0.0a0,!=4.0.0a1)", "cloudpickle", "dask", "d
 tqdm = ["tqdm"]
 
 [[package]]
+name = "gguf"
+version = "0.10.0"
+description = "Read and write ML models in GGUF for GGML"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "gguf-0.10.0-py3-none-any.whl", hash = "sha256:706089fba756a06913227841b4a6c8398360fa991569fd974e663a92b224e33f"},
+    {file = "gguf-0.10.0.tar.gz", hash = "sha256:52a30ef26328b419ffc47d9269fc580c238edf1c8a19b5ea143c323e04a038c1"},
+]
+
+[package.dependencies]
+numpy = ">=1.17"
+pyyaml = ">=5.1"
+tqdm = ">=4.27"
+
+[[package]]
 name = "gitdb"
 version = "4.0.11"
 description = "Git Object Database"
@@ -3887,6 +3903,50 @@ jfrog = ["mlflow-jfrog-plugin"]
 langchain = ["langchain (>=0.1.0,<=0.2.11)"]
 sqlserver = ["mlflow-dbstore"]
 xethub = ["mlflow-xethub"]
+
+[[package]]
+name = "mlx"
+version = "0.17.2"
+description = "A framework for machine learning on Apple silicon."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "mlx-0.17.2-cp310-cp310-macosx_13_0_arm64.whl", hash = "sha256:8a528bd0c6c9086c3e21550f84f258e0cf363feb86f6e341ddab677cbcd5bc23"},
+    {file = "mlx-0.17.2-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:4b17949ee402c373734f83d757b2dcaa2b53ea278014db3e16aef20c92428571"},
+    {file = "mlx-0.17.2-cp311-cp311-macosx_13_0_arm64.whl", hash = "sha256:e6d5791a5f1d08fda79ceb8f7b211e0409d92d24614c79e45de7276b156624a8"},
+    {file = "mlx-0.17.2-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:e45a8ba78e843f46c54e5860ebc9a8212e81674a66cb6e68aff13cfc8aba7bc5"},
+    {file = "mlx-0.17.2-cp312-cp312-macosx_13_0_arm64.whl", hash = "sha256:41f674daf15f102bd24b61c417600d31cbbcb3655a632d473b3abb376e50a8db"},
+    {file = "mlx-0.17.2-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:0ab08f27ee8d97cea0d98a5be7947714b926feb99153e0aba9f4c95fe54b4d10"},
+    {file = "mlx-0.17.2-cp38-cp38-macosx_13_0_arm64.whl", hash = "sha256:28f2ecc9797b49a0df9e57d4a281d8006519128fe789b43bbe7196e7eb6d21fa"},
+    {file = "mlx-0.17.2-cp38-cp38-macosx_14_0_arm64.whl", hash = "sha256:606cfca72d0384ff70fa696667d8f6dfa0723ecb9bb1041b434058abd9b0e9bc"},
+    {file = "mlx-0.17.2-cp39-cp39-macosx_13_0_arm64.whl", hash = "sha256:09fa4d5de4336ca44153a13a9406be62312e0f803bd472286d897833f4b95e3c"},
+    {file = "mlx-0.17.2-cp39-cp39-macosx_14_0_arm64.whl", hash = "sha256:7062b1c03ac489392ef46ae00d99f16036c598225bd6c8c35925321eaa9cd38f"},
+]
+
+[package.extras]
+dev = ["nanobind (==2.1.0)", "numpy", "pre-commit", "setuptools (>=42)", "torch", "typing-extensions"]
+
+[[package]]
+name = "mlx-lm"
+version = "0.18.1"
+description = "LLMs on Apple silicon with MLX and the Hugging Face Hub"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "mlx_lm-0.18.1-py3-none-any.whl", hash = "sha256:38610e02c71067327833c570db7414cc0e604c24c4870377c84a55d5dc690f3d"},
+    {file = "mlx_lm-0.18.1.tar.gz", hash = "sha256:7a3f9adbacbfa99f2bee3b3407d87ff6fad55ee7aa616bf87f918f783782abdd"},
+]
+
+[package.dependencies]
+jinja2 = "*"
+mlx = ">=0.17.0"
+numpy = "*"
+protobuf = "*"
+pyyaml = "*"
+transformers = {version = ">=4.39.3", extras = ["sentencepiece"]}
+
+[package.extras]
+testing = ["datasets"]
 
 [[package]]
 name = "more-itertools"
@@ -8092,10 +8152,12 @@ filelock = "*"
 huggingface-hub = ">=0.23.2,<1.0"
 numpy = ">=1.17"
 packaging = ">=20.0"
+protobuf = {version = "*", optional = true, markers = "extra == \"sentencepiece\""}
 pyyaml = ">=5.1"
 regex = "!=2019.12.17"
 requests = "*"
 safetensors = ">=0.4.1"
+sentencepiece = {version = ">=0.1.91,<0.1.92 || >0.1.92", optional = true, markers = "extra == \"sentencepiece\""}
 tokenizers = ">=0.19,<0.20"
 tqdm = ">=4.27"
 
@@ -8932,4 +8994,4 @@ gpu = ["faiss-gpu"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "8d895a3f28ab809cce2fbfd70e2e8d97aa06f2b4bd47f0b91aaa4aa873e26e7f"
+content-hash = "06864f031c50cdead57606e8bf1d502e1b037ff29a9a5584dba33188aaf20c38"

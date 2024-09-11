@@ -168,3 +168,6 @@ sandbox
 
 # Models
 models
+
+# llama.cpp
+llama.cpp

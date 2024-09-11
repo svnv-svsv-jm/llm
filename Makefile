@@ -72,6 +72,7 @@ test: mypy pytest pytest-nbmake
 
 tests: test
 
+
 # -----------
 # git
 # -----------
@@ -172,3 +173,31 @@ sync-code:
 sync-exp-logs:
 	scp -r $(REMOTE_HOST):$(REMOTE_PATH_TO_PROJECT)/lightning_logs ./lightning_logs
 cp-remote-logs: sync-exp-logs
+
+
+# ----------
+# llama.ccp
+# ----------
+get-llama.ccp:
+	git clone git@github.com:ggerganov/llama.cpp.git
+
+# necessary to download gated models
+huggingface-login:
+	huggingface-cli login --token ${HUGGINGFACE_TOKEN}
+
+# Some useful names:
+# - mistralai/Mistral-7B-Instruct-v0.3
+# - meta-llama/Meta-Llama-3-8B-Instruct
+llama.ccp-download-model: huggingface-login
+llama.ccp-download-model: MODEL_NAME=mistralai/Mistral-7B-Instruct-v0.3
+llama.ccp-download-model:
+	mkdir -p models/$(MODEL_NAME)
+	huggingface-cli download $(MODEL_NAME) --local-dir models/$(MODEL_NAME)
+
+
+# --------
+# mlx-lm
+# --------
+mlx-convert: MODEL_PATH=mistralai/Mistral-7B-Instruct-v0.3
+mlx-convert:
+	python -m mlx_lm.convert --hf-path $(MODEL_PATH) -q

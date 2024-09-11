@@ -29,30 +29,45 @@ def load_model(
     """Load LLM.
 
     Args:
-        model_name (str): _description_
+        model_name (str):
+            Name of the model to use/download. For example: `"meta-llama/Meta-Llama-3.1-8B-Instruct"`.
+            For all models, see HuggingFace website.
 
-        bnb_config (BitsAndBytesConfig | None, optional): _description_. Defaults to `None`.
+        bnb_config (BitsAndBytesConfig | None, optional):
+            Configuration for quantization. This only works on CUDA.
+            Defaults to `None`.
 
-        quantize (bool, optional): _description_. Defaults to `False`.
+        quantize (bool, optional):
+            Whether to quantize or not. Defaults to `False`.
 
-        quantize_w_torch (bool, optional): _description_. Defaults to `False`.
+        quantize_w_torch (bool, optional):
+            If `True`, quantization will happen using `from torch.quantization import quantize_dynamic, get_default_qconfig`.
+            If `False`, quantization will happen using `from optimum.quanto import QuantizedModelForCausalLM`.
+            Defaults to `False`.
 
-        device (torch.device, optional): _description_. Defaults to `None`.
+        device (torch.device, optional):
+            Accelarator. Defaults to `None`.
 
-        token (str | None, optional): _description_. Defaults to `None`.
+        token (str | None, optional):
+            HuggingFace token, necessary to download models.
+            Defaults to `None`, meaning that it will be read from the environment variables `HUGGINGFACE_TOKEN`.
 
-        revision (str, optional): For example: `"float16"`. Defaults to `None`.
+        revision (str, optional):
+            For example: `"float16"`. Defaults to `None`.
 
-        model_class (ty.Type[AutoModelForCausalLM], optional): _description_. Defaults to `AutoModelForCausalLM`.
+        model_class (ty.Type[AutoModelForCausalLM], optional):
+            Defaults to `AutoModelForCausalLM`.
 
-        tokenizer_class (ty.Type[AutoTokenizer], optional): _description_. Defaults to `AutoTokenizer`.
+        tokenizer_class (ty.Type[AutoTokenizer], optional):
+            Defaults to `AutoTokenizer`.
 
         backend (str):
             A string representing the target backend.
             Currently supports `x86`, `fbgemm`, `qnnpack` and `onednn`.
 
     Returns:
-        ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]: _description_
+        ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
+            Loaded LLM and its corresponding tokenizer.
     """
 
     logger.debug(f"Loading model '{model_name}'...")
@@ -130,4 +145,5 @@ def load_model(
     if isinstance(model, QuantizedModelForCausalLM):
         model = model._wrapped
 
+    # Return model and tokenizer
     return model, tokenizer
