@@ -6,7 +6,7 @@ This document is intended for developers who wish to contribute to the project.
 
 ## Tools
 
-If you are a [Visual Studio Code](https://code.visualstudio.com/) user, you may also want to install the following VSCode extensions:
+If you are a [Visual Studio Code](https://code.visualstudio.com/) user, you may also want to install the the same VSCode extensions that we use:
 
 - [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python): pretty mandatory. This should also automatically install Pylance.
 - [Black formatter](https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter): prettu much needed, install it then on VSCode, in Settings, check the box "Editor: Format On Save".

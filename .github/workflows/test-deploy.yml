@@ -5,7 +5,7 @@ on:
     branches: ["develop"]
 
 jobs:
-  deploy:
+  test:
     strategy:
       fail-fast: false
       matrix:
@@ -32,8 +32,11 @@ jobs:
           make install
           make ${{ matrix.cmd }}
 
+  deploy:
+    needs: test
+    runs-on: "ubuntu-latest"
+    steps:
       - name: Push to main if tests pass
-        if: success()
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -52,13 +55,3 @@ jobs:
         run: |
           CMD="import pkg_resources; print(pkg_resources.get_distribution('${{ env.NAME }}').version)""
           echo "VERSION=$(python -c ${CMD})" >> $GITHUB_ENV
-
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ env.VERSION }}
-          release_name: ${{ env.VERSION }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

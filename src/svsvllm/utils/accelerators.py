@@ -9,7 +9,7 @@ from .cuda import pick_single_gpu
 
 
 def find_accelerator() -> str:
-    """Finds the accelerator. Will return `"auto"` if not on Mac, else it will return `"cpu"`."""
+    """Finds the accelerator. Will return `"cpu"` if on Mac, else it will return `"auto"`."""
     if sys.platform.lower() in ["darwin"]:
         return "cpu"
     return "auto"

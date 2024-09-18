@@ -110,7 +110,7 @@ def load_model(
             model = QuantizedModelForCausalLM.from_pretrained(f"models/{model_name}")
             already_quantoed = True
             logger.trace(f"Success!")
-        except:
+        except:  # pragma: no cover
             logger.trace(f"Could not load {model_name} using {QuantizedModelForCausalLM}.")
             model = load()
             already_quantoed = False
