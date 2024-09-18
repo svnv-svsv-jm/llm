@@ -55,10 +55,11 @@ sentencepiece = "^0.2.0"
 llama-cpp-python = "^0.2.90"
 huggingface-hub = "^0.24.6"
 gguf = "^0.10.0"
-mlx-lm = "^0.18.1"
+mlx-lm = { version = "^0.18.1", optional = true }
 
 [tool.poetry.extras]
 gpu = ["faiss-gpu"]
+osx = ["mlx-lm"]
 
 [tool.poetry.dev-dependencies]
 poetry-plugin-export = "*"
