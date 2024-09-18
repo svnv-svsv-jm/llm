@@ -45,13 +45,16 @@ jobs:
         id: get_name
         run: echo "NAME=$(python -c 'import toml; print(toml.load(\"pyproject.toml\")[\"tool\"][\"poetry\"][\"name\"])')" >> $GITHUB_ENV
 
-      - name: Create Release
-        id: create_release
+      - name: Get project version
+        id: get_version
+        run: echo "VERSION=$(python -c 'import pkg_resources; print(pkg_resources.get_distribution(\"${{ env.NAME }}\").version)')" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
         uses: actions/create-release@v1
         with:
-          tag_name: python -c "import pkg_resources; print(pkg_resources.get_distribution('${{ env.NAME }}').version)"
-          release_name: python -c "import pkg_resources; print(pkg_resources.get_distribution('${{ env.NAME }}').version)"
+          tag_name: ${{ env.VERSION }}
+          release_name: ${{ env.VERSION }}
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
