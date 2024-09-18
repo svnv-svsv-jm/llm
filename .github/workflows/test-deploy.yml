@@ -29,8 +29,8 @@ jobs:
           pip install virtualenv
           virtualenv venv
           source venv/bin/activate
+          make install
           make ${{ matrix.cmd }}
-          make test
 
       - name: Push to main if tests pass
         if: success()
