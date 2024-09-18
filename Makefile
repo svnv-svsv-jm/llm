@@ -25,6 +25,7 @@ PYTHON_EXEC?=python -m
 PYTHONVERSION?=3.10.10
 PYTEST?=pytest
 SYSTEM=$(shell python -c "import sys; print(sys.platform)")
+COV_FAIL_UNDER=95
 # poetry
 POETRY=poetry
 # docker
@@ -63,12 +64,12 @@ mypy:
 	$(PYTHON_EXEC) mypy tests
 
 pytest:
-	$(PYTHON_EXEC) pytest -x --testmon --pylint --cov-fail-under 95
+	$(PYTHON_EXEC) pytest -x --testmon --pylint --cov-fail-under $(COV_FAIL_UNDER)
 
-pytest-nbmake:
+nbmake:
 	$(PYTHON_EXEC) pytest -x --testmon --nbmake --overwrite "$(EXAMPLE_DIR)"
 
-test: mypy pytest pytest-nbmake
+test: mypy pytest nbmake
 
 tests: test
 

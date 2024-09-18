@@ -26,9 +26,14 @@ def load_documents(path: str) -> List[Document]:
     Raises:
         FileNotFoundError: If the specified path does not exist.
     """
+    # Sanitize input
+    path = f"{path}"
+
+    # Raise error if path does not exist
     if not os.path.exists(path):
         raise FileNotFoundError(f"The specified path does not exist: {path}")
 
+    # Create loaders
     loaders = {
         ".pdf": DirectoryLoader(
             path,
@@ -45,6 +50,7 @@ def load_documents(path: str) -> List[Document]:
         ),
     }
 
+    # Load docs
     docs = []
     for file_type, loader in loaders.items():
         logger.info(f"Loading {file_type} files...")

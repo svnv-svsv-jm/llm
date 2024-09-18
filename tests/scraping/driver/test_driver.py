@@ -5,12 +5,6 @@ import typing as ty
 
 import time
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.actions.action_builder import ActionBuilder
 
 from svsvllm.scraping import (
     DRIVER_TYPE,
@@ -21,11 +15,8 @@ from svsvllm.scraping import (
 from svsvllm.scraping.url import AE_URL
 
 
-def test_ae_website_search(
-    web_driver: DRIVER_TYPE,
-    artifact_location: str,
-) -> None:
-    """Test the driver."""
+def test_ae_website_search(web_driver: DRIVER_TYPE) -> None:
+    """Test the driver on the website of Agenzia delle Entrate."""
     # Go to desired URL
     web_driver.get(AE_URL)
     time.sleep(5)
