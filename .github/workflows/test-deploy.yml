@@ -43,15 +43,3 @@ jobs:
           branch: main
           force: true
           tags: true
-
-      - name: Get project name from pyproject.toml
-        id: get_name
-        run: |
-          CMD='import toml; print(toml.load("pyproject.toml")["tool"]["poetry"]["name"])'
-          echo "NAME=$(python -c ${CMD})" >> $GITHUB_ENV
-
-      - name: Get project version
-        id: get_version
-        run: |
-          CMD="import pkg_resources; print(pkg_resources.get_distribution('${{ env.NAME }}').version)""
-          echo "VERSION=$(python -c ${CMD})" >> $GITHUB_ENV
