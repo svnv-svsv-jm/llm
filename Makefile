@@ -64,7 +64,7 @@ mypy:
 	$(PYTHON_EXEC) mypy tests
 
 pytest:
-	$(PYTHON_EXEC) pytest -x --testmon --pylint --cov-fail-under $(COV_FAIL_UNDER)
+	$(PYTHON_EXEC) pytest -x --testmon --junitxml=pytest-results.xml --pylint --cov=src/ --cov-fail-under $(COV_FAIL_UNDER)
 
 nbmake:
 	$(PYTHON_EXEC) pytest -x --testmon --nbmake --overwrite "$(EXAMPLE_DIR)"

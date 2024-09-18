@@ -32,7 +32,7 @@ jobs:
           make install
           make ${{ matrix.cmd }}
 
-  deploy:
+  push-to-main:
     needs: test
     runs-on: "ubuntu-latest"
     steps:

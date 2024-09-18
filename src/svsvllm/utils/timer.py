@@ -23,10 +23,11 @@ class CommandTimer:
         # Private
         self.stop_thread = False
         self.start_time: float
+        self.elapsed_time: float
         self.timer_thread: threading.Thread
 
     def format_elapsed_time(self, seconds: float) -> str:
-        """Format elapsed time."""
+        """Format elapsed time from `float` to DD:HH:mm:ss."""
         days = seconds // (24 * 3600)
         seconds = seconds % (24 * 3600)
         hours = seconds // 3600
@@ -38,8 +39,8 @@ class CommandTimer:
     def print_elapsed_time(self, start_time: float) -> None:
         """Show elapsed time."""
         while not self.stop_thread:
-            elapsed_time = self.format_elapsed_time(time.time() - start_time)
-            print(f"\r[{self.name}] Elapsed time (DD:HH:mm:ss): {elapsed_time}", end="")
+            time_info = self.format_elapsed_time(time.time() - start_time)
+            print(f"\r[{self.name}] Elapsed time (DD:HH:mm:ss): {time_info}", end="")
             time.sleep(self.sleep)
 
     def start(self) -> None:
@@ -56,8 +57,8 @@ class CommandTimer:
         """Stop the timer thread."""
         self.stop_thread = True
         self.timer_thread.join()
-        elapsed_time = time.time() - self.start_time
-        print(f"\nCommand {self.name} completed in {elapsed_time:.2f} seconds")
+        self.elapsed_time = time.time() - self.start_time
+        print(f"\nCommand {self.name} completed in {self.elapsed_time:.2f} seconds")
 
     def run(self, command: ty.Callable, *args: ty.Any, **kwargs: ty.Any) -> ty.Any:
         """Time a command to run."""

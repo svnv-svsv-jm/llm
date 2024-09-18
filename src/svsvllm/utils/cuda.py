@@ -6,14 +6,16 @@ import torch
 from pytorch_lightning.accelerators import find_usable_cuda_devices
 
 
-def pick_single_gpu(exclude_gpus: ty.List[int] = []) -> int:
+def pick_single_gpu(exclude_gpus: ty.List[int] = []) -> int:  # pragma: no cover
     """
     Raises:
         RuntimeError:
             If you try to allocate a GPU, when no GPUs are available.
     """
+    # Initialize
     previously_used_gpus = []
     unused_gpus = []
+    # Iterate over devices
     for i in range(torch.cuda.device_count()):
         if i in exclude_gpus:
             continue
@@ -30,4 +32,5 @@ def pick_single_gpu(exclude_gpus: ty.List[int] = []) -> int:
         except RuntimeError:
             continue
         return i
+    # Raise error if no GPUs
     raise RuntimeError("No GPUs available.")

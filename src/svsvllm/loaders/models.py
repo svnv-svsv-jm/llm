@@ -25,6 +25,7 @@ def load_model(
     model_class: ty.Type[AutoModelForCausalLM] | None = None,
     tokenizer_class: ty.Type[AutoTokenizer] | None = None,
     backend: str = DEFAULT_BACKEND,
+    models_dir: str = ".models",
 ) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
     """Load LLM.
 
@@ -65,6 +66,10 @@ def load_model(
             A string representing the target backend.
             Currently supports `x86`, `fbgemm`, `qnnpack` and `onednn`.
 
+        models_dir (str):
+            Directory where to download models.
+            Defaults to `".models"`.
+
     Returns:
         ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
             Loaded LLM and its corresponding tokenizer.
@@ -94,6 +99,7 @@ def load_model(
 
     # Load model
     def load() -> AutoModelForCausalLM:
+        """Load model."""
         with CommandTimer(f"Model loading: {model_name}"):
             model = model_class.from_pretrained(
                 model_name,
@@ -107,7 +113,7 @@ def load_model(
     if quantize and not quantize_w_torch:
         try:  # We try to get a previously quantized and saved model
             logger.trace(f"Trying to load {model_name} using {QuantizedModelForCausalLM}...")
-            model = QuantizedModelForCausalLM.from_pretrained(f"models/{model_name}")
+            model = QuantizedModelForCausalLM.from_pretrained(f"{models_dir}/{model_name}")
             already_quantoed = True
             logger.trace(f"Success!")
         except:  # pragma: no cover
@@ -140,7 +146,7 @@ def load_model(
                 logger.debug(f"Quantizing with {QuantizedModelForCausalLM}...")
                 model = QuantizedModelForCausalLM.quantize(model, weights=qint4, exclude="lm_head")
                 logger.debug("Saving pretrained quantized model.")
-                model.save_pretrained(f"models/{model_name}")
+                model.save_pretrained(f"{models_dir}/{model_name}")
         logger.debug(f"Quantized {model_name}")
     if isinstance(model, QuantizedModelForCausalLM):
         model = model._wrapped

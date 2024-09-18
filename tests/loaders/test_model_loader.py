@@ -21,28 +21,48 @@ from svsvllm.utils import CommandTimer
 @pytest.mark.parametrize(
     "model_name, quantize, quantize_w_torch, model_class, tokenizer_class",
     [
-        # (
-        #     "NousResearch/Nous-Hermes-2-Mistral-7B-DPO",  # Too big...
-        #     True,
-        #     True,
-        #     MixtralForCausalLM,
-        #     LlamaTokenizer,
-        # ),
         ("TinyLlama/TinyLlama_v1.1", True, False, None, None),
+        ("TinyLlama/TinyLlama_v1.1", True, True, None, None),
         ("BEE-spoke-data/smol_llama-101M-GQA", True, False, None, None),
+        ("BEE-spoke-data/smol_llama-101M-GQA", True, True, None, None),
     ],
 )
 def test_model_loader(
-    model_name: str,
+    artifact_location: str,
     bnb_config: BitsAndBytesConfig,
+    device: torch.device,
+    model_name: str,
     quantize: bool,
     quantize_w_torch: bool,
-    device: torch.device,
     model_class: type[AutoModelForCausalLM] | None,
     tokenizer_class: type[AutoTokenizer] | None,
-    artifact_location: str,
 ) -> None:
-    """Test model loader."""
+    """Test model loader.
+    Args:
+        artifact_location (str):
+            See `conftest.py`.
+
+        bnb_config (BitsAndBytesConfig):
+            See `conftest.py`.
+
+        device (torch.device):
+            See `conftest.py`.
+
+        model_name (str):
+            See `svsvllm.loaders.load_model`.
+
+        quantize (bool):
+            See `svsvllm.loaders.load_model`.
+
+        quantize_w_torch (bool):
+            See `svsvllm.loaders.load_model`.
+
+        model_class (type[AutoModelForCausalLM] | None):
+            See `svsvllm.loaders.load_model`.
+
+        tokenizer_class (type[AutoTokenizer] | None):
+            See `svsvllm.loaders.load_model`.
+    """
     # Load (quantized) model
     model, tokenizer = load_model(
         model_name,

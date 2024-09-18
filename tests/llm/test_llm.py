@@ -38,18 +38,50 @@ from svsvllm.rag import ITALIAN_PROMPT_TEMPLATE
     ],
 )
 def test_llm(
-    model_name: str,
     artifact_location: str,
     database: FAISS,
     bnb_config: BitsAndBytesConfig,
-    quantize: bool,
-    quantize_w_torch: bool,
     patch_torch_quantized_engine: bool,
     device: torch.device,
+    model_name: str,
+    quantize: bool,
+    quantize_w_torch: bool,
     model_class: type[AutoModelForCausalLM] | None,
     tokenizer_class: type[AutoTokenizer] | None,
 ) -> None:
-    """Test we can run a simple example."""
+    """Test we can run a simple example.
+
+    Args:
+        artifact_location (str):
+            See `conftest.py`.
+
+        database (FAISS):
+            See `conftest.py`.
+
+        bnb_config (BitsAndBytesConfig):
+            See `conftest.py`.
+
+        patch_torch_quantized_engine (bool):
+            See `conftest.py`.
+
+        device (torch.device):
+            See `conftest.py`.
+
+        model_name (str):
+            See `svsvllm.loaders.load_model`.
+
+        quantize (bool):
+            See `svsvllm.loaders.load_model`.
+
+        quantize_w_torch (bool):
+            See `svsvllm.loaders.load_model`.
+
+        model_class (type[AutoModelForCausalLM] | None):
+            See `svsvllm.loaders.load_model`.
+
+        tokenizer_class (type[AutoTokenizer] | None):
+            See `svsvllm.loaders.load_model`.
+    """
     # Load model
     model, tokenizer = load_model(
         model_name,

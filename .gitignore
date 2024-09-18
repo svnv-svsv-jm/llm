@@ -43,6 +43,7 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+pytest-results.xml
 nosetests.xml
 coverage.xml
 *.cover
@@ -167,7 +168,7 @@ sandbox
 .testmondata*
 
 # Models
-models
+.models
 
 # llama.cpp
 llama.cpp
