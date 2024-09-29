@@ -1,6 +1,11 @@
 name: Test and update master
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
   push:
     branches: ["develop"]
 

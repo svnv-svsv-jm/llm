@@ -8,6 +8,8 @@ import torch
 from torch.quantization import quantize_dynamic, get_default_qconfig
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from optimum.quanto import QuantizedModelForCausalLM, qint4
+import huggingface_hub
+from pathlib import Path
 
 from svsvllm.utils import CommandTimer, get_default_backend
 
@@ -77,9 +79,14 @@ def load_model(
 
     logger.debug(f"Loading model '{model_name}'...")
 
+    # Models directory
+    savedir = os.path.join(f"{models_dir}", f"{model_name}")
+    Path(savedir).mkdir(exist_ok=True, parents=True)
+
     # HuggingFace token or it won't download
     if token is None:
         token = os.environ["HUGGINGFACE_TOKEN"]
+    huggingface_hub.login(token)
 
     # Sanitize inputs
     if model_class is None:
@@ -110,10 +117,11 @@ def load_model(
             )
         return model
 
+    # Quantization settings
     if quantize and not quantize_w_torch:
         try:  # We try to get a previously quantized and saved model
             logger.trace(f"Trying to load {model_name} using {QuantizedModelForCausalLM}...")
-            model = QuantizedModelForCausalLM.from_pretrained(f"{models_dir}/{model_name}")
+            model = QuantizedModelForCausalLM.from_pretrained(savedir)
             already_quantoed = True
             logger.trace(f"Success!")
         except:  # pragma: no cover
@@ -146,7 +154,7 @@ def load_model(
                 logger.debug(f"Quantizing with {QuantizedModelForCausalLM}...")
                 model = QuantizedModelForCausalLM.quantize(model, weights=qint4, exclude="lm_head")
                 logger.debug("Saving pretrained quantized model.")
-                model.save_pretrained(f"{models_dir}/{model_name}")
+                model.save_pretrained(savedir)
         logger.debug(f"Quantized {model_name}")
     if isinstance(model, QuantizedModelForCausalLM):
         model = model._wrapped

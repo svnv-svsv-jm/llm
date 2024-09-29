@@ -20,7 +20,7 @@ def pipeline(
     task: str = "text-generation",
     **kwargs: ty.Any,
 ) -> HuggingFacePipeline:
-    """Cerbero pipeline."""
+    """General `HuggingFacePipeline` object."""
     logger.debug("Pipeline...")
     # with patch.object(QuantizedModelForCausalLM, "__module__", return_value="torch"):
     pipe = _pipeline(

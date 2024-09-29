@@ -5,13 +5,7 @@ import sys, os
 import yaml
 
 import torch
-from transformers import (
-    BitsAndBytesConfig,
-    AutoTokenizer,
-    AutoModelForCausalLM,
-    LlamaTokenizer,
-    MixtralForCausalLM,
-)
+from transformers import BitsAndBytesConfig, AutoTokenizer, AutoModelForCausalLM
 import transformers
 
 from svsvllm.loaders import load_model
@@ -72,6 +66,7 @@ def test_model_loader(
         model_class=model_class,
         tokenizer_class=tokenizer_class,
     )
+
     # Create pipeline
     pipeline = transformers.pipeline(
         task="text-generation",
@@ -80,6 +75,7 @@ def test_model_loader(
         torch_dtype=torch.float16,
         device_map=device,
     )
+
     # Run
     with CommandTimer(model_name):
         sequences = pipeline(
@@ -91,12 +87,14 @@ def test_model_loader(
             eos_token_id=tokenizer.eos_token_id,
             max_length=500,
         )
+
     # Log generated text
     answer = ""
     for seq in sequences:
         s = seq["generated_text"]
         logger.info(f"Result: {s}")
         answer += f"{s}"
+
     # Save answers
     logger.info("Saving LLMs' answers...")
     name = model_name.replace("/", "--")

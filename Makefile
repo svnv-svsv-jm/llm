@@ -26,6 +26,7 @@ PYTHONVERSION?=3.10.10
 PYTEST?=pytest
 SYSTEM=$(shell python -c "import sys; print(sys.platform)")
 COV_FAIL_UNDER=95
+APP=src/svsvllm/__main__.py
 # poetry
 POETRY=poetry
 # docker
@@ -72,6 +73,13 @@ nbmake:
 test: mypy pytest nbmake
 
 tests: test
+
+
+# -----------
+# UI
+# -----------
+ui:
+	streamlit run $(APP)
 
 
 # -----------
@@ -161,6 +169,14 @@ exp: exp-base
 exp-gpu: GPU_FLAGS=--gpus all
 exp-gpu: CONFIG=main.yaml
 exp-gpu: exp-base
+
+
+# ---------------
+# HuggingFace
+# ---------------
+# Clean cache
+hf-clean-cache:
+	rm -r ~/.cache/huggingface/hub
 
 
 # ---------------

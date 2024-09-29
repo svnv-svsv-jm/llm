@@ -44,3 +44,18 @@ def mistral_small(
         tokenizer_class=LlamaTokenizer,
     )
     return model, tokenizer
+
+
+@pytest.fixture
+def mistral7b(
+    bnb_config: BitsAndBytesConfig | None,
+) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
+    """Small mistral."""
+    model_name = "mistralai/Mistral-7B-v0.1"
+    model, tokenizer = load_model(
+        model_name,
+        bnb_config=bnb_config,
+        quantize=True,
+        quantize_w_torch=True,
+    )
+    return model, tokenizer
