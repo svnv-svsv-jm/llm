@@ -3,8 +3,8 @@ __all__ = ["create_rag_database"]
 import typing as ty
 from loguru import logger
 
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.faiss import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 

@@ -10,7 +10,10 @@ from .callbacks import PageSelectorCallback
 
 
 def main_page() -> None:
-    """Main page."""
+    """Main page.
+
+    Contains the sidebar and the chat.
+    """
     # Sidebar
     sidebar()
 
@@ -66,9 +69,7 @@ def ui() -> None:
         st.session_state.page = PageNames.MAIN  # Default page is the main page
 
     # Display content based on the current page
-    if st.session_state.page == PageNames.MAIN:
-        main_page()
-    elif st.session_state.page == PageNames.SETTINGS:
+    if st.session_state.page == PageNames.SETTINGS:
         settings_page()
-    else:
+    else:  # st.session_state.page == PageNames.MAIN
         main_page()

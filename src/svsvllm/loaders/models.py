@@ -69,7 +69,7 @@ def load_model(
             Currently supports `x86`, `fbgemm`, `qnnpack` and `onednn`.
 
         models_dir (str):
-            Directory where to download models.
+            Directory where to save quantized models.
             Defaults to `".models"`.
 
     Returns:

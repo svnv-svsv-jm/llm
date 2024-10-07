@@ -15,6 +15,21 @@ from svsvllm.loaders import load_model
 
 
 @pytest.fixture
+def tiny_llama(
+    bnb_config: BitsAndBytesConfig | None,
+) -> tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
+    """TinyLlama."""
+    model_name = "TinyLlama/TinyLlama_v1.1"
+    model, tokenizer = load_model(
+        model_name,
+        bnb_config=bnb_config,
+        quantize=True,
+        quantize_w_torch=True,
+    )
+    return model, tokenizer
+
+
+@pytest.fixture
 def cerbero(
     bnb_config: BitsAndBytesConfig | None,
 ) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:

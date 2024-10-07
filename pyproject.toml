@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core>=1.0.0", "cython"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "svsv-llm"
 version = "0.1.0"
@@ -15,9 +19,8 @@ exclude = ["tests/*"]
 repository = "https://github.com/svnv-svsv-jm/llm"
 changelog = "https://github.com/svnv-svsv-jm/llm/main/changelog.md"
 
-[build-system]
-requires = ["poetry-core>=1.0.0", "cython"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.scripts]
+runner = "svsvllm.__main__:main"
 
 [tool.poetry.dependencies]
 # Python version(s)
@@ -50,6 +53,7 @@ mlx-lm = { version = "^0.18.1", optional = true }
 # LLM
 sentence-transformers = "^2.5.1"
 langchain = "*"
+langchain-huggingface = "^0.1.0"
 langgraph = "*"
 ollama = "^0.1.7"
 llama-cpp-python = "^0.2.90"

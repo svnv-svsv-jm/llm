@@ -30,9 +30,11 @@ def get_response(
 
     # No OpenAI
     if not openai_api_key:
+        # Inform user via warning box
         st.info(
             "Add your OpenAI API key to continue. Support for open-source models is in development."
         )
+        # Let the chatbox also inform the user
         return "Welcome to FiscalAI! Unfortunately, support for open-source models is still in development. Please add your OpenAI API key to get a different, meaningful response."
 
     # OpenAI
@@ -42,6 +44,8 @@ def get_response(
         messages=st.session_state.messages,
     )
     msg = response.choices[0].message.content
+
+    # Sanity check and return
     if msg is None:
         msg = ""
-    return msg
+    return f"{msg}"
