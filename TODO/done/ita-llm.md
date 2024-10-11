@@ -1,4 +1,4 @@
-# [ ] Italian LLms
+# Italian LLms
 
 **Status:** In progress  
 **Priority:** High  

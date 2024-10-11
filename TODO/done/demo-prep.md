@@ -1,4 +1,4 @@
-# [ ] Preparation for demo
+# Preparation for demo
 
 **Status:** Done  
 **Priority:** High  

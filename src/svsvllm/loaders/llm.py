@@ -5,12 +5,13 @@ from loguru import logger
 from langchain_community.vectorstores.faiss import FAISS
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableSerializable, RunnablePassthrough
+from langchain_core.runnables import Runnable, RunnablePassthrough
+from langchain_huggingface import HuggingFacePipeline
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import pipeline
 from optimum.quanto import QuantizedModelForCausalLM
 
 from svsvllm.rag import DEFAULT_TEMPLATE
-from .pipeline import pipeline
 
 
 def llm_chain(
@@ -19,7 +20,7 @@ def llm_chain(
     prompt_template: str = DEFAULT_TEMPLATE,
     database: FAISS | None = None,
     **kwargs: ty.Any,
-) -> RunnableSerializable:
+) -> Runnable:
     """LLM chain.
 
     Args:
@@ -43,7 +44,8 @@ def llm_chain(
         input_variables=["context", "question"],
         template=prompt_template,
     )
-    llm = prompt | pipeline(model=model, tokenizer=tokenizer, **kwargs) | StrOutputParser()
+    pipe = HuggingFacePipeline(pipeline=pipeline(model=model, tokenizer=tokenizer, **kwargs))
+    llm = prompt | pipe | StrOutputParser()
     logger.debug(f"LLM chain: {llm}")
     if database is not None:
         retriever = database.as_retriever()

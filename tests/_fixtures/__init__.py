@@ -6,3 +6,4 @@ from .models import *
 from .rag import *
 from .web import *
 from .chains import *
+from .pipeline import *

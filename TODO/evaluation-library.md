@@ -1,7 +1,9 @@
 # [ ] Evaluate with custom example
 
-**Status:** In progress  
-**Priority:** High  
+**Status:** To do
+
+**Priority:** High
+
 **Description:**
 
 Check out:

@@ -98,13 +98,13 @@ def test_llm(
 
     # LLM's
     logger.info("Creating LLMs...")
-    llm = llm_chain(
+    chain = llm_chain(
         model,
         tokenizer,
         prompt_template=ITALIAN_PROMPT_TEMPLATE,
         device=device,
     )
-    llm_w_rag = llm_chain(
+    chain_w_rag = llm_chain(
         model,
         tokenizer,
         database=database,
@@ -115,9 +115,9 @@ def test_llm(
     # Run LLM's
     logger.info("Running LLMs...")
     with CommandTimer(f"{model_name} (no-rag)"):
-        answer_no_rag = llm.invoke({"context": "", "question": question})
+        answer_no_rag = chain.invoke({"context": "", "question": question})
     with CommandTimer(f"{model_name} (with-rag)"):
-        answer_w_rag = llm_w_rag.invoke(question)
+        answer_w_rag = chain_w_rag.invoke(question)
 
     # Save answers
     logger.info("Saving LLMs' answers...")
