@@ -5,7 +5,7 @@ from streamlit.web import cli
 from streamlit import runtime
 
 from svsvllm.app.ui import ui
-from svsvllm.utils.logging import set_up_logging
+from svsvllm.utils.logger import set_up_logging
 
 # Define app
 app = typer.Typer()

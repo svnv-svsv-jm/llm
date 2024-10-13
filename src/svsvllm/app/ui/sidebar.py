@@ -7,7 +7,7 @@ import streamlit as st
 
 from .file_upload import file_uploader
 from .locale import LANGUAGES
-from .defaults import DEFAULT_MODEL
+from .defaults import OPENAI_DEFAULT_MODEL
 from .const import PageNames
 from .callbacks import PageSelectorCallback, UpdateLanguageCallback
 
@@ -40,7 +40,7 @@ def sidebar() -> None:
         st.text_input("OpenAI API Key", key="openai_api_key", type="password")
 
         # Model name
-        st.text_input("LLM name", key="model_name", placeholder=DEFAULT_MODEL)
+        st.text_input("LLM name", key="model_name", placeholder=OPENAI_DEFAULT_MODEL)
 
         # File uploader for multiple files (simulate folder upload)
         file_uploader()

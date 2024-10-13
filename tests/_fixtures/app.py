@@ -7,7 +7,7 @@ import svsvllm.__main__ as main
 
 
 @pytest.fixture
-def apptest() -> AppTest:
+def apptest(trace_logging_level: bool) -> AppTest:
     """App for testing."""
     path = os.path.abspath(main.__file__)
     logger.debug(f"Loading script: {path}")

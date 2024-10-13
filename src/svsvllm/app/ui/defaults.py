@@ -1,1 +1,1 @@
-DEFAULT_MODEL = "gpt-3.5-turbo"
+OPENAI_DEFAULT_MODEL = "gpt-3.5-turbo"
