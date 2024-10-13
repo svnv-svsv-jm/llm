@@ -12,9 +12,6 @@ def initialize_messages() -> None:
     if "messages" not in st.session_state:
         init_message = AIMessage(content=START_MSG_EN)
         logger.trace(f"Initializing messages: {init_message}")
+        with st.chat_message("assistant"):
+            st.write(init_message.content)
         st.session_state["messages"] = [init_message]
-
-    # for msg in st.session_state.messages:
-    #     logger.trace(f"Writing message: `{msg}`.")
-    #     assert isinstance(msg, BaseMessage)
-    #     st.chat_message(role).write(msg.content)

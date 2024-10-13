@@ -11,5 +11,8 @@ pyrootutils.setup_root(
     cwd=True,
 )
 
+# Testing environment
+os.environ["TEST_MODE"] = "True"
 
+# Import fixtures
 from _fixtures import *  # pylint: disable=unused-wildcard-import

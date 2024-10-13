@@ -32,6 +32,7 @@ def main_page() -> None:
 
     # Chat?
     has_chat: bool = st.session_state.get("has_chat", True)
+    logger.trace(f"Has chat: {has_chat}")
     if not has_chat:
         return
 
@@ -70,6 +71,3 @@ def main_page() -> None:
             # Update session
             logger.trace(f"Assistant: {message}")
             messages.append(message)
-
-    # TODO: necessary?
-    st.session_state.messages = messages

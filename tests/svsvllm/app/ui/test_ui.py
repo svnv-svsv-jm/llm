@@ -27,13 +27,27 @@ def test_page_title(apptest: AppTest) -> None:
     assert "FiscalAI" in apptest.title[0].value
 
 
-def test_ui_simple(apptest: AppTest) -> None:
-    """Test `app`."""
+def test_shows_welcome_message(apptest: AppTest) -> None:
+    """Verify initial message from assistant is shown."""
+    apptest.session_state["has_chat"] = False
+    apptest.run()
+    assert len(apptest.chat_message) == 1
+    assert apptest.chat_message[0].name == "assistant"
+    assert "help" in apptest.chat_message[0].markdown[0].value
+
+
+def test_no_openai_key(apptest: AppTest) -> None:
+    """Test the OpenAI key is not found."""
+    apptest.session_state["openai_api_key"] = None
     with patch.object(st, "chat_input", side_effect=["Hello", None]) as chat_input:
-        apptest.session_state["openai_api_key"] = None
         apptest.run()
         chat_input.assert_called()
+    # Test: No OpenAI key
     assert apptest.session_state.openai_api_key is None
+    # Test: chat history exists
+    logger.info(apptest.chat_message)
+    assert len(apptest.chat_message) == 3
+    assert len(apptest.session_state.messages) == 3
 
 
 if __name__ == "__main__":

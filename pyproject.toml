@@ -406,7 +406,7 @@ disable = [
     "abstract-method",
     "f-string-without-interpolation",
     "duplicate-code",
-    "too-many-positional-arguments",
+    # "too-many-positional-arguments",
 ]
 
 # Enable the message, report, category or checker with the given id(s). You can
