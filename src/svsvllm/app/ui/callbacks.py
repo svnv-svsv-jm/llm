@@ -19,6 +19,8 @@ class SaveFilesCallback(BaseCallback):
 
     def __call__(self, *args: ty.Any, **kwds: ty.Any) -> ty.Any:
         """Save uploaded files to local filesystem."""
+        # Inform user via warning box
+        st.info("Uploading files... Please wait for the success message.")
         # Get files from session
         files: list[UploadedFile] | None = st.session_state.get("uploaded_files", None)
 
@@ -31,6 +33,7 @@ class SaveFilesCallback(BaseCallback):
         assert isinstance(saved_filenames, list)
 
         # Save each file
+        st.info("Saving files... Please wait for the success message.")
         for file in files:
             logger.trace(f"Reading: {file.name}")
             bytes_data = file.read()  # read the content of the file in binary
@@ -45,6 +48,7 @@ class SaveFilesCallback(BaseCallback):
 
         # Re-create RAG?
         initialize_rag(force_recreate=True)
+        st.info("Files uploaded!")
 
 
 class UpdateLanguageCallback(BaseCallback):

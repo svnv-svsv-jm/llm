@@ -87,6 +87,16 @@ To run all your tests, run:
 make tests
 ```
 
+### Manual testing
+
+Run:
+
+```bash
+make ui
+```
+
+And use the app locally.
+
 ## CI/CD Pipeline
 
 We use it to automatically test our code when pushing.

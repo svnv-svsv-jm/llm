@@ -118,6 +118,7 @@ def load_model(
         return model
 
     # Quantization settings
+    already_quantoed = False
     if quantize and not quantize_w_torch:
         try:  # We try to get a previously quantized and saved model
             logger.trace(f"Trying to load {model_name} using {QuantizedModelForCausalLM}...")
@@ -127,7 +128,6 @@ def load_model(
         except:  # pragma: no cover
             logger.trace(f"Could not load {model_name} using {QuantizedModelForCausalLM}.")
             model = load()
-            already_quantoed = False
     else:
         logger.debug(f"Loading {model_name} without quantizing...")
         model = load()

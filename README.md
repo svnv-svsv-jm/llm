@@ -19,6 +19,14 @@ See [here](./contributing.md).
 make install
 ```
 
+## Run app locally
+
+Run:
+
+```bash
+make ui
+```
+
 ## Usage
 
 See [examples](./examples) and [tutorials](./tutorials).

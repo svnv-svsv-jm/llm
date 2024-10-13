@@ -78,8 +78,9 @@ tests: test
 # -----------
 # UI
 # -----------
+ui: LOG_LEVEL=TRACE
 ui:
-	streamlit run $(APP)
+	LOG_LEVEL=$(LOG_LEVEL) python -m svsvllm
 
 
 # -----------
