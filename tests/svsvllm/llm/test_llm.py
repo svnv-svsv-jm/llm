@@ -6,13 +6,7 @@ import sys, os
 import yaml
 
 import torch
-from transformers import (
-    BitsAndBytesConfig,
-    AutoTokenizer,
-    AutoModelForCausalLM,
-    LlamaTokenizer,
-    MixtralForCausalLM,
-)
+from transformers import BitsAndBytesConfig
 from langchain_community.vectorstores.faiss import FAISS
 
 from svsvllm.utils import CommandTimer
@@ -21,20 +15,9 @@ from svsvllm.rag import ITALIAN_PROMPT_TEMPLATE
 
 
 @pytest.mark.parametrize(
-    "model_name, quantize, quantize_w_torch, model_class, tokenizer_class",
+    "model_name, quantize, quantize_w_torch, max_new_tokens",
     [
-        ("BEE-spoke-data/smol_llama-101M-GQA", True, True, None, None),
-        # ("meta-llama/Meta-Llama-3.1-8B-Instruct", True, True), # Gated repo...
-        # ("galatolo/cerbero-7b", True, True, None, None),  # Very big...
-        # ("andreabac3/Fauno-Italian-LLM-7B", True, True, None, None),  # Broken on HuggingFace
-        # ("Musixmatch/umberto-commoncrawl-cased-v1", True, True, None, None),
-        # (
-        #     "NousResearch/Nous-Hermes-2-Mistral-7B-DPO",  # Too big...
-        #     True,
-        #     True,
-        #     MixtralForCausalLM,
-        #     LlamaTokenizer,
-        # ),
+        ("BEE-spoke-data/smol_llama-101M-GQA", True, True, 100),
     ],
 )
 def test_llm(
@@ -46,8 +29,7 @@ def test_llm(
     model_name: str,
     quantize: bool,
     quantize_w_torch: bool,
-    model_class: type[AutoModelForCausalLM] | None,
-    tokenizer_class: type[AutoTokenizer] | None,
+    max_new_tokens: int,
 ) -> None:
     """Test we can run a simple example.
 
@@ -88,8 +70,6 @@ def test_llm(
         bnb_config=bnb_config,
         quantize=quantize,
         quantize_w_torch=quantize_w_torch,
-        model_class=model_class,
-        tokenizer_class=tokenizer_class,
     )
 
     # Question
@@ -103,6 +83,7 @@ def test_llm(
         tokenizer,
         prompt_template=ITALIAN_PROMPT_TEMPLATE,
         device=device,
+        max_new_tokens=max_new_tokens,
     )
     chain_w_rag = llm_chain(
         model,
@@ -110,6 +91,7 @@ def test_llm(
         database=database,
         prompt_template=ITALIAN_PROMPT_TEMPLATE,
         device=device,
+        max_new_tokens=max_new_tokens,
     )
 
     # Run LLM's

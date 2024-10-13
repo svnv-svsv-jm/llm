@@ -19,6 +19,7 @@ def llm_chain(
     tokenizer: AutoTokenizer,
     prompt_template: str = DEFAULT_TEMPLATE,
     database: FAISS | None = None,
+    task: str = "text-generation",
     **kwargs: ty.Any,
 ) -> Runnable:
     """LLM chain.
@@ -37,6 +38,11 @@ def llm_chain(
             Database for the RAG. Defaults to `None`.
             If no database, then no RAG.
 
+        task (str):
+            The task defining which pipeline will be returned.
+            See `transformers.pipeline`.
+            Defaults to `"text-generation"`.
+
     Returns:
         RunnableSerializable: LLM model, with or without RAG.
     """
@@ -44,7 +50,14 @@ def llm_chain(
         input_variables=["context", "question"],
         template=prompt_template,
     )
-    pipe = HuggingFacePipeline(pipeline=pipeline(model=model, tokenizer=tokenizer, **kwargs))
+    pipe = HuggingFacePipeline(
+        pipeline=pipeline(
+            task=task,
+            model=model,
+            tokenizer=tokenizer,
+            **kwargs,
+        )
+    )
     llm = prompt | pipe | StrOutputParser()
     logger.debug(f"LLM chain: {llm}")
     if database is not None:

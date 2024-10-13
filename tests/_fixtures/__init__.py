@@ -7,3 +7,4 @@ from .rag import *
 from .web import *
 from .chains import *
 from .pipeline import *
+from .app import *

@@ -1,23 +1,60 @@
 __all__ = ["PageSelectorCallback", "UpdateLanguageCallback"]
 
+import os
 import typing as ty
+from loguru import logger
 import streamlit as st
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 
-from .const import PageNames
+from .rag import initialize_rag
+from .const import PageNames, UPLOADED_FILES_DIR
 
 
 class BaseCallback:
     """Base callback."""
 
 
+class SaveFilesCallback(BaseCallback):
+    """Save uploaded files to local filesystem."""
+
+    def __call__(self, *args: ty.Any, **kwds: ty.Any) -> ty.Any:
+        """Save uploaded files to local filesystem."""
+        # Get files from session
+        files: list[UploadedFile] | None = st.session_state.get("uploaded_files", None)
+
+        # If no files, return
+        if files is None:
+            return
+
+        # Create file manager
+        saved_filenames = st.session_state.get("saved_filenames", [])
+        assert isinstance(saved_filenames, list)
+
+        # Save each file
+        for file in files:
+            logger.trace(f"Reading: {file.name}")
+            bytes_data = file.read()  # read the content of the file in binary
+            filename = os.path.join(UPLOADED_FILES_DIR, file.name)
+            with open(filename, "wb") as f:
+                logger.trace(f"Writing: {filename}")
+                f.write(bytes_data)  # write this content elsewhere
+                saved_filenames.append(filename)
+
+        # Remember saved files
+        st.session_state["saved_filenames"] = saved_filenames
+
+        # Re-create RAG?
+        initialize_rag(force_recreate=True)
+
+
 class UpdateLanguageCallback(BaseCallback):
     """Callback to update language."""
 
-    def __init__(self, **kwargs: ty.Any) -> None:
-        super().__init__(**kwargs)
-
     def __call__(self) -> None:
         """Update language."""
+        logger.trace(
+            f"Updating language: {st.session_state.language}->{st.session_state.new_language}"
+        )
         st.session_state.language = st.session_state.new_language
 
 
@@ -41,4 +78,5 @@ class PageSelectorCallback(BaseCallback):
 
     def __call__(self) -> None:
         """Switch page"""
+        logger.trace(f"Switching to {self.page}")
         st.session_state.page = self.page
