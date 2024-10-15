@@ -64,13 +64,16 @@ lock: install-init
 mypy:
 	$(PYTHON_EXEC) mypy tests
 
-pytest:
-	$(PYTHON_EXEC) pytest -x --testmon --junitxml=pytest-results.xml --pylint --cov=src/ --cov-fail-under $(COV_FAIL_UNDER)
+unit-test:
+	$(PYTHON_EXEC) pytest -m "not integtest" -x --pylint --testmon --junitxml=pytest-results.xml --cov=src/ --cov-fail-under $(COV_FAIL_UNDER)
+
+integ-test:
+	$(PYTHON_EXEC) pytest -m "integtest" --pylint --testmon --junitxml=pytest-results.xml --cov=src/
 
 nbmake:
 	$(PYTHON_EXEC) pytest -x --testmon --nbmake --overwrite "$(EXAMPLE_DIR)"
 
-test: mypy pytest nbmake
+test: mypy unit-test nbmake
 
 tests: test
 

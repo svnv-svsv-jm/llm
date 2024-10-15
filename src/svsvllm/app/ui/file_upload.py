@@ -14,5 +14,5 @@ def file_uploader() -> None:
         "Upload files from a folder",
         accept_multiple_files=True,
         key="uploaded_files",
-        on_change=SaveFilesCallback(),
+        on_change=SaveFilesCallback("save-file"),
     )

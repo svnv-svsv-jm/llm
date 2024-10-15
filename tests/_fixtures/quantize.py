@@ -7,7 +7,7 @@ import torch
 from transformers import BitsAndBytesConfig
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def bnb_config() -> BitsAndBytesConfig | None:
     """Quantization configuration with `BitsAndBytes`."""
     if torch.cuda.is_available():

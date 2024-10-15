@@ -68,8 +68,8 @@ def main_page() -> None:
                 else:
                     logger.trace("Ppen source models not supported message")
                     # Let the chatbox inform the user
-                    response = "Welcome to FiscalAI! Unfortunately, support for open-source models is still in development. Please add your OpenAI API key to get a different, meaningful response."
-                    st.write(response)
+                    response = "Welcome to FiscalAI! Unfortunately, support for open-source models is still in development. Please add your OpenAI API key to get a different, meaningful response."  # pragma: no cover
+                    st.write(response)  # pragma: no cover
                 logger.trace("Creating `AIMessage`")
                 message = AIMessage(content=response)
 

@@ -5,6 +5,8 @@ import typing as ty
 import torch
 from pytorch_lightning.accelerators import find_usable_cuda_devices
 
+from svsvllm.exceptions import NoGPUError
+
 
 def pick_single_gpu(exclude_gpus: ty.List[int] = []) -> int:  # pragma: no cover
     """
@@ -29,8 +31,8 @@ def pick_single_gpu(exclude_gpus: ty.List[int] = []) -> int:  # pragma: no cover
         device = torch.device(f"cuda:{i}")
         try:
             torch.ones(1).to(device)
-        except RuntimeError:
+        except Exception:
             continue
         return i
     # Raise error if no GPUs
-    raise RuntimeError("No GPUs available.")
+    raise NoGPUError("No GPUs available.")

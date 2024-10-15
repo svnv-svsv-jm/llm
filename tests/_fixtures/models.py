@@ -1,4 +1,4 @@
-__all__ = ["tiny_llama", "cerbero", "mistral_small", "mistral7b"]
+__all__ = ["default_llm", "cerbero", "mistral_small", "mistral7b"]
 
 import pytest
 import typing as ty
@@ -14,14 +14,15 @@ from transformers import (
 from optimum.quanto import QuantizedModelForCausalLM
 
 from svsvllm.loaders import load_model
+from svsvllm.defaults import DEFAULT_LLM
 
 
-@pytest.fixture
-def tiny_llama(
+@pytest.fixture(scope="session")
+def default_llm(
     bnb_config: BitsAndBytesConfig | None,
 ) -> tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
-    """TinyLlama."""
-    model_name = "TinyLlama/TinyLlama_v1.1"
+    """Default LLM."""
+    model_name = DEFAULT_LLM
     model, tokenizer = load_model(
         model_name,
         bnb_config=bnb_config,

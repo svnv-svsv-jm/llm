@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # In tests, we run this
     if TEST_MODE:
-        ui()
+        chatbot()
 
     # Main application
     else:

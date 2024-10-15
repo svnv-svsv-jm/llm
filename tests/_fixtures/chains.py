@@ -1,4 +1,4 @@
-__all__ = ["tiny_llama_chain"]
+__all__ = ["default_llm_chain"]
 
 import pytest
 import typing as ty
@@ -11,10 +11,10 @@ from langchain_huggingface import HuggingFacePipeline
 
 
 @pytest.fixture
-def tiny_llama_chain(tiny_llama_pipeline: Pipeline) -> RunnableSerializable:
-    """TinyLlama LLM."""
+def default_llm_chain(default_llm_pipeline: Pipeline) -> RunnableSerializable:
+    """Default LLM."""
     # Create pipeline
-    pipe = HuggingFacePipeline(pipeline=tiny_llama_pipeline)
+    pipe = HuggingFacePipeline(pipeline=default_llm_pipeline)
     # Create chain
     llm_chain = pipe | StrOutputParser()
     return llm_chain

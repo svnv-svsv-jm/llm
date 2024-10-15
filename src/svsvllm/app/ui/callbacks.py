@@ -13,6 +13,13 @@ from .const import PageNames, UPLOADED_FILES_DIR
 class BaseCallback:
     """Base callback."""
 
+    def __init__(self, name: str) -> None:
+        self.name = name
+        # Add instance to state
+        if st.session_state.get("callbacks", None):
+            st.session_state["callbacks"] = {}
+        st.session_state["callbacks"][name] = self
+
 
 class SaveFilesCallback(BaseCallback):
     """Save uploaded files to local filesystem."""
@@ -47,7 +54,8 @@ class SaveFilesCallback(BaseCallback):
         st.session_state["saved_filenames"] = saved_filenames
 
         # Re-create RAG?
-        initialize_rag(force_recreate=True)
+        if st.session_state.get("has_chat", True):
+            initialize_rag(force_recreate=True)
         st.info("Files uploaded!")
 
 

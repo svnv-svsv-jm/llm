@@ -1,4 +1,4 @@
-__all__ = ["tiny_llama_pipeline"]
+__all__ = ["default_llm_pipeline"]
 
 import pytest
 import typing as ty
@@ -10,12 +10,12 @@ from optimum.quanto import QuantizedModelForCausalLM
 
 
 @pytest.fixture
-def tiny_llama_pipeline(
-    tiny_llama: tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer],
+def default_llm_pipeline(
+    default_llm: tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer],
     device: torch.device,
 ) -> Pipeline:
     """TinyLlama LLM."""
-    model, tokenizer = tiny_llama
+    model, tokenizer = default_llm
     return pipeline(
         task="text-generation",
         model=model,

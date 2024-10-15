@@ -1,10 +1,12 @@
-__all__ = ["apptest", "mock_openai", "mock_chat_input", "mock_agent_stream"]
+__all__ = ["apptest", "mock_openai", "mock_chat_input", "mock_agent_stream", "mock_text_file"]
 
 import pytest
 from unittest.mock import MagicMock, ANY, patch
 import os
 import typing as ty
 from loguru import logger
+from io import BytesIO
+
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 from openai import OpenAI
@@ -60,3 +62,11 @@ def mock_agent_stream() -> ty.Iterator[MagicMock]:
     return_value["messages"] = [AIMessage(content="This is a mocked message.")]
     with patch.object(CompiledGraph, "stream", side_effect=[return_value]) as mock_stream:
         yield mock_stream
+
+
+@pytest.fixture
+def mock_text_file() -> BytesIO:
+    """Mock file content (can be any file type you're expecting)."""
+    mock_file = BytesIO(b"Test file content")
+    mock_file.name = "test-file.txt"
+    return mock_file

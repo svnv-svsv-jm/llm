@@ -16,6 +16,7 @@ from svsvllm.scraping.driver import DRIVER_TYPE
 from svsvllm.scraping.url import AE_URL
 
 
+@pytest.mark.integtest
 def test_now_secure(
     web_driver: DRIVER_TYPE,
     artifact_location: str,

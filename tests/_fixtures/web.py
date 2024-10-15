@@ -9,10 +9,10 @@ from svsvllm.scraping.driver import create_driver, DRIVER_TYPE
 
 
 @pytest.fixture
-def web_driver() -> ty.Generator[DRIVER_TYPE, None, None]:
+def web_driver() -> ty.Iterator[DRIVER_TYPE]:
     """Web driver."""
     # Headless only if running all tests
-    headless = False  # __file__ not in sys.argv[0]
+    headless = True  # __file__ not in sys.argv[0]
     # Create driver
     driver = create_driver(
         "window-size=1200x600",

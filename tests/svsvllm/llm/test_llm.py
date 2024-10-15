@@ -6,71 +6,27 @@ import sys, os
 import yaml
 
 import torch
-from transformers import BitsAndBytesConfig
 from langchain_community.vectorstores.faiss import FAISS
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from svsvllm.utils import CommandTimer
-from svsvllm.loaders import llm_chain, load_model
+from svsvllm.loaders import llm_chain
 from svsvllm.rag import ITALIAN_PROMPT_TEMPLATE
+from svsvllm.defaults import DEFAULT_LLM
 
 
-@pytest.mark.parametrize(
-    "model_name, quantize, quantize_w_torch, max_new_tokens",
-    [
-        ("BEE-spoke-data/smol_llama-101M-GQA", True, True, 100),
-    ],
-)
+@pytest.mark.parametrize("max_new_tokens", [100])
 def test_llm(
     artifact_location: str,
-    database: FAISS,
-    bnb_config: BitsAndBytesConfig,
     patch_torch_quantized_engine: bool,
+    database: FAISS,
+    default_llm: tuple[AutoModelForCausalLM, AutoTokenizer],
     device: torch.device,
-    model_name: str,
-    quantize: bool,
-    quantize_w_torch: bool,
     max_new_tokens: int,
 ) -> None:
-    """Test we can run a simple example.
-
-    Args:
-        artifact_location (str):
-            See `conftest.py`.
-
-        database (FAISS):
-            See `conftest.py`.
-
-        bnb_config (BitsAndBytesConfig):
-            See `conftest.py`.
-
-        patch_torch_quantized_engine (bool):
-            See `conftest.py`.
-
-        device (torch.device):
-            See `conftest.py`.
-
-        model_name (str):
-            See `svsvllm.loaders.load_model`.
-
-        quantize (bool):
-            See `svsvllm.loaders.load_model`.
-
-        quantize_w_torch (bool):
-            See `svsvllm.loaders.load_model`.
-
-        model_class (type[AutoModelForCausalLM] | None):
-            See `svsvllm.loaders.load_model`.
-
-        tokenizer_class (type[AutoTokenizer] | None):
-            See `svsvllm.loaders.load_model`.
-    """
+    """Test we can run a simple example."""
     # Load model
-    model, tokenizer = load_model(
-        model_name,
-        bnb_config=bnb_config,
-        quantize=quantize,
-        quantize_w_torch=quantize_w_torch,
-    )
+    model, tokenizer = default_llm
 
     # Question
     question = "come si calcola la plusvalenza sulla cessione di criptoattività?"
@@ -96,14 +52,14 @@ def test_llm(
 
     # Run LLM's
     logger.info("Running LLMs...")
-    with CommandTimer(f"{model_name} (no-rag)"):
+    with CommandTimer(f"(no-rag)"):
         answer_no_rag = chain.invoke({"context": "", "question": question})
-    with CommandTimer(f"{model_name} (with-rag)"):
+    with CommandTimer(f"(with-rag)"):
         answer_w_rag = chain_w_rag.invoke(question)
 
     # Save answers
     logger.info("Saving LLMs' answers...")
-    name = model_name.replace("/", "--")
+    name = DEFAULT_LLM.replace("/", "--")
     answers = {name: dict(no_rag=answer_no_rag, rag=answer_w_rag)}
     with open(os.path.join(artifact_location, f"{name}.yaml"), "w") as outfile:
         yaml.dump(answers, outfile, indent=2)

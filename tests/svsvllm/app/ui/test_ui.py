@@ -5,12 +5,16 @@ import typing as ty
 import sys, os
 import streamlit as st
 from streamlit.testing.v1 import AppTest
+from langchain_core.messages import AIMessage
+
+from svsvllm.defaults import DEFAULT_LLM
 
 # TODO: see https://medium.com/@chrisschneider/build-a-high-quality-streamlit-app-with-test-driven-development-eef4e462f65e
 
 
 def test_app_starts(apptest: AppTest) -> None:
     """Verify the app starts without errors."""
+    apptest.session_state["has_chat"] = False
     apptest.run()
     assert not apptest.exception
 
@@ -49,7 +53,7 @@ def test_openai(
     state_for_client: bool,
     openai_api_key: str | None,
 ) -> None:
-    """Test app is ready to work with OpenAI model.
+    """Test app is ready to work with or without OpenAI model.
 
     Args:
         state_for_client (bool):
@@ -65,7 +69,7 @@ def test_openai(
     # Inject key
     apptest.session_state["openai_api_key"] = openai_api_key
     # Inject fake model name
-    apptest.session_state["model_name"] = "TinyLlama/TinyLlama_v1.1"
+    apptest.session_state["model_name"] = DEFAULT_LLM
 
     # Run app with mocked user inputs
     apptest.run()
@@ -82,7 +86,21 @@ def test_openai(
     # Test: chat history exists
     logger.info(apptest.chat_message)
     assert len(apptest.chat_message) == 3
+    logger.info(apptest.session_state.messages)
     assert len(apptest.session_state.messages) == 3
+
+    # Test AIMessage(s) is/are there
+    # We are expecting the welcome message, then there is the fake user input, then the mocked response
+    counter = 0
+    for msg in apptest.chat_message:
+        if msg.name == "assistant":
+            counter += 1
+    assert counter == 2
+    counter = 0
+    for msg in apptest.session_state.messages:
+        if isinstance(msg, AIMessage):
+            counter += 1
+    assert counter == 2
 
 
 if __name__ == "__main__":

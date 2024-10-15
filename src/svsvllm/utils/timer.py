@@ -8,18 +8,18 @@ import threading
 class CommandTimer:
     """Run a command and time it."""
 
-    def __init__(self, name: str = "no-process-name", sleep: float = 5) -> None:
+    def __init__(self, name: str = "no-process-name", sleep_time: float = 1) -> None:
         """
         Args:
             name (str, optional):
                 The name of the process.
 
-            sleep (float, optional):
+            sleep_time (float, optional):
                 Sleep time in seconds, between two prints.
                 Defaults to `5`.
         """
         self.name = name
-        self.sleep = sleep
+        self.sleep_time = sleep_time
         # Private
         self.stop_thread = False
         self.start_time: float
@@ -41,7 +41,7 @@ class CommandTimer:
         while not self.stop_thread:
             time_info = self.format_elapsed_time(time.time() - start_time)
             print(f"\r[{self.name}] Elapsed time (DD:HH:mm:ss): {time_info}", end="")
-            time.sleep(self.sleep)
+            time.sleep(self.sleep_time)
 
     def start(self) -> None:
         """Start the timer thread."""

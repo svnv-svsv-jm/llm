@@ -15,6 +15,7 @@ from svsvllm.scraping import (
 from svsvllm.scraping.url import AE_URL
 
 
+@pytest.mark.integtest
 def test_ae_website_search(web_driver: DRIVER_TYPE) -> None:
     """Test the driver on the website of Agenzia delle Entrate."""
     # Go to desired URL

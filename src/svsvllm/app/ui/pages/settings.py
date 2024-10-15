@@ -3,8 +3,6 @@ __all__ = ["settings_page"]
 from loguru import logger
 import streamlit as st
 
-from ..sidebar import sidebar
-from ..start_messages import START_MSG_EN
 from ..const import PageNames
 from ..callbacks import PageSelectorCallback
 

@@ -5,43 +5,33 @@ import sys, os
 import yaml
 
 import torch
-from transformers import BitsAndBytesConfig, AutoTokenizer, AutoModelForCausalLM
+from transformers import BitsAndBytesConfig
 import transformers
 
 from svsvllm.loaders import load_model
 from svsvllm.utils import CommandTimer
+from svsvllm.defaults import DEFAULT_LLM
 
 
 @pytest.mark.parametrize(
-    "model_name, quantize, quantize_w_torch, model_class, tokenizer_class",
+    "model_name, quantize, quantize_w_torch",
     [
-        ("TinyLlama/TinyLlama_v1.1", True, False, None, None),
-        ("TinyLlama/TinyLlama_v1.1", True, True, None, None),
-        ("BEE-spoke-data/smol_llama-101M-GQA", True, False, None, None),
-        ("BEE-spoke-data/smol_llama-101M-GQA", True, True, None, None),
+        (DEFAULT_LLM, True, False),
+        (DEFAULT_LLM, True, True),
     ],
 )
-def test_model_loader(
+def test_load_model(
     artifact_location: str,
     bnb_config: BitsAndBytesConfig,
     device: torch.device,
     model_name: str,
     quantize: bool,
     quantize_w_torch: bool,
-    model_class: type[AutoModelForCausalLM] | None,
-    tokenizer_class: type[AutoTokenizer] | None,
 ) -> None:
-    """Test model loader.
+    """Test `load_model`. This function loads models from HuggingFace, but also helps quantizing them.
+    Here, we test that this function is able to quantize a model and then we're able to use it.
+
     Args:
-        artifact_location (str):
-            See `conftest.py`.
-
-        bnb_config (BitsAndBytesConfig):
-            See `conftest.py`.
-
-        device (torch.device):
-            See `conftest.py`.
-
         model_name (str):
             See `svsvllm.loaders.load_model`.
 
@@ -50,12 +40,6 @@ def test_model_loader(
 
         quantize_w_torch (bool):
             See `svsvllm.loaders.load_model`.
-
-        model_class (type[AutoModelForCausalLM] | None):
-            See `svsvllm.loaders.load_model`.
-
-        tokenizer_class (type[AutoTokenizer] | None):
-            See `svsvllm.loaders.load_model`.
     """
     # Load (quantized) model
     model, tokenizer = load_model(
@@ -63,8 +47,6 @@ def test_model_loader(
         bnb_config=bnb_config,
         quantize=quantize,
         quantize_w_torch=quantize_w_torch,
-        model_class=model_class,
-        tokenizer_class=tokenizer_class,
     )
 
     # Create pipeline
