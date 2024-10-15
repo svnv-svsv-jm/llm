@@ -11,7 +11,6 @@ from streamlit.testing.v1 import AppTest
 
 def test_app_starts(apptest: AppTest) -> None:
     """Verify the app starts without errors."""
-    apptest.session_state["has_chat"] = False
     apptest.run()
     assert not apptest.exception
 
@@ -36,14 +35,50 @@ def test_shows_welcome_message(apptest: AppTest) -> None:
     assert "help" in apptest.chat_message[0].markdown[0].value
 
 
-def test_no_openai_key(apptest: AppTest) -> None:
-    """Test the OpenAI key is not found."""
-    apptest.session_state["openai_api_key"] = None
-    with patch.object(st, "chat_input", side_effect=["Hello", None]) as chat_input:
-        apptest.run()
-        chat_input.assert_called()
-    # Test: No OpenAI key
-    assert apptest.session_state.openai_api_key is None
+@pytest.mark.parametrize("openai_api_key", [None, "any"])
+@pytest.mark.parametrize("state_for_client", [False, True])
+def test_openai(
+    apptest: AppTest,
+    mock_openai: MagicMock,
+    mock_chat_input: MagicMock,
+    mock_agent_stream: MagicMock,
+    # mock_hf_model_creation: dict[str, MagicMock],
+    # mock_transformers_pipeline: MagicMock,
+    # mock_hf_pipeline: MagicMock,
+    # mock_hf_chat: MagicMock,
+    state_for_client: bool,
+    openai_api_key: str | None,
+) -> None:
+    """Test app is ready to work with OpenAI model.
+
+    Args:
+        state_for_client (bool):
+            If `True`, we inject the mock client into the state. If `False`, we create a new `OpenAI` client, but still the `OpenAI.__new__` method is mocked.
+
+        openai_api_key (str | None):
+            When `None`, the open source model will be used.
+    """
+    # Inject mock into app state to avoid creation of OpenAI client
+    if state_for_client:
+        apptest.session_state["openai_client"] = mock_openai
+
+    # Inject key
+    apptest.session_state["openai_api_key"] = openai_api_key
+    # Inject fake model name
+    apptest.session_state["model_name"] = "TinyLlama/TinyLlama_v1.1"
+
+    # Run app with mocked user inputs
+    apptest.run()
+    mock_chat_input.assert_called()
+    if openai_api_key is None:
+        # mock_transformers_pipeline.assert_called()
+        # mock_hf_pipeline.assert_called()
+        # mock_hf_chat.assert_called()
+        mock_agent_stream.assert_called()
+
+    # Test: OpenAI key
+    assert apptest.session_state.openai_api_key == openai_api_key
+
     # Test: chat history exists
     logger.info(apptest.chat_message)
     assert len(apptest.chat_message) == 3

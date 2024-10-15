@@ -21,7 +21,7 @@ Q_SYSTEM_PROMPT = (
     "just reformulate it if needed and otherwise return it as is."
 )
 
-OPEN_SOURCE_MODELS_SUPPORTED = False
+OPEN_SOURCE_MODELS_SUPPORTED = True
 
 
 class PageNames:

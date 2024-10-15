@@ -50,7 +50,9 @@ def main_page() -> None:
         with st.chat_message("assistant"):
             # Check if we have to run OpenAI
             openai_api_key: str | None = st.session_state.get("openai_api_key", None)
+            logger.trace(f"Received OpenAI API key: {type(openai_api_key)}")
             if openai_api_key is not None:
+                logger.trace("Calling OpenAI model")
                 msg = get_openai_response(
                     model=st.session_state.get("model", OPENAI_DEFAULT_MODEL),
                     openai_api_key=openai_api_key,
@@ -61,11 +63,14 @@ def main_page() -> None:
             # Run open source model?
             else:
                 if OPEN_SOURCE_MODELS_SUPPORTED:
+                    logger.trace("Calling open source model")
                     response = st.write_stream(get_response_from_open_source_model(prompt))
                 else:
+                    logger.trace("Ppen source models not supported message")
                     # Let the chatbox inform the user
                     response = "Welcome to FiscalAI! Unfortunately, support for open-source models is still in development. Please add your OpenAI API key to get a different, meaningful response."
                     st.write(response)
+                logger.trace("Creating `AIMessage`")
                 message = AIMessage(content=response)
 
             # Update session

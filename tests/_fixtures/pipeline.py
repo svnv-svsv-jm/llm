@@ -1,3 +1,5 @@
+__all__ = ["tiny_llama_pipeline"]
+
 import pytest
 import typing as ty
 from loguru import logger

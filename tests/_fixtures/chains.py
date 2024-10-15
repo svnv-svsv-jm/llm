@@ -1,12 +1,13 @@
+__all__ = ["tiny_llama_chain"]
+
 import pytest
 import typing as ty
 from loguru import logger
 
-import torch
 from transformers import Pipeline
 from langchain_core.runnables import RunnableSerializable
 from langchain_core.output_parsers import StrOutputParser
-from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
+from langchain_huggingface import HuggingFacePipeline
 
 
 @pytest.fixture

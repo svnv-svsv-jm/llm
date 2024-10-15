@@ -1,3 +1,5 @@
+__all__ = ["tiny_llama", "cerbero", "mistral_small", "mistral7b"]
+
 import pytest
 import typing as ty
 from loguru import logger

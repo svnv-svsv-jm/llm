@@ -1,3 +1,5 @@
+__all__ = ["log_level_key", "trace_logging_level"]
+
 import pytest
 import os
 

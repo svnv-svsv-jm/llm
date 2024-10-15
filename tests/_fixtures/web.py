@@ -1,3 +1,5 @@
+__all__ = ["web_driver"]
+
 import pytest
 import typing as ty
 from loguru import logger

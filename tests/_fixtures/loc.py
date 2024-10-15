@@ -1,3 +1,5 @@
+__all__ = ["artifact_location", "docs_path"]
+
 import pytest
 import os
 from pathlib import Path
