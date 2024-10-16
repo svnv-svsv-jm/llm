@@ -33,7 +33,7 @@ def sidebar() -> None:
             options=LANGUAGES,
             key="new_language",
             index=LANGUAGES.index(st.session_state.language),
-            on_change=UpdateLanguageCallback(),
+            on_change=UpdateLanguageCallback("language-update"),
         )
 
         # OpenAI key
@@ -46,4 +46,10 @@ def sidebar() -> None:
         file_uploader()
 
         # Button to go to the settings page
-        st.button("Go to Settings", on_click=PageSelectorCallback(PageNames.SETTINGS))
+        st.button(
+            "Go to Settings",
+            on_click=PageSelectorCallback(
+                PageNames.SETTINGS,
+                name="page-selector",
+            ),
+        )

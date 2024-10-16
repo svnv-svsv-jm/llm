@@ -4,16 +4,19 @@ This repository shows you how one can locally build a RAG from some documents in
 
 ## Contributing
 
-See [here](./contributing.md).
+If you wish to contribute to this repository, see [here](./contributing.md).
 
 ## Pre-requisites
 
-- Python and a virtual environment
-- `poetry`
+You need the following:
+
+- Python and a virtual environment (even better if you have `pyenv`)
 - `make`
 - `HUGGINGFACE_TOKEN` declared in a `.env` file.
 
 ## Installation
+
+To install all dependencies for the project, run the following command:
 
 ```bash
 make install
@@ -21,7 +24,7 @@ make install
 
 ## Run app locally
 
-Run:
+To run the UI, run the following command:
 
 ```bash
 make ui
@@ -29,4 +32,4 @@ make ui
 
 ## Usage
 
-See [examples](./examples) and [tutorials](./tutorials).
+For more examples, see [examples](./examples) and [tutorials](./tutorials).

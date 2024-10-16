@@ -8,6 +8,7 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from .rag import initialize_rag
 from .const import PageNames, UPLOADED_FILES_DIR
+from .utils import get_and_maybe_init_session_state
 
 
 class BaseCallback:
@@ -16,8 +17,10 @@ class BaseCallback:
     def __init__(self, name: str) -> None:
         self.name = name
         # Add instance to state
-        if st.session_state.get("callbacks", None):
+        if st.session_state.get("callbacks", None) is None:
+            logger.trace("Initializing `callbacks` in session state")
             st.session_state["callbacks"] = {}
+        logger.trace(f"Adding {self} to session state")
         st.session_state["callbacks"][name] = self
 
 
@@ -27,21 +30,29 @@ class SaveFilesCallback(BaseCallback):
     def __call__(self, *args: ty.Any, **kwds: ty.Any) -> ty.Any:
         """Save uploaded files to local filesystem."""
         # Inform user via warning box
-        st.info("Uploading files... Please wait for the success message.")
+        msg = "Uploading files... Please wait for the success message."
+        st.info(msg)
+        logger.debug(msg)
+
         # Get files from session
-        files: list[UploadedFile] | None = st.session_state.get("uploaded_files", None)
+        logger.trace("Getting files from session")
+        uploaded_files: list[UploadedFile] | None = st.session_state.get("uploaded_files", None)
+        logger.trace(f"Got: {uploaded_files}")
 
         # If no files, return
-        if files is None:
+        if uploaded_files is None:
+            logger.trace("No uploaded files.")
             return
 
-        # Create file manager
-        saved_filenames = st.session_state.get("saved_filenames", [])
+        # File manager
+        saved_filenames: list[str] = get_and_maybe_init_session_state("saved_filenames", [])
         assert isinstance(saved_filenames, list)
 
         # Save each file
-        st.info("Saving files... Please wait for the success message.")
-        for file in files:
+        msg = "Saving files... Please wait for the success message."
+        st.info(msg)
+        logger.debug(msg)
+        for file in uploaded_files:
             logger.trace(f"Reading: {file.name}")
             bytes_data = file.read()  # read the content of the file in binary
             filename = os.path.join(UPLOADED_FILES_DIR, file.name)
@@ -56,7 +67,9 @@ class SaveFilesCallback(BaseCallback):
         # Re-create RAG?
         if st.session_state.get("has_chat", True):
             initialize_rag(force_recreate=True)
-        st.info("Files uploaded!")
+        msg = "Files uploaded."
+        st.info(msg)
+        logger.debug(msg)
 
 
 class UpdateLanguageCallback(BaseCallback):

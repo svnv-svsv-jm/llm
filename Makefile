@@ -22,7 +22,7 @@ EXAMPLE_DIR:=./examples
 # python
 PYTHON?=python
 PYTHON_EXEC?=python -m
-PYTHONVERSION?=3.10.10
+PYTHONVERSION?=3.13
 PYTEST?=pytest
 SYSTEM=$(shell python -c "import sys; print(sys.platform)")
 COV_FAIL_UNDER=95
@@ -44,7 +44,11 @@ IMAGE_PYTHON=/venv/bin/python
 # -----------
 # install project's dependencies
 # -----------
-# dev dependencies
+create-env: ENVNAME=llm
+create-env:
+	pyenv virtualenv $(PYTHONVERSION) $(ENVNAME) || echo "$(ENVNAME) already exists"
+	pyenv shell $(ENVNAME)
+
 install-init:
 	$(PYTHON_EXEC) pip install --upgrade pip
 	$(PYTHON_EXEC) pip install --upgrade poetry poetry-plugin-export
