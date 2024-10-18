@@ -19,7 +19,8 @@ class BaseCallback:
         # Add instance to state
         if st.session_state.get("callbacks", None) is None:
             logger.trace("Initializing `callbacks` in session state")
-            st.session_state["callbacks"] = {}
+            callbacks: dict[str, BaseCallback] = {}
+            st.session_state["callbacks"] = callbacks
         logger.trace(f"Adding {self} to session state")
         st.session_state["callbacks"][name] = self
 

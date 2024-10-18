@@ -5,9 +5,9 @@ from loguru import logger
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage, BaseMessage
 
+from svsvllm.defaults import OPENAI_DEFAULT_MODEL
 from ..response import get_openai_response, get_response_from_open_source_model
 from ..sidebar import sidebar
-from ..defaults import OPENAI_DEFAULT_MODEL
 from ..messages import initialize_messages
 from ..const import OPEN_SOURCE_MODELS_SUPPORTED
 

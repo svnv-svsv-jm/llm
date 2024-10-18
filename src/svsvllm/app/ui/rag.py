@@ -14,7 +14,7 @@ from langchain.chains.history_aware_retriever import create_history_aware_retrie
 from langchain_community.vectorstores.faiss import FAISS
 
 from svsvllm.rag import create_rag_database
-from .defaults import EMBEDDING_DEFAULT_MODEL
+from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL
 from .const import UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT
 from .model import create_chat_model
 from .utils import get_and_maybe_init_session_state

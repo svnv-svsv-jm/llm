@@ -5,9 +5,9 @@ import typing as ty
 from loguru import logger
 import streamlit as st
 
+from svsvllm.defaults import DEFAULT_LLM, OPENAI_DEFAULT_MODEL, EMBEDDING_DEFAULT_MODEL
 from .file_upload import file_uploader
 from .locale import LANGUAGES
-from .defaults import OPENAI_DEFAULT_MODEL, EMBEDDING_DEFAULT_MODEL
 from .const import PageNames
 from .callbacks import PageSelectorCallback, UpdateLanguageCallback
 
@@ -17,9 +17,9 @@ def sidebar() -> None:
     with st.sidebar:
         # Information
         st.markdown("[Get an OpenAI API key](https://platform.openai.com/account/api-keys)")
-        st.markdown(
-            "[View the source code](https://github.com/svnv-svsv-jm/llm/blob/main/src/svsvllm/app/ui/ui.py)"
-        )
+        # st.markdown(
+        #     "[View the source code](https://github.com/svnv-svsv-jm/llm/blob/main/src/svsvllm/app/ui/ui.py)"
+        # )
         st.markdown(
             "[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnv-svsv-jm/llm?quickstart=1)"
         )
@@ -41,12 +41,17 @@ def sidebar() -> None:
 
         # Model name
         st.text_input(
-            "LLM name",
-            key="model_name",
+            "OpenAI LLM name",
+            key="openai_model_name",
             placeholder=OPENAI_DEFAULT_MODEL,
         )
         st.text_input(
-            "Embedding model name",
+            "HuggingFace LLM name",
+            key="model_name",
+            placeholder=DEFAULT_LLM,
+        )
+        st.text_input(
+            "RAG embedding model name",
             key="embedding_model_name",
             placeholder=EMBEDDING_DEFAULT_MODEL,
         )

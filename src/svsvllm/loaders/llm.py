@@ -78,7 +78,7 @@ def llm_chain(
     pipe = HuggingFacePipeline(pipeline=pipe)
 
     # Chain them
-    llm = prompt | pipe | StrOutputParser()
+    llm: Runnable = prompt | pipe | StrOutputParser()
     logger.debug(f"LLM chain: {llm}")
 
     # Add RAG?
@@ -88,4 +88,11 @@ def llm_chain(
             "context": retriever,
             "question": RunnablePassthrough(),
         } | llm
+
+    # Sanity check
+    assert isinstance(
+        llm, Runnable
+    ), f"Found LLM of type {type(llm)}. Please contact the developers."
+
+    # Return
     return llm
