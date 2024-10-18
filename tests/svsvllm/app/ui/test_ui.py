@@ -3,9 +3,11 @@ from unittest.mock import patch, MagicMock
 from loguru import logger
 import typing as ty
 import sys, os
+
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 from langchain_core.messages import AIMessage
+from langchain_huggingface import ChatHuggingFace
 
 from svsvllm.defaults import DEFAULT_LLM
 
@@ -73,12 +75,17 @@ def test_openai(
 
     # Run app with mocked user inputs
     apptest.run()
+
+    # Test input was provided
     mock_chat_input.assert_called()
+
+    # If no OpenAI key, check open-source LLM was used
     if openai_api_key is None:
         # mock_transformers_pipeline.assert_called()
         # mock_hf_pipeline.assert_called()
         # mock_hf_chat.assert_called()
         mock_agent_stream.assert_called()
+        assert isinstance(apptest.session_state.chat_model, ChatHuggingFace)
 
     # Test: OpenAI key
     assert apptest.session_state.openai_api_key == openai_api_key

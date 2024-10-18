@@ -2,6 +2,8 @@ __all__ = ["llm_chain"]
 
 import typing as ty
 from loguru import logger
+
+import torch
 from langchain_community.vectorstores.faiss import FAISS
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -20,6 +22,8 @@ def llm_chain(
     prompt_template: str = DEFAULT_TEMPLATE,
     database: FAISS | None = None,
     task: str = "text-generation",
+    move_to_device: torch.device = None,
+    enable_attention_slicing: bool = False,
     **kwargs: ty.Any,
 ) -> Runnable:
     """LLM chain.
@@ -43,23 +47,41 @@ def llm_chain(
             See `transformers.pipeline`.
             Defaults to `"text-generation"`.
 
+        move_to_device (torch.device):
+            If passed, the `transformers.pipeline` will be manually moved to the provided device:
+            `pipeline.to(device)`.
+
+        enable_attention_slicing (bool):
+            If `True`, the pipeline's method `pipe.enable_attention_slicing()` will be called.
+
     Returns:
         RunnableSerializable: LLM model, with or without RAG.
     """
+    # Prompt
     prompt = PromptTemplate(
         input_variables=["context", "question"],
         template=prompt_template,
     )
-    pipe = HuggingFacePipeline(
-        pipeline=pipeline(
-            task=task,
-            model=model,
-            tokenizer=tokenizer,
-            **kwargs,
-        )
+
+    # Pipeline
+    pipe = pipeline(
+        task=task,
+        model=model,
+        tokenizer=tokenizer,
+        **kwargs,
     )
+    if move_to_device is not None:
+        pipe = pipe.to(move_to_device)
+    # Recommended if your computer has < 64 GB of RAM
+    if enable_attention_slicing:
+        pipe.enable_attention_slicing()
+    pipe = HuggingFacePipeline(pipeline=pipe)
+
+    # Chain them
     llm = prompt | pipe | StrOutputParser()
     logger.debug(f"LLM chain: {llm}")
+
+    # Add RAG?
     if database is not None:
         retriever = database.as_retriever()
         llm = {

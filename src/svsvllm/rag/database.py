@@ -22,6 +22,6 @@ def create_rag_database(
     documents: ty.List[Document] = load_documents(path)
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunked_docs: ty.List[Document] = splitter.split_documents(documents)
-    embeddings = HuggingFaceEmbeddings(model_name=model_name)
-    db = FAISS.from_documents(chunked_docs, embedding=embeddings, **kwargs)
+    embedder = HuggingFaceEmbeddings(model_name=model_name)
+    db = FAISS.from_documents(chunked_docs, embedding=embedder, **kwargs)
     return db

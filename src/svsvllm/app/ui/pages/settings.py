@@ -17,4 +17,10 @@ def settings_page() -> None:
     # st.write(f"Selected Language: {language}")
 
     # Button to go back to the main page
-    st.button("Go to Main Page", on_click=PageSelectorCallback(PageNames.MAIN))
+    st.button(
+        "Go to Main Page",
+        on_click=PageSelectorCallback(
+            PageNames.MAIN,
+            name="page-selector",
+        ),
+    )
