@@ -81,13 +81,13 @@ class SessionState(BaseModel):
         description="Uploaded files.",
         validate_default=True,
     )
-    callbacks: dict[str, BaseCallback] = Field(
-        default={},
+    callbacks: dict[str, BaseCallback] | None = Field(
+        default=None,
         description="Uploaded files.",
         validate_default=True,
     )
-    saved_filenames: list[str] = Field(
-        default=[],
+    saved_filenames: list[str] | None = Field(
+        default=None,
         description="Names of the uploaded files after written to disk.",
         validate_default=True,
     )

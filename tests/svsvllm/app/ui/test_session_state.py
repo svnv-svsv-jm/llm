@@ -22,6 +22,8 @@ from svsvllm.app.ui.session_state import SessionState
         ("openai_model_name", "what", False, False),
         ("page", "yo", True, False),
         ("openai_model_name", "what", False, True),
+        ("saved_filenames", ["yoyo"], False, True),
+        ("openai_client", 5, True, True),
     ],
 )
 def test_session_states_are_synced(
@@ -48,14 +50,17 @@ def test_session_states_are_synced(
     # Here we are passing an invalid value and we expect a ValidationError
     if validation_fails:
         with pytest.raises(ValidationError):
-            setattr(our_state, field, value)
+            if not reverse_sync:
+                setattr(our_state, field, value)
+            else:
+                st_state[field] = value
         return
 
     # Update field
     if reverse_sync:
         with patch.object(our_state, "__setattr__", side_effect=our_state.__setattr__) as mock:
             st_state[field] = value
-            # Test our class method was called even if we set the state directly
+            # Test our class method was called even if we set the st.state directly, not via `our_state`
             mock.assert_called()
     else:
         setattr(our_state, field, value)
