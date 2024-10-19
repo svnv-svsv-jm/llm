@@ -1,5 +1,5 @@
 # pylint: disable=no-member,unnecessary-dunder-call,global-variable-not-assigned
-__all__ = ["SessionState", "session_state"]
+__all__ = ["SessionState"]
 
 import typing as ty
 from loguru import logger
@@ -8,7 +8,7 @@ import streamlit as st
 from streamlit.runtime.state import (
     SafeSessionState,
     SessionStateProxy,
-    SessionState as _SessionState,
+    SessionState as StreamlitSessionState,
 )
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
@@ -18,10 +18,12 @@ from langchain_core.retrievers import BaseRetriever, RetrieverOutputLike
 from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+from svsvllm.utils.singleton import Singleton
 from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM, OPENAI_DEFAULT_MODEL
 from .callbacks import BaseCallback
 
 
+StateType = StreamlitSessionState | SessionStateProxy | SafeSessionState
 _locals: dict[str, ty.Any] = {"__avoid_recursive": False, "_bind": None}
 
 
@@ -38,8 +40,12 @@ class PatchRecursive:
         _locals["__avoid_recursive"] = False
 
 
-class SessionState(BaseModel):
-    """Custom Streamlit session state, in order to revise all present keys, validate them, etc."""
+class _SessionState(BaseModel):
+    """Custom Streamlit session state, in order to revise all present keys, validate them, etc.
+
+    Instances of this class are fully synced with Streamlit's session state. This means that changes to `import streamlit as st; st.session_state` will be reflected in instances of this class, and reverse.
+    Thus, please ensure only one instance of this class exists at a time.
+    """
 
     has_chat: bool = Field(
         default=True,
@@ -159,11 +165,9 @@ class SessionState(BaseModel):
         self.patch(st.session_state)
 
     @property
-    def _bind(self) -> SessionStateProxy | SafeSessionState | None:
+    def _bind(self) -> StateType | None:
         """Access the bound sesstion state."""
-        r: SessionStateProxy | SafeSessionState | None = _locals["_bind"]
-        if r is not None:
-            assert isinstance(r, (_SessionState, SessionStateProxy, SafeSessionState))
+        r: StateType | None = _locals["_bind"]
         return r
 
     @_bind.setter
@@ -182,14 +186,41 @@ class SessionState(BaseModel):
         """Set the bound object."""
         _locals["__avoid_recursive"] = value
 
-    def sync(self) -> None:
-        """Sync states."""
-        logger.debug(f"Syncing")
-        for key, val in self.to_dict().items():
-            logger.trace(f"Syncing: {key}")
-            self.session_state[key] = val
+    @property
+    def session_state(self) -> StateType:
+        """Streamlit session state."""
+        if self._bind is not None:
+            logger.trace("Session state is bounded explicitly.")
+            state = self._bind
+        else:
+            logger.trace("Session state is not bounded explicitly")
+            state = st.session_state
+        # Return
+        return state
 
-    def bind(self, session_state: SessionStateProxy | SafeSessionState) -> None:
+    @logger.catch(AttributeError, message="Failed to sync with Streamlit session state.")
+    def _sync(self, from_state: ty.Mapping[str, ty.Any], to_state: ty.Mapping[str, ty.Any]) -> None:
+        logger.debug(f"Syncing from {type(from_state)} to {type(to_state)}")
+        for key, val in from_state.items():
+            logger.trace(f"Syncing: {key}")
+            try:
+                to_state[key] = val  # type: ignore
+            except (KeyError, AttributeError):
+                logger.debug(f"Failed to sync `{key}`")
+        logger.debug(f"Synced from {type(from_state)} to {type(to_state)}")
+
+    def sync(self, reverse: bool = False) -> None:
+        """Sync states.
+
+        Args:
+            reverse (bool):
+                If `True`, try to sync from `st.session_state` to here. If this raises `AttributeError`, this means the state is empty, so we sync from here to there.
+        """
+        if reverse:
+            self._sync(from_state=self.session_state, to_state=self)  # type: ignore
+        self._sync(from_state=self.to_dict(), to_state=self.session_state)  # type: ignore
+
+    def bind(self, session_state: StateType) -> None:
         """Bind this model to Streamlit's session state."""
         logger.trace(f"Binding to {type(session_state)}")
         self._bind = self.patch(session_state)
@@ -202,8 +233,8 @@ class SessionState(BaseModel):
 
     def patch(
         self,
-        state: SessionStateProxy | SafeSessionState | None = None,
-    ) -> SessionStateProxy | SafeSessionState:
+        state: StateType | None = None,
+    ) -> StateType:
         """We patch the original Streamlit state so that when that one is used, it automatically syncs with this class."""
         if state is None:
             state = self.session_state
@@ -213,7 +244,7 @@ class SessionState(BaseModel):
         __setattr__original = state.__class__.__setattr__
 
         def patched_setitem(
-            obj: SessionStateProxy | SafeSessionState,
+            obj: StateType,
             key: ty.Any,
             value: ty.Any,
         ) -> None:
@@ -240,25 +271,13 @@ class SessionState(BaseModel):
         logger.trace("Patched `__setitem__` and `__setattr__`")
         return state
 
-    @property
-    def session_state(self) -> SessionStateProxy | SafeSessionState:
-        """Streamlit session state."""
-        if self._bind is not None:
-            logger.trace("Session state is bounded explicitly.")
-            state = self._bind
-        else:
-            logger.trace("Session state is not bounded explicitly")
-            state = st.session_state
-        # Return
-        return state
-
     def __len__(self) -> int:
         """Number of user state and keyed widget values in session_state."""
         return self.session_state.__len__()
 
-    def __getitem__(self, key: str) -> ty.Any:
+    def __getitem__(self, key: str | int) -> ty.Any:
         """Return the state or widget value with the given key."""
-        return self.session_state.__getitem__(key)
+        return self.session_state.__getitem__(key)  # type: ignore
 
     def __setitem__(self, key: str, value: ty.Any) -> None:
         """Set the value of the given key."""
@@ -276,4 +295,78 @@ class SessionState(BaseModel):
         return self.model_dump()
 
 
-session_state = SessionState()
+class SessionState(Singleton):
+    """Custom Streamlit session state, in order to revise all present keys, validate them, etc.
+
+    Instances of this class are fully synced with Streamlit's session state. This means that changes to `import streamlit as st; st.session_state` will be reflected in instances of this class, and reverse.
+
+    This class is a singleton, so only one instance can be created at a time.
+
+    Technically, this is a wrapper around the `pydantic` model :class:`_SessionState`.
+    """
+
+    def __init__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
+        """Constructor.
+
+        Args:
+            **kwargs (Any):
+                See :class:`_SessionState`.
+        """
+        self.state = _SessionState(**kwargs)
+
+    @property
+    def state(self) -> _SessionState:
+        """Return the state of the session."""
+        return self._state
+
+    @state.setter
+    def state(self, state: _SessionState) -> None:
+        """Set the state of the session."""
+        self._state = state
+
+    @property
+    def session_state(self) -> StateType:
+        """Streamlit session state."""
+        return self.state.session_state
+
+    def bind(self, session_state: StateType) -> None:
+        """Bind this model to Streamlit's session state."""
+        self.state.bind(session_state)
+
+    def unbind(self) -> None:
+        """Unbind."""
+        logger.trace(f"Unbinding {self}")
+        self.state.unbind()
+
+    def sync(self) -> None:
+        """Sync states."""
+        self.state.sync()
+
+    def to_dict(self) -> dict[str, ty.Any]:
+        """Dump model."""
+        return self.state.to_dict()
+
+    def __len__(self) -> int:
+        """Number of user state and keyed widget values in session_state."""
+        return len(self.state)
+
+    def __getitem__(self, key: str) -> ty.Any:
+        """Return the state or widget value with the given key."""
+        return self.state[key]
+
+    def __setitem__(self, key: str, value: ty.Any) -> None:
+        """Set the value of the given key."""
+        self.state[key] = value
+
+    def __getattr__(self, key: str) -> ty.Any:
+        """get the value from the wrapped state."""
+        if key not in ["_state", "state"]:
+            return getattr(self._state, key)
+        # return super().__getattr__(key)
+
+    def __setattr__(self, key: str, value: ty.Any) -> None:
+        """Set the value of the given key, but set it on the wrapped satte."""
+        if key not in ["_state", "state"]:
+            setattr(self._state, key, value)
+        else:
+            super().__setattr__(key, value)

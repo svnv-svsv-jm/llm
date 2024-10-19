@@ -8,9 +8,15 @@ import streamlit as st
 from streamlit.testing.v1 import AppTest
 from pydantic_core import ValidationError
 
-from svsvllm.app.ui.session_state import SessionState
+from svsvllm.app.ui.session_state import SessionState, _SessionState
 
 
+def test_session_state_is_singleton() -> None:
+    """Test there is only one instance always."""
+    assert SessionState() is SessionState()
+
+
+@pytest.mark.parametrize("state_class", [SessionState, _SessionState])
 @pytest.mark.parametrize("bind", [False, True])
 @pytest.mark.parametrize(
     "field, value, validation_fails, reverse_sync",
@@ -28,6 +34,7 @@ from svsvllm.app.ui.session_state import SessionState
 )
 def test_session_states_are_synced(
     apptest: AppTest,
+    state_class: ty.Type[SessionState | _SessionState],
     bind: bool,
     field: str,
     value: ty.Any,
@@ -36,7 +43,7 @@ def test_session_states_are_synced(
 ) -> None:
     """Test `SessionState` is always synced with `st.session_state`."""
     # Create state
-    our_state = SessionState()
+    our_state = state_class()
     logger.info(f"Creating session state: {type(our_state)}")
 
     # Bind
@@ -56,14 +63,23 @@ def test_session_states_are_synced(
                 st_state[field] = value
         return
 
-    # Update field
-    if reverse_sync:
-        with patch.object(our_state, "__setattr__", side_effect=our_state.__setattr__) as mock:
+    # Patch with itself, just to assert it is called
+    obj = our_state._state if isinstance(our_state, SessionState) else our_state
+    assert isinstance(obj, _SessionState)
+    with patch.object(
+        obj,
+        "__setattr__",
+        side_effect=obj.__setattr__,
+    ) as mock:
+
+        # Update field
+        if reverse_sync:
             st_state[field] = value
-            # Test our class method was called even if we set the st.state directly, not via `our_state`
-            mock.assert_called()
-    else:
-        setattr(our_state, field, value)
+        else:
+            setattr(our_state, field, value)
+
+        # Test our class method was called even if we set the st.state directly, not via `our_state`
+        mock.assert_called()
 
     # Test they stay synced
     assert getattr(st_state, field) == value
