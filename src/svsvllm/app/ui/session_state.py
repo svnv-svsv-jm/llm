@@ -26,7 +26,7 @@ from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM, OPENAI_DEFAUL
 StateType = StreamlitSessionState | SessionStateProxy | SafeSessionState
 _locals: dict[str, ty.Any] = {"__avoid_recursive": False, "_bind": None}
 
-DEFAULT_REVERSE = False
+DEFAULT_REVERSE_SYNC = False
 
 
 class PatchRecursive:
@@ -219,7 +219,17 @@ class _SessionState(BaseModel):
                 logger.debug(f"Failed to sync `{key}`")
         logger.debug(f"Synced from {type(from_state)} to {type(to_state)}")
 
-    def sync(self, reverse: bool = DEFAULT_REVERSE) -> None:
+    def _sync_direct(self) -> None:
+        """Direct synchronization."""
+        logger.trace("Direct synchronization")
+        self._sync(from_state=self.to_dict(), to_state=self.session_state)  # type: ignore
+
+    def _sync_reverse(self) -> None:
+        """Reverse synchronization."""
+        logger.trace("Reverse synchronization")
+        self._sync(from_state=self.session_state, to_state=self)  # type: ignore
+
+    def sync(self, reverse: bool = DEFAULT_REVERSE_SYNC) -> None:
         """Sync states.
 
         Args:
@@ -227,8 +237,8 @@ class _SessionState(BaseModel):
                 If `True`, try to sync from `st.session_state` to here. If this raises `AttributeError`, this means the state is empty, so we sync from here to there.
         """
         if reverse:
-            self._sync(from_state=self.session_state, to_state=self)  # type: ignore
-        self._sync(from_state=self.to_dict(), to_state=self.session_state)  # type: ignore
+            self._sync_reverse()
+        self._sync_direct()
 
     def bind(self, session_state: StateType | None) -> None:
         """Bind this model to Streamlit's session state."""
@@ -325,7 +335,7 @@ class SessionState(metaclass=Singleton):
 
     def __init__(
         self,
-        reverse: bool = DEFAULT_REVERSE,
+        reverse: bool,
         state: StateType | None = None,
         **kwargs: ty.Any,
     ) -> None:
@@ -341,6 +351,7 @@ class SessionState(metaclass=Singleton):
             **kwargs (Any):
                 See :class:`_SessionState`.
         """
+        logger.debug(f"Creating session state with:\n\treverse={reverse}")
         self.state = _SessionState(**kwargs)
         self.bind(state)
         self.sync(reverse=reverse)
@@ -361,13 +372,14 @@ class SessionState(metaclass=Singleton):
         """Streamlit session state."""
         return self.state.session_state
 
-    def sync(self, reverse: bool = DEFAULT_REVERSE) -> None:
+    def sync(self, reverse: bool = DEFAULT_REVERSE_SYNC) -> None:
         """Sync states.
 
         Args:
             reverse (bool):
                 If `True`, try to sync from `st.session_state` to here. If this raises `AttributeError`, this means the state is empty, so we sync from here to there.
         """
+        logger.debug(f"Syncing... (reverse={reverse})")
         self.state.sync(reverse=reverse)
 
     def patch(self, state: StateType | None = None) -> StateType:

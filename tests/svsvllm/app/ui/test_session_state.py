@@ -12,10 +12,20 @@ from svsvllm.utils.singleton import Singleton
 from svsvllm.app.ui.session_state import SessionState, _SessionState
 
 
+def test_reverse_sync() -> None:
+    """Test that reverse sync is called when the flag is set."""
+    with patch.object(
+        _SessionState,
+        "_sync_reverse",
+    ) as mock:
+        SessionState(reverse=True)
+        mock.assert_called()
+
+
 def test_session_state_is_singleton() -> None:
     """Test there is only one instance always."""
-    ss0 = SessionState()
-    ss1 = SessionState()
+    ss0 = SessionState(reverse=True)
+    ss1 = SessionState(reverse=False)
     assert ss0 is ss1, f"{Singleton._instances}"
 
 
