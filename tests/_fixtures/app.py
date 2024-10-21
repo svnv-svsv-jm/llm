@@ -1,4 +1,11 @@
-__all__ = ["apptest", "mock_openai", "mock_chat_input", "mock_agent_stream", "mock_text_file"]
+__all__ = [
+    "apptest",
+    "session_state",
+    "mock_openai",
+    "mock_chat_input",
+    "mock_agent_stream",
+    "mock_text_file",
+]
 
 import pytest
 from unittest.mock import MagicMock, ANY, patch
@@ -15,6 +22,7 @@ from langgraph.graph.graph import CompiledGraph
 
 
 import svsvllm.__main__ as main
+from svsvllm.app.ui.session_state import SessionState
 
 
 @pytest.fixture
@@ -24,6 +32,14 @@ def apptest(trace_logging_level: bool) -> AppTest:
     logger.debug(f"Loading script: {path}")
     at = AppTest.from_file(path, default_timeout=30)
     return at
+
+
+@pytest.fixture
+def session_state(apptest: AppTest) -> SessionState:
+    """Session state."""
+    ss = SessionState()
+    ss.bind(apptest.session_state)
+    return ss
 
 
 @pytest.fixture

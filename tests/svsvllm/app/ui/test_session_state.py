@@ -8,28 +8,33 @@ import streamlit as st
 from streamlit.testing.v1 import AppTest
 from pydantic_core import ValidationError
 
+from svsvllm.utils.singleton import Singleton
 from svsvllm.app.ui.session_state import SessionState, _SessionState
 
 
 def test_session_state_is_singleton() -> None:
     """Test there is only one instance always."""
-    assert SessionState() is SessionState()
+    ss0 = SessionState()
+    ss1 = SessionState()
+    assert ss0 is ss1, f"{Singleton._instances}"
 
 
 @pytest.mark.parametrize("state_class", [SessionState, _SessionState])
 @pytest.mark.parametrize("bind", [False, True])
+@pytest.mark.parametrize("check_reverse_sync", [False, True])
+@pytest.mark.parametrize("use_reverse_sync", [False, True])
 @pytest.mark.parametrize(
-    "field, value, validation_fails, reverse_sync",
+    "field, value, validation_fails",
     [
-        ("has_chat", False, False, False),
-        ("has_chat", True, False, False),
-        ("has_chat", 3, True, False),
-        ("new_language", "English", False, False),
-        ("openai_model_name", "what", False, False),
-        ("page", "yo", True, False),
-        ("openai_model_name", "what", False, True),
-        ("saved_filenames", ["yoyo"], False, True),
-        ("openai_client", 5, True, True),
+        ("has_chat", 3, True),
+        ("has_chat", False, False),
+        ("has_chat", True, False),
+        ("new_language", "English", False),
+        ("openai_model_name", "what", False),
+        ("page", "yo", True),
+        ("openai_model_name", "what", False),
+        ("saved_filenames", ["yoyo"], False),
+        ("openai_client", 5, True),
     ],
 )
 def test_session_states_are_synced(
@@ -39,11 +44,20 @@ def test_session_states_are_synced(
     field: str,
     value: ty.Any,
     validation_fails: bool,
-    reverse_sync: bool,
+    check_reverse_sync: bool,
+    use_reverse_sync: bool,
 ) -> None:
     """Test `SessionState` is always synced with `st.session_state`."""
+    # Reset to be able to create a new one
+    SessionState.reset()
+
+    # Reverse sync?
+    params = dict()
+    if state_class is SessionState:
+        params = dict(reverse=use_reverse_sync)
+
     # Create state
-    our_state = state_class()
+    our_state = state_class(**params)  # type: ignore
     logger.info(f"Creating session state: {type(our_state)}")
 
     # Bind
@@ -57,7 +71,8 @@ def test_session_states_are_synced(
     # Here we are passing an invalid value and we expect a ValidationError
     if validation_fails:
         with pytest.raises(ValidationError):
-            if not reverse_sync:
+            logger.info(f"Updating `{field}` with `{value}`")
+            if not check_reverse_sync:
                 setattr(our_state, field, value)
             else:
                 st_state[field] = value
@@ -73,7 +88,8 @@ def test_session_states_are_synced(
     ) as mock:
 
         # Update field
-        if reverse_sync:
+        logger.info(f"Updating `{field}` with `{value}`")
+        if check_reverse_sync:
             st_state[field] = value
         else:
             setattr(our_state, field, value)

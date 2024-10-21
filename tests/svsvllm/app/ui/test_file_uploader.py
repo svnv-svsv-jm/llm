@@ -6,14 +6,20 @@ import sys, os
 from streamlit.testing.v1 import AppTest
 from io import BytesIO
 
+from svsvllm.app.ui.session_state import SessionState
 
-def test_file_uploader(apptest: AppTest, mock_text_file: BytesIO) -> None:
+
+def test_file_uploader(
+    apptest: AppTest,
+    session_state: SessionState,
+    mock_text_file: BytesIO,
+) -> None:
     """Test sidebar's file uplodaer works."""
     # No need for chat
-    apptest.session_state["has_chat"] = False
+    session_state["has_chat"] = False
 
     # Manually set the file in session state (simulate file upload)
-    apptest.session_state["uploaded_files"] = [mock_text_file]
+    session_state["uploaded_files"] = [mock_text_file]
 
     # Run app
     apptest.run()

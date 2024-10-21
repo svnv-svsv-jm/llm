@@ -17,7 +17,7 @@ from svsvllm.rag import create_rag_database
 from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL
 from .const import UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT
 from .model import create_chat_model
-from .utils import get_and_maybe_init_session_state
+from .session_state import get_and_maybe_init_session_state
 
 
 @st.cache_resource

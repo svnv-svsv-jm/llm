@@ -8,7 +8,7 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from .rag import initialize_rag
 from .const import PageNames, UPLOADED_FILES_DIR
-from .utils import get_and_maybe_init_session_state
+from .session_state import get_and_maybe_init_session_state
 
 
 class BaseCallback:
