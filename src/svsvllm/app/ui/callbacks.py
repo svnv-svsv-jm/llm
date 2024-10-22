@@ -8,7 +8,7 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from .rag import initialize_rag
 from .const import PageNames, UPLOADED_FILES_DIR
-from .session_state import get_and_maybe_init_session_state
+from .session_state import session_state
 
 
 class BaseCallback:
@@ -16,13 +16,8 @@ class BaseCallback:
 
     def __init__(self, name: str) -> None:
         self.name = name
-        # Add instance to state
-        if st.session_state.get("callbacks", None) is None:
-            logger.trace("Initializing `callbacks` in session state")
-            callbacks: dict[str, BaseCallback] = {}
-            st.session_state["callbacks"] = callbacks
         logger.trace(f"Adding {self} to session state")
-        st.session_state["callbacks"][name] = self
+        session_state["callbacks"][name] = self
 
 
 class SaveFilesCallback(BaseCallback):
@@ -46,7 +41,7 @@ class SaveFilesCallback(BaseCallback):
             return
 
         # File manager
-        saved_filenames: list[str] = get_and_maybe_init_session_state("saved_filenames", [])
+        saved_filenames: list[str] = session_state["saved_filenames"]
         assert isinstance(saved_filenames, list)
 
         # Save each file

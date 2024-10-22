@@ -10,6 +10,9 @@ from ..response import get_openai_response, get_response_from_open_source_model
 from ..sidebar import sidebar
 from ..messages import initialize_messages
 from ..const import OPEN_SOURCE_MODELS_SUPPORTED
+from ..session_state import session_state, SessionState
+
+assert isinstance(session_state, SessionState)
 
 
 def main_page() -> None:
@@ -17,22 +20,25 @@ def main_page() -> None:
 
     Contains the sidebar and the chat.
     """
+    logger.debug(f"Main page")
+
     # Sidebar
     sidebar()
 
     # Title and initialization
+    logger.debug("Title and initialization")
     st.title("💬 FiscalAI")
     st.subheader("Smart Assistant")
     st.caption("🚀 Your favorite chatbot, powered by FiscalAI.")
 
     # Initialize messages if not done yet
     initialize_messages()
-    logger.trace("Initialized messages")
-    messages: list[BaseMessage] = st.session_state.messages
+    logger.debug("Initialized messages")
+    messages = session_state.state.messages
 
     # Chat?
-    has_chat: bool = st.session_state.get("has_chat", True)
-    logger.trace(f"Has chat: {has_chat}")
+    has_chat: bool = session_state.get("has_chat")
+    logger.debug(f"Has chat: {has_chat}")
     if not has_chat:
         return
 
@@ -49,12 +55,12 @@ def main_page() -> None:
         # LLM's response
         with st.chat_message("assistant"):
             # Check if we have to run OpenAI
-            openai_api_key: str | None = st.session_state.get("openai_api_key", None)
-            logger.trace(f"Received OpenAI API key: {type(openai_api_key)}")
+            openai_api_key: str | None = session_state.get("openai_api_key")
+            logger.debug(f"Received OpenAI API key: {type(openai_api_key)}")
             if openai_api_key is not None:
                 logger.trace("Calling OpenAI model")
                 msg = get_openai_response(
-                    model=st.session_state.get("model", OPENAI_DEFAULT_MODEL),
+                    model=session_state.get("model"),
                     openai_api_key=openai_api_key,
                 )
                 st.write(msg)
@@ -66,7 +72,7 @@ def main_page() -> None:
                     logger.trace("Calling open source model")
                     response = st.write_stream(get_response_from_open_source_model(prompt))
                 else:
-                    logger.trace("Ppen source models not supported message")
+                    logger.trace("Open source models not supported message")
                     # Let the chatbox inform the user
                     response = "Welcome to FiscalAI! Unfortunately, support for open-source models is still in development. Please add your OpenAI API key to get a different, meaningful response."  # pragma: no cover
                     st.write(response)  # pragma: no cover

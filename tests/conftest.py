@@ -2,6 +2,9 @@ import pytest
 import sys, os, pyrootutils
 import typing as ty
 from loguru import logger
+import warnings
+
+warnings.filterwarnings("ignore")
 
 pyrootutils.setup_root(
     search_from=".",

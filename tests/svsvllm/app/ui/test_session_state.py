@@ -9,11 +9,26 @@ from streamlit.testing.v1 import AppTest
 from pydantic_core import ValidationError
 
 from svsvllm.utils.singleton import Singleton
-from svsvllm.app.ui.session_state import SessionState, _SessionState
+from svsvllm.app.ui.session_state import SessionState, _SessionState, _VerboseSetItem
+
+
+@pytest.mark.parametrize("value", [False, True])
+def test_session_state_integration_w_apptest(
+    apptest_ss: AppTest,
+    session_state: SessionState,
+    value: bool,
+) -> None:
+    """Test session state integration with `AppTest`."""
+    apptest_ss.session_state["has_chat"] = value
+    assert session_state.state.has_chat == value
 
 
 def test_reverse_sync() -> None:
     """Test that reverse sync is called when the flag is set."""
+    # Reset to be able to create a new one
+    SessionState.reset()
+    # Start test
+    logger.info("Testing reverse sync is called")
     with patch.object(
         _SessionState,
         "_sync_reverse",
@@ -98,11 +113,12 @@ def test_session_states_are_synced(
     ) as mock:
 
         # Update field
-        logger.info(f"Updating `{field}` with `{value}`")
-        if check_reverse_sync:
-            st_state[field] = value
-        else:
-            setattr(our_state, field, value)
+        logger.info(f"(check_reverse_sync={check_reverse_sync}) Updating `{field}` with `{value}`")
+        with _VerboseSetItem(depth=6):
+            if check_reverse_sync:
+                st_state[field] = value
+            else:
+                setattr(our_state, field, value)
 
         # Test our class method was called even if we set the st.state directly, not via `our_state`
         mock.assert_called()

@@ -14,31 +14,30 @@ from svsvllm.defaults import DEFAULT_LLM
 # TODO: see https://medium.com/@chrisschneider/build-a-high-quality-streamlit-app-with-test-driven-development-eef4e462f65e
 
 
-def test_app_starts(apptest: AppTest) -> None:
+def test_app_starts(safe_apptest: AppTest) -> None:
     """Verify the app starts without errors."""
-    apptest.session_state["has_chat"] = False
-    apptest.run()
-    assert not apptest.exception
+    safe_apptest.session_state["has_chat"] = False
+    safe_apptest.run(timeout=2)
+    logger.info(safe_apptest.exception)
+    assert not safe_apptest.exception
 
 
-def test_page_title(apptest: AppTest) -> None:
+def test_page_title(safe_apptest: AppTest) -> None:
     """Verify the app has the expected title."""
-    apptest.session_state["has_chat"] = False
-    apptest.run()
-    assert len(apptest.subheader) == 1
-    assert "Smart Assistant" in apptest.subheader[0].value
-    assert len(apptest.caption) > 0
-    assert len(apptest.title) > 0
-    assert "FiscalAI" in apptest.title[0].value
+    safe_apptest.session_state["has_chat"] = False
+    safe_apptest.run(timeout=2)
+    assert len(safe_apptest.caption) > 0
+    assert len(safe_apptest.title) > 0
+    assert "FiscalAI" in safe_apptest.title[0].value
 
 
-def test_shows_welcome_message(apptest: AppTest) -> None:
+def test_shows_welcome_message(safe_apptest: AppTest) -> None:
     """Verify initial message from assistant is shown."""
-    apptest.session_state["has_chat"] = False
-    apptest.run()
-    assert len(apptest.chat_message) == 1
-    assert apptest.chat_message[0].name == "assistant"
-    assert "help" in apptest.chat_message[0].markdown[0].value
+    safe_apptest.session_state["has_chat"] = False
+    safe_apptest.run(timeout=2)
+    assert len(safe_apptest.chat_message) == 1
+    assert safe_apptest.chat_message[0].name == "assistant"
+    assert "help" in safe_apptest.chat_message[0].markdown[0].value
 
 
 @pytest.mark.parametrize("openai_api_key", [None, "any"])

@@ -1,5 +1,8 @@
 __all__ = [
     "apptest",
+    "apptest_ss",
+    "safe_apptest",
+    "safe_apptest_ss",
     "session_state",
     "mock_openai",
     "mock_chat_input",
@@ -8,38 +11,72 @@ __all__ = [
 ]
 
 import pytest
-from unittest.mock import MagicMock, ANY, patch
+from unittest.mock import MagicMock, patch
 import os
 import typing as ty
 from loguru import logger
 from io import BytesIO
 
-import streamlit as st
-from streamlit.testing.v1 import AppTest
 from openai import OpenAI
 from langchain_core.messages import AIMessage
 from langgraph.graph.graph import CompiledGraph
-
+import streamlit as st
+from streamlit.testing.v1 import AppTest
 
 import svsvllm.__main__ as main
 from svsvllm.app.ui.session_state import SessionState
 
 
 @pytest.fixture
-def apptest(trace_logging_level: bool) -> AppTest:
-    """App for testing."""
-    path = os.path.abspath(main.__file__)
-    logger.debug(f"Loading script: {path}")
-    at = AppTest.from_file(path, default_timeout=30)
-    return at
+def session_state() -> ty.Iterator[SessionState]:
+    """Session state."""
+    SessionState.reset()
+    ss: SessionState = SessionState(reverse=True)
+    yield ss
+    SessionState.reset()
 
 
 @pytest.fixture
-def session_state(apptest: AppTest) -> SessionState:
-    """Session state."""
-    ss = SessionState()
-    ss.bind(apptest.session_state)
-    return ss
+def apptest(trace_logging_level: bool) -> ty.Iterator[AppTest]:
+    """App for testing."""
+    # Create app from file
+    path = os.path.abspath(main.__file__)
+    logger.debug(f"Loading script: {path}")
+    at = AppTest.from_file(path, default_timeout=30)
+    yield at
+
+
+@pytest.fixture
+def apptest_ss(apptest: AppTest, session_state: SessionState) -> ty.Iterator[AppTest]:
+    """App for testing with bound session state."""
+    session_state.bind(apptest.session_state)
+    yield apptest
+
+
+@pytest.fixture
+def safe_apptest(apptest: AppTest) -> ty.Iterator[AppTest]:
+    """Patch this method so that we can time out without errors."""
+
+    # Patch the run method to time out safely
+    def run(**kwags: ty.Any) -> AppTest | None:
+        """Patch this method so that we can time out without errors."""
+        logger.debug("Running patched `run`")
+        try:
+            return apptest.run(**kwags)
+        except RuntimeError as e:
+            logger.debug(e)
+            return None
+
+    apptest.run = run
+
+    yield apptest
+
+
+@pytest.fixture
+def safe_apptest_ss(safe_apptest: AppTest, session_state: SessionState) -> ty.Iterator[AppTest]:
+    """Safe app for testing with bound session state."""
+    session_state.bind(safe_apptest.session_state)
+    yield safe_apptest
 
 
 @pytest.fixture

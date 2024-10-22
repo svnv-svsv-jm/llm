@@ -1,5 +1,5 @@
 # pylint: disable=no-member,unnecessary-dunder-call,global-variable-not-assigned
-__all__ = ["SessionState", "set_state", "get_state", "get_and_maybe_init_session_state"]
+__all__ = ["SessionState", "session_state"]
 
 import typing as ty
 from loguru import logger
@@ -16,6 +16,7 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 from langchain_huggingface import ChatHuggingFace
 from langchain_community.vectorstores.faiss import FAISS
 from langchain_core.retrievers import BaseRetriever, RetrieverOutputLike
+from langchain_core.messages import BaseMessage
 from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -24,22 +25,51 @@ from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM, OPENAI_DEFAUL
 
 
 StateType = StreamlitSessionState | SessionStateProxy | SafeSessionState
-_locals: dict[str, ty.Any] = {"__avoid_recursive": False, "_bind": None}
+_locals: dict[str, ty.Any] = {
+    "_avoid_recursive": False,
+    "_bind": None,
+    "_verbose": False,
+    "_depth": 0,
+}
+_cache = {}
 
-DEFAULT_REVERSE_SYNC = False
+DEFAULT_REVERSE_SYNC = True
 
 
-class PatchRecursive:
+class _PatchRecursive:
     """Temporarily deactivate recursion."""
 
-    def __enter__(self) -> "PatchRecursive":
+    def __enter__(self) -> "_PatchRecursive":
         """Edit value."""
-        _locals["__avoid_recursive"] = True
+        _locals["_avoid_recursive"] = True
         return self
 
     def __exit__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
         """Edit value."""
-        _locals["__avoid_recursive"] = False
+        _locals["_avoid_recursive"] = False
+
+
+class _VerboseSetItem:
+    """Verbose `setattr` and `setitem` method."""
+
+    def __init__(self, depth: int = 0) -> None:
+        """
+        Args:
+            depth (int):
+                Input to `logger.opt(depth=depth)`.
+        """
+        self.depth = depth
+
+    def __enter__(self) -> "_VerboseSetItem":
+        """Edit value."""
+        _locals["_verbose"] = True
+        _locals["_depth"] = self.depth
+        return self
+
+    def __exit__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
+        """Edit value."""
+        _locals["_verbose"] = False
+        _locals["_depth"] = 0
 
 
 class _SessionState(BaseModel):
@@ -84,18 +114,18 @@ class _SessionState(BaseModel):
         description="RAG embedding model name.",
         validate_default=True,
     )
-    uploaded_files: list[UploadedFile | BytesIO] | None = Field(
-        default=None,
+    uploaded_files: list[UploadedFile | BytesIO] = Field(
+        default=[],
         description="Uploaded files.",
         validate_default=True,
     )
-    callbacks: dict[str, ty.Callable] | None = Field(
-        default=None,
+    callbacks: dict[str, ty.Callable] = Field(
+        default={},
         description="Uploaded files.",
         validate_default=True,
     )
-    saved_filenames: list[str] | None = Field(
-        default=None,
+    saved_filenames: list[str] = Field(
+        default=[],
         description="Names of the uploaded files after written to disk.",
         validate_default=True,
     )
@@ -139,6 +169,11 @@ class _SessionState(BaseModel):
         description="Open source HuggingFace model LangChain wrapper.",
         validate_default=True,
     )
+    messages: list[BaseMessage] = Field(
+        default=[],
+        description="History of messages.",
+        validate_default=True,
+    )
 
     class Config:
         """Lets you re-run the validation functions on attribute assignments."""
@@ -166,29 +201,34 @@ class _SessionState(BaseModel):
         return r
 
     @_bind.setter
-    def _bind(self, value: SessionStateProxy | SafeSessionState) -> None:
+    def _bind(self, value: StateType | None) -> None:
         """Set the bound object."""
         _locals["_bind"] = value
 
     @property
-    def __avoid_recursive(self) -> bool:
+    def _avoid_recursive(self) -> bool:
         """Access the bound sesstion state."""
-        r: bool = _locals["__avoid_recursive"]
+        r: bool = _locals["_avoid_recursive"]
         return r
 
-    @__avoid_recursive.setter
-    def __avoid_recursive(self, value: bool) -> None:
-        """Set the bound object."""
-        _locals["__avoid_recursive"] = value
+    @property
+    def _verbose_item_set(self) -> bool:
+        """Whether to log on item/attribute being set."""
+        r: bool = _locals["_verbose"]
+        return r
+
+    @property
+    def _logging_depth(self) -> bool:
+        """Whether to log on item/attribute being set."""
+        r: int = _locals["_depth"]
+        return r
 
     @property
     def session_state(self) -> StateType:
         """Streamlit session state."""
         if self._bind is not None:
-            logger.trace("Session state is bounded explicitly.")
             state = self._bind
         else:
-            logger.trace("Session state is not bounded explicitly")
             state = st.session_state
         # Return
         return state
@@ -221,12 +261,12 @@ class _SessionState(BaseModel):
 
     def _sync_direct(self) -> None:
         """Direct synchronization."""
-        logger.trace("Direct synchronization")
+        logger.debug("Direct synchronization")
         self._sync(from_state=self.to_dict(), to_state=self.session_state)  # type: ignore
 
     def _sync_reverse(self) -> None:
         """Reverse synchronization."""
-        logger.trace("Reverse synchronization")
+        logger.debug("Reverse synchronization")
         self._sync(from_state=self.session_state, to_state=self)  # type: ignore
 
     def sync(self, reverse: bool = DEFAULT_REVERSE_SYNC) -> None:
@@ -240,11 +280,8 @@ class _SessionState(BaseModel):
             self._sync_reverse()
         self._sync_direct()
 
-    def bind(self, session_state: StateType | None) -> None:
+    def bind(self, session_state: StateType | None = None) -> None:
         """Bind this model to Streamlit's session state."""
-        if session_state is None:
-            logger.trace("Nothing to bind to.")
-            return
         logger.trace(f"Binding to {type(session_state)}")
         self._bind = self.patch(session_state)
         self.sync()
@@ -253,6 +290,7 @@ class _SessionState(BaseModel):
         """Unbind."""
         logger.trace("Unbinding")
         self._bind = None
+        self.patch(st.session_state)
         self.sync()
 
     def patch(
@@ -263,17 +301,31 @@ class _SessionState(BaseModel):
         if state is None:
             state = self.session_state
         logger.trace("Patching `__setitem__` and `__setattr__`")
-        # Patch
-        __setitem__original = state.__class__.__setitem__
-        __setattr__original = state.__class__.__setattr__
 
+        # By using a local cache, we understand if the state coming in is different or the same as before
+        _last_state = _cache.get("last", None)
+        # If there is not last state, this is the first time this runs, so save everything
+        if _last_state is None:
+            _cache["last"] = state
+            _cache["__setitem__"] = state.__class__.__setitem__
+            _cache["__setattr__"] = state.__class__.__setattr__
+        # If they are not the same, we save the references to its methods
+        if state is not _cache["last"]:
+            _cache["__setitem__"] = state.__class__.__setitem__
+            _cache["__setattr__"] = state.__class__.__setattr__
+        # Now we get them. We explictly use the `[]` access to let an error be raised if these keys do not exist
+        _cache["last"] = state
+        __setitem__original = _cache["__setitem__"]
+        __setattr__original = _cache["__setattr__"]
+
+        # Patch
         def patched_setitem(
             obj: StateType,
             key: ty.Any,
             value: ty.Any,
         ) -> None:
             # Call custom function first: this runs the pydantic validation before setting the value in the original streamlit state
-            with PatchRecursive():
+            with _PatchRecursive():
                 self.__setitem__(key, value)
             # Call the original method
             __setitem__original(obj, key, value)  # type: ignore
@@ -286,7 +338,7 @@ class _SessionState(BaseModel):
             value: ty.Any,
         ) -> None:
             # Call custom function first: this runs the pydantic validation before setting the value in the original streamlit state
-            with PatchRecursive():
+            with _PatchRecursive():
                 self.__setattr__(key, value)
             # Call the original method
             __setattr__original(obj, key, value)  # type: ignore
@@ -298,6 +350,10 @@ class _SessionState(BaseModel):
         state.__class__.__setattr__ = patched_setattr  # type: ignore
         logger.trace("Patched `__setitem__` and `__setattr__`")
         return state
+
+    def get(self, key: str) -> ty.Any:
+        """Getter."""
+        return self.session_state.get(key, None)
 
     def __len__(self) -> int:
         """Number of user state and keyed widget values in session_state."""
@@ -314,7 +370,11 @@ class _SessionState(BaseModel):
     def __setattr__(self, key: str, value: ty.Any) -> None:
         """Set the value of the given key."""
         super().__setattr__(key, value)  # type: ignore
-        if self.__avoid_recursive:
+        if self._verbose_item_set:
+            _log = logger.opt(depth=self._logging_depth)
+            _log.trace(f"Set key `{key}` to `{value}`")
+            assert getattr(self, key) == value
+        if self._avoid_recursive:
             return
         self.session_state.__setattr__(key, value)
 
@@ -333,9 +393,14 @@ class SessionState(metaclass=Singleton):
     Technically, this is a wrapper around the `pydantic` model :class:`_SessionState`.
     """
 
+    @classmethod
+    def reset(cls) -> None:
+        """Reset the singleton."""
+        Singleton.reset(cls)
+
     def __init__(
         self,
-        reverse: bool,
+        reverse: bool = DEFAULT_REVERSE_SYNC,
         state: StateType | None = None,
         **kwargs: ty.Any,
     ) -> None:
@@ -399,6 +464,10 @@ class SessionState(metaclass=Singleton):
         """Dump model."""
         return self.state.to_dict()
 
+    def get(self, key: str) -> ty.Any:
+        """Getter."""
+        return self.state[key]
+
     def __len__(self) -> int:
         """Number of user state and keyed widget values in session_state."""
         return len(self.state)
@@ -425,57 +494,4 @@ class SessionState(metaclass=Singleton):
             super().__setattr__(key, value)
 
 
-def set_state(key: str, value: ty.Any) -> None:
-    """Sets an element in the session state, leveraging our custom `pydantic` model for it.
-
-    Args:
-        key (str):
-            Name of the element in the session state.
-            The element will be set as `st.session_state[key] = value`.
-
-        value (ty.Any):
-            Value to set. This will be validated using our custom `pydantic` model for the session state.
-    """
-    # Validate item
-    _SessionState(**{key: value})
-    # All good, set it
-    st.session_state[key] = value
-
-
-def get_state(key: str) -> ty.Any:
-    """Gets element from session state, initializing if it does not exist, leveraging our custom `pydantic` model for it.
-
-    Args:
-        key (str):
-            Name of the element in the session state.
-            The element will be retrieved as `st.session_state.get(key)`.
-
-    Returns:
-        ty.Any: The element that is `st.session_state.get(key)`.
-    """
-    return get_and_maybe_init_session_state(key)
-
-
-def get_and_maybe_init_session_state(key: str, initial_value: ty.Any = None) -> ty.Any:
-    """Gets element from session state, initializing if it does not exist, leveraging our custom `pydantic` model for it.
-
-    Args:
-        key (str):
-            Name of the element in the session state.
-            The element will be retrieved as `st.session_state.get(key)`.
-
-        initial_value (ty.Any):
-            If `st.session_state[key]` does not exist, it will be initialized with this value.
-            If this is not provided, the default value will be taken from `_SessionState`.
-
-    Returns:
-        ty.Any: The element that is `st.session_state.get(key)`.
-    """
-    logger.trace(f"Getting '{key}' in session state")
-    if st.session_state.get(key, None) is None:
-        logger.trace(f"Creating '{key}' in session state")
-        if initial_value is None:
-            initial_value = _SessionState()[key]
-        st.session_state[key] = initial_value
-    value = st.session_state.get(key)
-    return value
+session_state = SessionState(reverse=DEFAULT_REVERSE_SYNC)

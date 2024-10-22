@@ -17,20 +17,16 @@ from svsvllm.rag import create_rag_database
 from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL
 from .const import UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT
 from .model import create_chat_model
-from .session_state import get_and_maybe_init_session_state
+from .session_state import session_state
 
 
 @st.cache_resource
 def initialize_database(force_recreate: bool = False) -> FAISS:
     """Initialize the database."""
     if force_recreate or "db" not in st.session_state:
-        embedding_model_name = get_and_maybe_init_session_state(
-            "embedding_model_name",
-            initial_value=EMBEDDING_DEFAULT_MODEL,
-        )
         db: FAISS = create_rag_database(
             UPLOADED_FILES_DIR,
-            model_name=embedding_model_name,
+            model_name=session_state["embedding_model_name"],
         )
         st.session_state["db"] = db
     db = st.session_state["db"]
