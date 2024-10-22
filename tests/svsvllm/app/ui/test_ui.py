@@ -17,7 +17,7 @@ from svsvllm.app.ui.session_state import SessionState
 
 def test_app_starts(apptest: AppTest, session_state: SessionState) -> None:
     """Verify the app starts without errors."""
-    session_state["has_chat"] = False
+    apptest.session_state["has_chat"] = False
     apptest.run(timeout=2)
     for i, ex in enumerate(apptest.exception):
         logger.info(f"({i}): {ex}")
@@ -33,13 +33,13 @@ def test_page_title(apptest: AppTest) -> None:
     assert "FiscalAI" in apptest.title[0].value
 
 
-def test_shows_welcome_message(safe_apptest: AppTest) -> None:
+def test_shows_welcome_message(apptest: AppTest) -> None:
     """Verify initial message from assistant is shown."""
-    safe_apptest.session_state["has_chat"] = False
-    safe_apptest.run(timeout=2)
-    assert len(safe_apptest.chat_message) == 1
-    assert safe_apptest.chat_message[0].name == "assistant"
-    assert "help" in safe_apptest.chat_message[0].markdown[0].value
+    apptest.session_state["has_chat"] = False
+    apptest.run(timeout=2)
+    assert len(apptest.chat_message) == 1
+    assert apptest.chat_message[0].name == "assistant"
+    assert "help" in apptest.chat_message[0].markdown[0].value
 
 
 @pytest.mark.parametrize("openai_api_key", [None, "any"])

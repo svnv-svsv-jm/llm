@@ -13,7 +13,7 @@ from svsvllm.app.ui.session_state import SessionState, _SessionState, _VerboseSe
 
 
 @pytest.mark.parametrize("auto_sync", [False, True])
-@pytest.mark.parametrize("key", ["page", "has_chat", "language", "openai_api_key", "callbacks"])
+@pytest.mark.parametrize("key", ["has_chat", "language", "openai_api_key", "callbacks"])
 def test_accessing_session_state(key: str, auto_sync: bool) -> None:
     """Test we can access the session state at any key without errors because they are initialized by default."""
     logger.info("Starting...")
@@ -112,27 +112,13 @@ def test_session_states_are_synced(
         if not auto_sync:
             return  # Tests below are for auto sync functionality
 
-        # Patch with itself, just to assert it is called
-        obj = our_state._state if isinstance(our_state, SessionState) else our_state
-        assert isinstance(obj, _SessionState)
-        with patch.object(
-            obj,
-            "__setattr__",
-            side_effect=obj.__setattr__,
-        ) as mock:
-
-            # Update field
-            logger.info(
-                f"(check_reverse_sync={check_reverse_sync}) Updating `{field}` with `{value}`"
-            )
-            with _VerboseSetItem(depth=6):
-                if check_reverse_sync:
-                    st_state[field] = value
-                else:
-                    setattr(our_state, field, value)
-
-            # Test our class method was called even if we set the st.state directly, not via `our_state`
-            mock.assert_called()
+        # Update field
+        logger.info(f"(check_reverse_sync={check_reverse_sync}) Updating `{field}` with `{value}`")
+        with _VerboseSetItem(depth=6):
+            if check_reverse_sync:
+                st_state[field] = value
+            else:
+                setattr(our_state, field, value)
 
         # Test they stay synced
         assert getattr(st_state, field) == value

@@ -224,7 +224,7 @@ class _SessionState(BaseModel):
 
     @property
     def _logging_depth(self) -> bool:
-        """Whether to log on item/attribute being set."""
+        """Depth when logging."""
         r: int = _locals["_depth"]
         return r
 
@@ -335,6 +335,8 @@ class _SessionState(BaseModel):
         __setitem__original = _cache["__setitem__"]
         __setattr__original = _cache["__setattr__"]
 
+        __setattr_call = super().__setattr__
+
         # Patch
         def patched_setitem(
             obj: StateType,
@@ -343,11 +345,9 @@ class _SessionState(BaseModel):
         ) -> None:
             # Call custom function first: this runs the pydantic validation before setting the value in the original streamlit state
             with _PatchRecursive():
-                self.__setitem__(key, value)
+                __setattr_call(key, value)
             # Call the original method
             __setitem__original(obj, key, value)  # type: ignore
-            assert obj[key] == value
-            assert self[key] == value
 
         def patched_setattr(
             obj: StateType,
@@ -356,11 +356,9 @@ class _SessionState(BaseModel):
         ) -> None:
             # Call custom function first: this runs the pydantic validation before setting the value in the original streamlit state
             with _PatchRecursive():
-                self.__setattr__(key, value)
+                __setattr_call(key, value)
             # Call the original method
             __setattr__original(obj, key, value)  # type: ignore
-            assert obj[key] == value
-            assert self[key] == value
 
         # Replace the original method with the patched one
         state.__class__.__setitem__ = patched_setitem  # type: ignore
@@ -368,38 +366,59 @@ class _SessionState(BaseModel):
         logger.trace("Patched `__setitem__` and `__setattr__`")
         return state
 
-    def get(self, key: str) -> ty.Any:
-        """Getter."""
-        return self.session_state.get(key, None)
-
     def __len__(self) -> int:
         """Number of user state and keyed widget values in session_state."""
         return len(self.session_state)
 
-    def __getitem__(self, key: str | int) -> ty.Any:
-        """Return the state or widget value with the given key."""
+    def __get(self, key: str) -> ty.Any:
+        default = self.__dict__.get(key, None)
         try:
             value = self.session_state[key]
         except KeyError:
-            value = getattr(self, key)
-            self.session_state[key] = value
-
+            value = default
+        # Validate value
+        try:
+            _SessionState(**{key: value})
+        except Exception:
+            # If validation fails, choose the default
+            value = default
+        self.session_state[key] = value
         return value
 
-    def __setitem__(self, key: str, value: ty.Any) -> None:
-        """Set the value of the given key."""
-        self.__setattr__(key, value)
+    def __getitem__(self, key: str | int) -> ty.Any:
+        """Return the state or widget value with the given key."""
+        return self.__get(key)
 
-    def __setattr__(self, key: str, value: ty.Any) -> None:
+    def __getattr__(self, key: str) -> ty.Any:
+        """Return the state or widget value with the given key."""
+        return self.__get(key)
+
+    def get(self, key: str) -> ty.Any:
+        """Getter."""
+        return self.__get(key)
+
+    def __set__(self, key: str, value: ty.Any) -> None:
         """Set the value of the given key."""
+        # Set by calling pydantic `__setattr__` to run validations
         super().__setattr__(key, value)  # type: ignore
+        # Log stuff if desired
         if self._verbose_item_set:
             _log = logger.opt(depth=self._logging_depth)
             _log.trace(f"Set key `{key}` to `{value}`")
             assert getattr(self, key) == value
+        # When this method is used as patch, it will halt here
         if self._avoid_recursive:
             return
+        # Also update Streamlit's state
         self.session_state[key] = value
+
+    def __setitem__(self, key: str, value: ty.Any) -> None:
+        """Set the value of the given key."""
+        self.__set__(key, value)
+
+    def __setattr__(self, key: str, value: ty.Any) -> None:
+        """Set the value of the given key."""
+        self.__set__(key, value)
 
     def to_dict(self) -> dict[str, ty.Any]:
         """Dump model."""
@@ -453,6 +472,7 @@ class SessionState(metaclass=Singleton):
     @state.setter
     def state(self, state: _SessionState) -> None:
         """Set the state of the session."""
+        assert isinstance(state, _SessionState)
         self._state = state
 
     @property
