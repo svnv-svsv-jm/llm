@@ -53,6 +53,7 @@ def test_session_state_is_singleton(session_state: SessionState) -> None:
         assert session_state is ss, f"{Singleton._instances}"
 
 
+@pytest.mark.parametrize("auto_sync", [False, True])
 @pytest.mark.parametrize("bind", [False, True])
 @pytest.mark.parametrize("check_reverse_sync", [False, True])
 @pytest.mark.parametrize("use_reverse_sync", [False, True])
@@ -78,10 +79,11 @@ def test_session_states_are_synced(
     validation_fails: bool,
     check_reverse_sync: bool,
     use_reverse_sync: bool,
+    auto_sync: bool,
 ) -> None:
     """Test `SessionState` is always synced with `st.session_state`."""
     # Reverse sync?
-    params = dict(auto_sync=True, reverse=use_reverse_sync)
+    params = dict(auto_sync=auto_sync, reverse=use_reverse_sync)
 
     # Create state
     # Context manager ensures state is reset at the end of the test
@@ -105,6 +107,10 @@ def test_session_states_are_synced(
                 else:
                     st_state[field] = value
             return
+
+        # Check if auto_sync is on
+        if not auto_sync:
+            return  # Tests below are for auto sync functionality
 
         # Patch with itself, just to assert it is called
         obj = our_state._state if isinstance(our_state, SessionState) else our_state
