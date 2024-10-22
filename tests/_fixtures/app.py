@@ -30,10 +30,8 @@ from svsvllm.app.ui.session_state import SessionState
 @pytest.fixture
 def session_state() -> ty.Iterator[SessionState]:
     """Session state."""
-    SessionState.reset()
-    ss: SessionState = SessionState(reverse=True)
-    yield ss
-    SessionState.reset()
+    with SessionState(reverse=True, auto_sync=True) as ss:
+        yield ss
 
 
 @pytest.fixture

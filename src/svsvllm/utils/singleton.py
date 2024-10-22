@@ -21,14 +21,17 @@ class Singleton(type, ty.Generic[_T]):
 
     def __call__(cls, *args: ty.Any, **kwargs: ty.Any) -> _T:
         """This method is called on object creation."""
-        logger.debug(f"Creating {cls} with {kwargs}")
+        _logger = logger.opt(depth=2)
         # Lock creation
         with cls._lock:
             # Check if an instance already exists
             if cls._instances.get(cls, None) is None:
+                _logger.debug(f"Creating instance of {cls}")
                 # If not, create a new instance by calling the superclass's __call__
                 instance = super(Singleton, cls).__call__(*args, **kwargs)
                 cls._instances[cls] = instance
+            else:
+                _logger.debug(f"Instance of {cls} already exists: {cls._instances[cls]}")
         return cls._instances[cls]
 
     @classmethod

@@ -17,19 +17,21 @@ from svsvllm.rag import create_rag_database
 from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL
 from .const import UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT
 from .model import create_chat_model
-from .session_state import session_state
+from .session_state import SessionState
 
 
 @st.cache_resource
 def initialize_database(force_recreate: bool = False) -> FAISS:
     """Initialize the database."""
     if force_recreate or "db" not in st.session_state:
+        session_state = SessionState()
+        embedding_model_name = session_state.state.embedding_model_name
         db: FAISS = create_rag_database(
             UPLOADED_FILES_DIR,
-            model_name=session_state["embedding_model_name"],
+            model_name=embedding_model_name,
         )
         st.session_state["db"] = db
-    db = st.session_state["db"]
+    db = session_state.state.db
     return db
 
 
@@ -40,7 +42,8 @@ def initialize_retriever() -> BaseRetriever:
     if retriever is not None:
         logger.debug(f"Retriever already initialized: {retriever}")
         return retriever
-    db: FAISS = st.session_state.get("db", None)
+    session_state = SessionState()
+    db: FAISS = session_state.state.db
     if db is None:
         logger.warning("Database not initialized, attempting to initialize it...")
         initialize_database()
@@ -69,7 +72,8 @@ def create_history_aware_retriever() -> RetrieverOutputLike:
     if chat_model is None:
         logger.warning("Chat model not initialized, attempting to initialize it...")
         create_chat_model()
-    retriever = st.session_state.get("retriever", None)
+    session_state = SessionState()
+    retriever = session_state.state.retriever
     if retriever is None:
         logger.warning("Retriever not initialized, attempting to initialize it...")
         initialize_retriever()

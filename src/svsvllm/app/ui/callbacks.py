@@ -8,7 +8,7 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from .rag import initialize_rag
 from .const import PageNames, UPLOADED_FILES_DIR
-from .session_state import session_state
+from .session_state import SessionState
 
 
 class BaseCallback:
@@ -17,7 +17,8 @@ class BaseCallback:
     def __init__(self, name: str) -> None:
         self.name = name
         logger.trace(f"Adding {self} to session state")
-        session_state["callbacks"][name] = self
+        state = SessionState().state
+        state.callbacks[name] = self
 
 
 class SaveFilesCallback(BaseCallback):
@@ -32,7 +33,7 @@ class SaveFilesCallback(BaseCallback):
 
         # Get files from session
         logger.trace("Getting files from session")
-        uploaded_files: list[UploadedFile] | None = st.session_state.get("uploaded_files", None)
+        uploaded_files: list[UploadedFile] | None = SessionState().state.uploaded_files
         logger.trace(f"Got: {uploaded_files}")
 
         # If no files, return
@@ -41,7 +42,7 @@ class SaveFilesCallback(BaseCallback):
             return
 
         # File manager
-        saved_filenames: list[str] = session_state["saved_filenames"]
+        saved_filenames: list[str] = SessionState().state.saved_filenames
         assert isinstance(saved_filenames, list)
 
         # Save each file
@@ -61,7 +62,7 @@ class SaveFilesCallback(BaseCallback):
         st.session_state["saved_filenames"] = saved_filenames
 
         # Re-create RAG?
-        if st.session_state.get("has_chat", True):
+        if SessionState().state.has_chat:
             initialize_rag(force_recreate=True)
         msg = "Files uploaded."
         st.info(msg)
@@ -74,9 +75,9 @@ class UpdateLanguageCallback(BaseCallback):
     def __call__(self) -> None:
         """Update language."""
         logger.trace(
-            f"Updating language: {st.session_state.language}->{st.session_state.new_language}"
+            f"Updating language: {SessionState().state.language}->{SessionState().state.new_language}"
         )
-        st.session_state.language = st.session_state.new_language
+        st.session_state["language"] = SessionState().state.new_language
 
 
 class PageSelectorCallback(BaseCallback):
@@ -100,4 +101,4 @@ class PageSelectorCallback(BaseCallback):
     def __call__(self) -> None:
         """Switch page"""
         logger.trace(f"Switching to {self.page}")
-        st.session_state.page = self.page
+        st.session_state["page"] = self.page

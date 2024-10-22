@@ -10,6 +10,7 @@ from .file_upload import file_uploader
 from .locale import LANGUAGES
 from .const import PageNames
 from .callbacks import PageSelectorCallback, UpdateLanguageCallback
+from .session_state import SessionState
 
 
 def sidebar() -> None:
@@ -25,14 +26,13 @@ def sidebar() -> None:
         )
 
         # Create a selectbox for language selection
-        if "language" not in st.session_state:
-            st.session_state.language = LANGUAGES[0]
-            logger.trace(f"Language selection: {st.session_state.language}")
+        state = SessionState().state
+        logger.trace(f"Language selection: {state.language}")
         st.selectbox(
             label="Select a Language",
             options=LANGUAGES,
             key="new_language",
-            index=LANGUAGES.index(st.session_state.language),
+            index=LANGUAGES.index(state.language),
             on_change=UpdateLanguageCallback("language-update"),
         )
 

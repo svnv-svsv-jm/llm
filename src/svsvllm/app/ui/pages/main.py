@@ -10,9 +10,7 @@ from ..response import get_openai_response, get_response_from_open_source_model
 from ..sidebar import sidebar
 from ..messages import initialize_messages
 from ..const import OPEN_SOURCE_MODELS_SUPPORTED
-from ..session_state import session_state, SessionState
-
-assert isinstance(session_state, SessionState)
+from ..session_state import SessionState
 
 
 def main_page() -> None:
@@ -31,13 +29,16 @@ def main_page() -> None:
     st.subheader("Smart Assistant")
     st.caption("🚀 Your favorite chatbot, powered by FiscalAI.")
 
+    # Get current state
+    state = SessionState().state
+
     # Initialize messages if not done yet
     initialize_messages()
     logger.debug("Initialized messages")
-    messages = session_state.state.messages
+    messages = state.messages
 
     # Chat?
-    has_chat: bool = session_state.get("has_chat")
+    has_chat: bool = state.has_chat
     logger.debug(f"Has chat: {has_chat}")
     if not has_chat:
         return
@@ -55,12 +56,12 @@ def main_page() -> None:
         # LLM's response
         with st.chat_message("assistant"):
             # Check if we have to run OpenAI
-            openai_api_key: str | None = session_state.get("openai_api_key")
+            openai_api_key: str | None = state.openai_api_key
             logger.debug(f"Received OpenAI API key: {type(openai_api_key)}")
             if openai_api_key is not None:
                 logger.trace("Calling OpenAI model")
                 msg = get_openai_response(
-                    model=session_state.get("model"),
+                    model=state.model,
                     openai_api_key=openai_api_key,
                 )
                 st.write(msg)

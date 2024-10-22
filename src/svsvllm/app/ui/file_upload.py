@@ -15,4 +15,5 @@ def file_uploader() -> None:
         accept_multiple_files=True,
         key="uploaded_files",
         on_change=SaveFilesCallback("save-file"),
+        help="Uploade documents that this chatbot may want to read.",
     )

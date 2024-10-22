@@ -1,5 +1,5 @@
 # pylint: disable=no-member,unnecessary-dunder-call,global-variable-not-assigned
-__all__ = ["SessionState", "session_state"]
+__all__ = ["SessionState"]
 
 import typing as ty
 from loguru import logger
@@ -79,6 +79,11 @@ class _SessionState(BaseModel):
     Thus, please ensure only one instance of this class exists at a time.
     """
 
+    auto_sync: bool = Field(
+        default=False,
+        description="Whether to automatically sync with Streamlit's state.",
+        validate_default=True,
+    )
     has_chat: bool = Field(
         default=True,
         description="Whether the app has a chatbot or not.",
@@ -243,6 +248,9 @@ class _SessionState(BaseModel):
             to_state (ty.Mapping[str, ty.Any]):
                 State that we sync with the source of truth.
         """
+        if not self.auto_sync:
+            logger.debug("Sync is disabled.")
+            return
         logger.debug(f"Syncing from {type(from_state)} to {type(to_state)}")
         # Get items
         try:
@@ -252,6 +260,8 @@ class _SessionState(BaseModel):
             return
         # Sync
         for key, val in items:
+            if "__setattr__" in key.lower():
+                continue
             logger.trace(f"Syncing: {key}")
             try:
                 to_state[key] = val  # type: ignore
@@ -298,8 +308,15 @@ class _SessionState(BaseModel):
         state: StateType | None = None,
     ) -> StateType:
         """We patch the original Streamlit state so that when that one is used, it automatically syncs with this class."""
+        # Get state to patch
         if state is None:
             state = self.session_state
+
+        # Do nothing if auto-sync is disabled
+        if not self.auto_sync:
+            logger.trace("Auto sync is disabled.")
+            return state
+
         logger.trace("Patching `__setitem__` and `__setattr__`")
 
         # By using a local cache, we understand if the state coming in is different or the same as before
@@ -357,11 +374,11 @@ class _SessionState(BaseModel):
 
     def __len__(self) -> int:
         """Number of user state and keyed widget values in session_state."""
-        return self.session_state.__len__()
+        return len(self.session_state)
 
     def __getitem__(self, key: str | int) -> ty.Any:
         """Return the state or widget value with the given key."""
-        return self.session_state.__getitem__(key)  # type: ignore
+        return self.session_state[key]  # type: ignore
 
     def __setitem__(self, key: str, value: ty.Any) -> None:
         """Set the value of the given key."""
@@ -493,5 +510,10 @@ class SessionState(metaclass=Singleton):
         else:
             super().__setattr__(key, value)
 
+    def __enter__(self) -> "SessionState":
+        """Activate state temporarily."""
+        return self
 
-session_state = SessionState(reverse=DEFAULT_REVERSE_SYNC)
+    def __exit__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
+        """Reset state."""
+        type(self).reset()

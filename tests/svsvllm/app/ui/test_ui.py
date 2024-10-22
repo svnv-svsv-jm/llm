@@ -10,25 +10,27 @@ from langchain_core.messages import AIMessage
 from langchain_huggingface import ChatHuggingFace
 
 from svsvllm.defaults import DEFAULT_LLM
+from svsvllm.app.ui.session_state import SessionState
 
 # TODO: see https://medium.com/@chrisschneider/build-a-high-quality-streamlit-app-with-test-driven-development-eef4e462f65e
 
 
-def test_app_starts(safe_apptest: AppTest) -> None:
+def test_app_starts(apptest: AppTest, session_state: SessionState) -> None:
     """Verify the app starts without errors."""
-    safe_apptest.session_state["has_chat"] = False
-    safe_apptest.run(timeout=2)
-    logger.info(safe_apptest.exception)
-    assert not safe_apptest.exception
+    session_state["has_chat"] = False
+    apptest.run(timeout=2)
+    for i, ex in enumerate(apptest.exception):
+        logger.info(f"({i}): {ex}")
+    assert len(apptest.exception) == 0
 
 
-def test_page_title(safe_apptest: AppTest) -> None:
+def test_page_title(apptest: AppTest) -> None:
     """Verify the app has the expected title."""
-    safe_apptest.session_state["has_chat"] = False
-    safe_apptest.run(timeout=2)
-    assert len(safe_apptest.caption) > 0
-    assert len(safe_apptest.title) > 0
-    assert "FiscalAI" in safe_apptest.title[0].value
+    apptest.session_state["has_chat"] = False
+    apptest.run(timeout=2)
+    assert len(apptest.caption) > 0
+    assert len(apptest.title) > 0
+    assert "FiscalAI" in apptest.title[0].value
 
 
 def test_shows_welcome_message(safe_apptest: AppTest) -> None:
