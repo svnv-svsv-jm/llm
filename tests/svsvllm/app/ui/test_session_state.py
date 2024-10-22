@@ -12,11 +12,14 @@ from svsvllm.utils.singleton import Singleton
 from svsvllm.app.ui.session_state import SessionState, _SessionState, _VerboseSetItem
 
 
+@pytest.mark.parametrize("auto_sync", [False, True])
 @pytest.mark.parametrize("key", ["page", "has_chat", "language", "openai_api_key", "callbacks"])
-def test_accessing_session_state(session_state: SessionState, key: str) -> None:
+def test_accessing_session_state(key: str, auto_sync: bool) -> None:
     """Test we can access the session state at any key without errors because they are initialized by default."""
-    value = session_state[key]
-    logger.info(f"{key}: {value}")
+    logger.info("Starting...")
+    with SessionState(auto_sync=auto_sync) as session_state:
+        value = session_state[key]
+        logger.info(f"{key}: {value}")
 
 
 @pytest.mark.parametrize("value", [False, True])

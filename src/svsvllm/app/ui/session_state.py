@@ -312,10 +312,10 @@ class _SessionState(BaseModel):
         if state is None:
             state = self.session_state
 
-        # Do nothing if auto-sync is disabled
-        if not self.auto_sync:
-            logger.trace("Auto sync is disabled.")
-            return state
+        # # Do nothing if auto-sync is disabled
+        # if not self.auto_sync:
+        #     logger.trace("Auto sync is disabled.")
+        #     return state
 
         logger.trace("Patching `__setitem__` and `__setattr__`")
 
@@ -378,7 +378,13 @@ class _SessionState(BaseModel):
 
     def __getitem__(self, key: str | int) -> ty.Any:
         """Return the state or widget value with the given key."""
-        return self.session_state[key]  # type: ignore
+        try:
+            value = self.session_state[key]
+        except KeyError:
+            value = getattr(self, key)
+            self.session_state[key] = value
+
+        return value
 
     def __setitem__(self, key: str, value: ty.Any) -> None:
         """Set the value of the given key."""
@@ -393,7 +399,7 @@ class _SessionState(BaseModel):
             assert getattr(self, key) == value
         if self._avoid_recursive:
             return
-        self.session_state.__setattr__(key, value)
+        self.session_state[key] = value
 
     def to_dict(self) -> dict[str, ty.Any]:
         """Dump model."""
