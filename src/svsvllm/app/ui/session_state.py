@@ -18,7 +18,8 @@ from langchain_community.vectorstores.faiss import FAISS
 from langchain_core.retrievers import BaseRetriever, RetrieverOutputLike
 from langchain_core.messages import BaseMessage
 from openai import OpenAI
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, SpecialTokensMixin
+import torch
 
 from svsvllm.utils.singleton import Singleton
 from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM, OPENAI_DEFAULT_MODEL
@@ -144,12 +145,12 @@ class _SessionState(BaseModel):
         description="OpenAI client.",
         validate_default=True,
     )
-    hf_model: AutoModelForCausalLM | None = Field(
+    hf_model: AutoModelForCausalLM | torch.nn.Module | None = Field(
         default=None,
         description="HuggingFace model.",
         validate_default=True,
     )
-    tokenizer: AutoTokenizer | None = Field(
+    tokenizer: AutoTokenizer | SpecialTokensMixin | torch.nn.Module | None = Field(
         default=None,
         description="HuggingFace tokenizer.",
         validate_default=True,

@@ -6,7 +6,7 @@ import sys, os
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 
-from svsvllm.app.ui.const import PageNames
+from svsvllm.app.const import PageNames
 
 
 def test_settings_page(apptest: AppTest) -> None:

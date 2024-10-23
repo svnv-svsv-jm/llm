@@ -70,6 +70,7 @@ selenium = "^4.23.1"
 typer = "^0.12.3"
 streamlit = "^1.38.0"
 pyngrok = "^7.2.0"
+pydantic-settings = "^2.6.0"
 
 [tool.poetry.extras]
 gpu = ["faiss-gpu"]

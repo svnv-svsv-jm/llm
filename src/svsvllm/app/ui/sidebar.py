@@ -6,9 +6,9 @@ from loguru import logger
 import streamlit as st
 
 from svsvllm.defaults import DEFAULT_LLM, OPENAI_DEFAULT_MODEL, EMBEDDING_DEFAULT_MODEL
+from svsvllm.app.const import PageNames
 from .file_upload import file_uploader
 from .locale import LANGUAGES
-from .const import PageNames
 from .callbacks import PageSelectorCallback, UpdateLanguageCallback
 from .session_state import SessionState
 

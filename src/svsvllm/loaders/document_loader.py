@@ -53,6 +53,6 @@ def load_documents(path: str) -> List[Document]:
     # Load docs
     docs = []
     for file_type, loader in loaders.items():
-        logger.info(f"Loading {file_type} files...")
+        logger.info(f"Loading {file_type} files from {path}...")
         docs.extend(loader.load())
     return docs

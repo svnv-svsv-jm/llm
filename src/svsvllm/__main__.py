@@ -4,7 +4,7 @@ import typer
 from streamlit.web import cli
 from streamlit import runtime
 
-from svsvllm.app.settings import TEST_MODE
+from svsvllm.app.settings import settings
 from svsvllm.app.ui import ui
 from svsvllm.utils.logger import set_up_logging
 
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     set_up_logging()
 
     # In tests, we run this
-    if TEST_MODE:
+    if settings.test_mode:
         chatbot()
 
     # Main application

@@ -19,7 +19,10 @@ def create_rag_database(
     **kwargs: ty.Any,
 ) -> FAISS:
     """Create RAG database."""
+    logger.trace(f"Creating database from folder: {path}")
     documents: ty.List[Document] = load_documents(path)
+    if len(documents) < 1:
+        logger.warning("No documents found.")
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunked_docs: ty.List[Document] = splitter.split_documents(documents)
     embedder = HuggingFaceEmbeddings(model_name=model_name)

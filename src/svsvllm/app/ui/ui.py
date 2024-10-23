@@ -3,7 +3,7 @@ __all__ = ["ui"]
 from loguru import logger
 import streamlit as st
 
-from .const import PageNames
+from ..const import PageNames
 from .pages import settings_page, main_page
 from .session_state import SessionState
 

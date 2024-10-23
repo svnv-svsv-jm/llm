@@ -14,8 +14,7 @@ from langchain.chains.history_aware_retriever import create_history_aware_retrie
 from langchain_community.vectorstores.faiss import FAISS
 
 from svsvllm.rag import create_rag_database
-from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL
-from .const import UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT
+from svsvllm.app.settings import settings
 from .model import create_chat_model
 from .session_state import SessionState
 
@@ -27,7 +26,7 @@ def initialize_database(force_recreate: bool = False) -> FAISS:
         session_state = SessionState()
         embedding_model_name = session_state.state.embedding_model_name
         db: FAISS = create_rag_database(
-            UPLOADED_FILES_DIR,
+            settings.uploaded_files_dir,
             model_name=embedding_model_name,
         )
         st.session_state["db"] = db
@@ -63,7 +62,7 @@ def create_history_aware_retriever() -> RetrieverOutputLike:
     """Create history-aware retriever."""
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", Q_SYSTEM_PROMPT),
+            ("system", settings.q_system_prompt),
             MessagesPlaceholder("chat_history"),
             ("human", "{input}"),
         ]

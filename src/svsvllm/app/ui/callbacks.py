@@ -6,8 +6,9 @@ from loguru import logger
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
+from svsvllm.app.settings import settings
+from svsvllm.app.const import PageNames
 from .rag import initialize_rag
-from .const import PageNames, UPLOADED_FILES_DIR
 from .session_state import SessionState
 
 
@@ -52,7 +53,7 @@ class SaveFilesCallback(BaseCallback):
         for file in uploaded_files:
             logger.trace(f"Reading: {file.name}")
             bytes_data = file.read()  # read the content of the file in binary
-            filename = os.path.join(UPLOADED_FILES_DIR, file.name)
+            filename = os.path.join(settings.uploaded_files_dir, file.name)
             with open(filename, "wb") as f:
                 logger.trace(f"Writing: {filename}")
                 f.write(bytes_data)  # write this content elsewhere

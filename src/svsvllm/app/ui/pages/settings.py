@@ -3,7 +3,7 @@ __all__ = ["settings_page"]
 from loguru import logger
 import streamlit as st
 
-from ..const import PageNames
+from svsvllm.app.const import PageNames
 from ..callbacks import PageSelectorCallback
 
 
