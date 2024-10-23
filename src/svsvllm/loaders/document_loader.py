@@ -48,6 +48,12 @@ def load_documents(path: str) -> List[Document]:
             loader_cls=TextLoader,
             show_progress=True,
         ),
+        ".txt": DirectoryLoader(
+            path,
+            glob="**/*.txt",
+            loader_cls=TextLoader,
+            show_progress=True,
+        ),
     }
 
     # Load docs

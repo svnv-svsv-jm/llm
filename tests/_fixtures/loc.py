@@ -1,4 +1,4 @@
-__all__ = ["artifact_location", "docs_path"]
+__all__ = ["artifact_location", "docs_path", "res_docs_path"]
 
 import pytest
 import os
@@ -15,6 +15,13 @@ def artifact_location() -> str:
 
 @pytest.fixture(scope="session")
 def docs_path() -> str:
-    """Path to foler with documents."""
+    """Path to folder with documents."""
     path = os.path.join("res", "documents")
+    return path
+
+
+@pytest.fixture(scope="session")
+def res_docs_path() -> str:
+    """Path to test folder with documents."""
+    path = os.path.join("tests", "res", "rag")
     return path

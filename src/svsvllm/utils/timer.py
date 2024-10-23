@@ -23,7 +23,7 @@ class CommandTimer:
         # Private
         self.stop_thread = False
         self.start_time: float
-        self.elapsed_time: float
+        self.elapsed_time: float  # in seconds
         self.timer_thread: threading.Thread
 
     def format_elapsed_time(self, seconds: float) -> str:
