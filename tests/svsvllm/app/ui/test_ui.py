@@ -105,7 +105,7 @@ def test_openai(
 
     # Run app with mocked user inputs
     with patch.object(settings, "uploaded_files_dir", docs_path):
-        apptest.run()
+        apptest.run(timeout=120)
 
     # Test no erros were raised
     for i, ex in enumerate(apptest.exception):

@@ -55,7 +55,7 @@ def get_response_from_open_source_model(
     # Generate thread ID if not exists, or use the one in the session state
     thread_id = st.session_state.get("thread_id", None)
     if thread_id is None:
-        thread_id = uuid.uuid4()
+        thread_id = str(uuid.uuid4())
         st.session_state["thread_id"] = thread_id
     # Create configuration
     agent_config = {"configurable": {"thread_id": thread_id}}

@@ -17,6 +17,8 @@ from langchain_huggingface import ChatHuggingFace
 from langchain_community.vectorstores.faiss import FAISS
 from langchain_core.retrievers import BaseRetriever, RetrieverOutputLike
 from langchain_core.messages import BaseMessage
+from langchain_core.runnables.config import RunnableConfig
+from langgraph.graph.graph import CompiledGraph
 from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForCausalLM, SpecialTokensMixin
 import torch
@@ -208,6 +210,25 @@ class _SessionState(BaseModel):
     messages: list[BaseMessage] = Field(
         default=[],
         description="History of messages.",
+        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    agent: CompiledGraph | None = Field(
+        None,
+        description="Agent executor.",
+        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    thread_id: str | None = Field(
+        None,
+        description="Thread ID for streaming.",
+        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    # TODO: needs its own schema
+    agent_config: RunnableConfig = Field(
+        {},
+        description="Agent configuration for streaming.",
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
