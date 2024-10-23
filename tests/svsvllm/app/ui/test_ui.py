@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, Mock, MagicMock
 from loguru import logger
 import typing as ty
 import sys, os
@@ -16,7 +16,6 @@ from svsvllm.app.settings import settings
 
 
 @pytest.mark.parametrize("openai_api_key", [None, "any"])
-@pytest.mark.parametrize("state_for_client", [False, True])
 def test_chatting(
     safe_apptest_ss: AppTest,
     res_docs_path: str,
@@ -27,22 +26,15 @@ def test_chatting(
     # mock_transformers_pipeline: MagicMock,
     # mock_hf_pipeline: MagicMock,
     # mock_hf_chat: MagicMock,
-    state_for_client: bool,
     openai_api_key: str | None,
 ) -> None:
     """Test app is ready to work with or without OpenAI model.
 
     Args:
-        state_for_client (bool):
-            If `True`, we inject the mock client into the state. If `False`, we create a new `OpenAI` client, but still the `OpenAI.__new__` method is mocked.
-
         openai_api_key (str | None):
             When `None`, the open source model will be used.
     """
     apptest = safe_apptest_ss
-    # Inject mock into app state to avoid creation of OpenAI client
-    if state_for_client:
-        apptest.session_state["openai_client"] = mock_openai
 
     # Inject key
     apptest.session_state["openai_api_key"] = openai_api_key
@@ -51,8 +43,9 @@ def test_chatting(
 
     # Run app with mocked user inputs
     with patch.object(settings, "uploaded_files_dir", res_docs_path):
+        # NOTE: we may even `apptest.chat_input[0].set_value("Hi").run()` but we have to run first once
         with CommandTimer("apptest.run") as timer:
-            apptest.run(timeout=120)
+            apptest.run(timeout=7)
         logger.info(f"App run took {timer.elapsed_time} seconds.")
 
     # Test no erros were raised
@@ -60,8 +53,8 @@ def test_chatting(
         logger.info(f"({i}): {ex}")
     assert len(apptest.exception) == 0
 
-    # Test input was provided
-    mock_chat_input.assert_called()
+    # Test called
+    mock_chat_input.assert_called()  # Input provided
 
     # If no OpenAI key, check open-source LLM was used
     if openai_api_key is None:
@@ -70,6 +63,8 @@ def test_chatting(
         # mock_hf_chat.assert_called()
         mock_agent_stream.assert_called()
         assert isinstance(apptest.session_state.chat_model, ChatHuggingFace)
+    else:
+        mock_openai.assert_called()  # OpenAI model created
 
     # Test: OpenAI key
     assert apptest.session_state.openai_api_key == openai_api_key
@@ -85,6 +80,9 @@ def test_chatting(
         if isinstance(msg, AIMessage):
             counter += 1
     assert counter == 2
+
+    # End
+    logger.success("PASSED")
 
 
 if __name__ == "__main__":

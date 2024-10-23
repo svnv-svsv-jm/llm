@@ -82,26 +82,33 @@ def safe_apptest_ss(safe_apptest: AppTest, session_state: SessionState) -> ty.It
     yield safe_apptest
 
 
+# Create a subclass of MagicMock that is recognized as an instance of OpenAI
+class OpenAIMock(MagicMock):
+    """A subclass of MagicMock that is recognized as an instance of `OpenAI`."""
+
+    def __instancecheck__(self, instance: ty.Any) -> bool:
+        return isinstance(instance, OpenAI)
+
+    def __init__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
+        super().__init__(*args, **kwargs)
+        # Mock method that returns LLM's response
+        choice = MagicMock()
+        choice.message.content = "Hi."
+        response = MagicMock()
+        response.choices = MagicMock(return_value=[MagicMock(return_value=choice)])
+        # Now create the OpenAI mock
+        self.chat = MagicMock()
+        self.chat.completions = MagicMock()
+        self.chat.completions.create = MagicMock(return_value=response)
+
+
 @pytest.fixture
 def mock_openai() -> ty.Iterator[MagicMock]:
-    """Mock `OpenAI` client.
-
-    The mock happens "twice":
-    * we create a mock that we can inject into the session's state;
-    * we mock `OpenAI.__new__`, so that it returns a mock on client creation.
-    """
-    # Create mock client
-    openai_client = MagicMock()
-    # Mock method that returns LLM's response
-    return_value = MagicMock()
-    return_value.response.choices.return_value = [MagicMock()]
-    return_value.response.choices[0].message.content = "Hi."
-    openai_client.chat.completions.create.return_value = return_value
-    # Also mock the class `OpenAI` to return a `MagicMock`
-    # And again mock method that returns LLM's response
-    with patch.object(OpenAI, "__new__", return_value=MagicMock()) as openaimock:
-        openaimock.client.chat.completions.create = return_value
-        yield openai_client
+    """Mock `OpenAI` client."""
+    client = OpenAIMock(spec=OpenAI)
+    assert isinstance(client, OpenAI)
+    with patch.object(OpenAI, "__new__", return_value=client) as openaimock:
+        yield openaimock
 
 
 @pytest.fixture

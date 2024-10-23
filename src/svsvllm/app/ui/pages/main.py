@@ -68,7 +68,7 @@ def main_page() -> None:
             if openai_api_key is not None:
                 logger.trace("Calling OpenAI model")
                 msg = get_openai_response(
-                    model=state.model,
+                    model=state.openai_model_name,
                     openai_api_key=openai_api_key,
                 )
                 st.write(msg)

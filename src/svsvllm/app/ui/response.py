@@ -8,6 +8,7 @@ from langchain_core.messages import HumanMessage, BaseMessage
 from langchain_core.utils.interactive_env import is_interactive_env
 from openai import OpenAI
 
+from .session_state import SessionState
 from .model import create_chat_model
 from .rag import initialize_rag, create_history_aware_retriever
 from .agent import create_agent
@@ -15,8 +16,20 @@ from .agent import create_agent
 
 def get_openai_response(openai_api_key: str, model: str) -> str:
     """Returns the response from the OpenAI model.
+
     The full chat history up to now is fed as input.
+
+    Args:
+        openai_api_key (str):
+            OpenAI API key.
+
+        model (str):
+            OpenAI model name.
+
+    Returns:
+        str: LLM's response as text.
     """
+    state = SessionState().state
     # OpenAI client
     if "openai_client" not in st.session_state:
         client = OpenAI(api_key=openai_api_key)
@@ -27,7 +40,7 @@ def get_openai_response(openai_api_key: str, model: str) -> str:
     # Create response
     response = client.chat.completions.create(
         model=model,
-        messages=st.session_state.messages,
+        messages=state.messages,
     )
     msg = response.choices[0].message.content
 
