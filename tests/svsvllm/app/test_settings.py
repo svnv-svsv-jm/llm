@@ -19,13 +19,13 @@ from svsvllm.app.settings import Settings
 )
 def test_settings(key: str, val: bool) -> None:
     """Test fields."""
-    # Fake the env var
-    os.environ[f"{ENV_PREFIX}{key}"] = f"{val}"
-    # Create the settings object
-    settings = Settings()
-    logger.info(f"Settings:\n{settings}")
-    # Check value is correct
-    assert getattr(settings, key.lower()) == val
+    # Temporarily patching os.environ
+    with patch.dict(os.environ, {f"{ENV_PREFIX}{key}": f"{val}"}):
+        # Create the settings object
+        settings = Settings()
+        logger.info(f"Settings:\n{settings}")
+        # Check value is correct
+        assert getattr(settings, key.lower()) == val
 
 
 if __name__ == "__main__":
