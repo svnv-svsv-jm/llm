@@ -86,11 +86,9 @@ def safe_apptest_ss(safe_apptest: AppTest, session_state: SessionState) -> ty.It
 class OpenAIMock(MagicMock):
     """A subclass of MagicMock that is recognized as an instance of `OpenAI`."""
 
-    def __instancecheck__(self, instance: ty.Any) -> bool:
-        return isinstance(instance, OpenAI)
-
     def __init__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
-        super().__init__(*args, **kwargs)
+        """Init superclass with `spec=OpenAI`, then create necessary attributes."""
+        super().__init__(*args, spec=OpenAI, **kwargs)
         # Mock method that returns LLM's response
         choice = MagicMock()
         choice.message.content = "Hi."
@@ -105,7 +103,7 @@ class OpenAIMock(MagicMock):
 @pytest.fixture
 def mock_openai() -> ty.Iterator[MagicMock]:
     """Mock `OpenAI` client."""
-    client = OpenAIMock(spec=OpenAI)
+    client = OpenAIMock()
     assert isinstance(client, OpenAI)
     with patch.object(OpenAI, "__new__", return_value=client) as openaimock:
         yield openaimock
@@ -120,10 +118,17 @@ def mock_chat_input() -> ty.Iterator[MagicMock]:
 
 @pytest.fixture
 def mock_agent_stream() -> ty.Iterator[MagicMock]:
-    """Mock agent's `CompiledGraph.stream()` method."""
-    return_value = MagicMock()
-    return_value["messages"] = [AIMessage(content="This is a mocked message.")]
-    with patch.object(CompiledGraph, "stream", side_effect=[return_value]) as mock_stream:
+    """Mock agent's `CompiledGraph.stream()` method.
+    We create a mock `dict` object with the `"messages"` key having a `list[AIMessage]` value.
+    """
+    # Create an object to stream
+    stream = MagicMock(
+        return_value={
+            "messages": [AIMessage(content="This is a mocked message.")],
+        }
+    )
+    # Patch and pass a list `side_effect` to simulate the `yield` effect (streaming)
+    with patch.object(CompiledGraph, "stream", side_effect=[stream]) as mock_stream:
         yield mock_stream
 
 
