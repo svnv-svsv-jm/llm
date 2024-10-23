@@ -6,6 +6,7 @@ import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 
 from svsvllm.app.const import OPEN_SOURCE_MODELS_SUPPORTED
+from svsvllm.app.settings import settings
 from ..response import get_openai_response, get_response_from_open_source_model
 from ..sidebar import sidebar
 from ..messages import initialize_messages
@@ -17,19 +18,24 @@ def main_page() -> None:
 
     Contains the sidebar and the chat.
     """
-    logger.debug(f"Main page")
-
-    # Sidebar
-    sidebar()
-
-    # Title and initialization
-    logger.debug("Title and initialization")
-    st.title("💬 FiscalAI")
-    st.subheader("Smart Assistant")
-    st.caption("🚀 Your favorite chatbot, powered by FiscalAI.")
+    # Log START
+    logger.debug(f"Main page: START")
 
     # Get current state
     state = SessionState().state
+
+    # Manually sync stuff
+    SessionState().manual_sync("chat_activated")
+
+    # Sidebar
+    if settings.has_sidebar:
+        sidebar()
+
+    # Title and initialization
+    logger.debug("Title and initialization")
+    st.title(settings.app_title)
+    st.subheader(settings.app_subheader)
+    st.caption(settings.app_caption)
 
     # Initialize messages if not done yet
     initialize_messages()
@@ -37,9 +43,10 @@ def main_page() -> None:
     messages = state.messages
 
     # Chat?
-    has_chat: bool = state.has_chat
+    has_chat: bool = settings.has_chat
     logger.debug(f"Has chat: {has_chat}")
     if not has_chat:
+        state.chat_activated = False
         return
 
     # Main chat loop
@@ -47,6 +54,7 @@ def main_page() -> None:
     prompt = st.chat_input()  # Prompt from user
     if prompt:
         # Start session
+        state.chat_activated = True
         logger.trace(f"Received prompt: {prompt}")
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -82,3 +90,7 @@ def main_page() -> None:
             # Update session
             logger.trace(f"Assistant: {message}")
             messages.append(message)
+            state.messages = messages  # This reruns validation
+
+    # Log END
+    logger.debug(f"Main page: END")

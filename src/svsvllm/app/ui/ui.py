@@ -19,3 +19,4 @@ def ui() -> None:
         settings_page()
     else:  # st.session_state.page == PageNames.MAIN
         main_page()
+    logger.trace("End of UI.")

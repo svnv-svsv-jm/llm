@@ -73,6 +73,17 @@ class _VerboseSetItem:
         _locals["_depth"] = 0
 
 
+class FieldExtraOptions(BaseModel):
+    """Extra options to be passed in the `Field` at `json_schema_extra`:
+    `Field(json_schema_extra=FieldExtraOptions().model_dump())`
+    """
+
+    is_synced: bool = Field(
+        True,
+        description="Whether this attribute should be propagated to Streamlit's session state.",
+    )
+
+
 class _SessionState(BaseModel):
     """Custom Streamlit session state, in order to revise all present keys, validate them, etc.
 
@@ -84,101 +95,121 @@ class _SessionState(BaseModel):
         default=False,
         description="Whether to automatically sync with Streamlit's state.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions(is_synced=False).model_dump(),
     )
-    has_chat: bool = Field(
-        default=True,
-        description="Whether the app has a chatbot or not.",
+    chat_activated: bool = Field(
+        default=False,
+        description="Whether the chat has been set up or not.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     language: ty.Literal["English", "Italian"] = Field(
         default="English",
         description="App language.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     new_language: ty.Literal["English", "Italian"] = Field(
         default="English",
         description="App language we are switching to.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     openai_api_key: SecretStr | None = Field(
         default=None,
         description="API key for OpenAI.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     openai_model_name: str = Field(
         default=OPENAI_DEFAULT_MODEL,
         description="OpenAI model name.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     model_name: str = Field(
         default=DEFAULT_LLM,
         description="HuggingFace model name.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     embedding_model_name: str = Field(
         default=EMBEDDING_DEFAULT_MODEL,
         description="RAG embedding model name.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     uploaded_files: list[UploadedFile | BytesIO] = Field(
         default=[],
         description="Uploaded files.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     callbacks: dict[str, ty.Callable] = Field(
         default={},
         description="Uploaded files.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     saved_filenames: list[str] = Field(
         default=[],
         description="Names of the uploaded files after written to disk.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     page: ty.Literal["main", "settings"] = Field(
         default="main",
         description="Page we are displaying.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     openai_client: OpenAI | None = Field(
         default=None,
         description="OpenAI client.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     hf_model: AutoModelForCausalLM | torch.nn.Module | None = Field(
         default=None,
         description="HuggingFace model.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     tokenizer: AutoTokenizer | SpecialTokensMixin | torch.nn.Module | None = Field(
         default=None,
         description="HuggingFace tokenizer.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     db: FAISS | None = Field(
         default=None,
         description="Document database.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     retriever: BaseRetriever | None = Field(
         default=None,
         description="Retriever object created from databse.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     history_aware_retriever: RetrieverOutputLike | None = Field(
         default=None,
         description="History aware retriever.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     chat_model: ChatHuggingFace | None = Field(
         default=None,
         description="Open source HuggingFace model LangChain wrapper.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
     messages: list[BaseMessage] = Field(
         default=[],
         description="History of messages.",
         validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
     )
 
     class Config:
@@ -336,7 +367,7 @@ class _SessionState(BaseModel):
         __setitem__original = _cache["__setitem__"]
         __setattr__original = _cache["__setattr__"]
 
-        __setattr_call = super().__setattr__
+        __setattr_here = super().__setattr__
 
         # Patch
         def patched_setitem(
@@ -346,7 +377,7 @@ class _SessionState(BaseModel):
         ) -> None:
             # Call custom function first: this runs the pydantic validation before setting the value in the original streamlit state
             with _PatchRecursive():
-                __setattr_call(key, value)
+                __setattr_here(key, value)
             # Call the original method
             __setitem__original(obj, key, value)  # type: ignore
 
@@ -357,7 +388,7 @@ class _SessionState(BaseModel):
         ) -> None:
             # Call custom function first: this runs the pydantic validation before setting the value in the original streamlit state
             with _PatchRecursive():
-                __setattr_call(key, value)
+                __setattr_here(key, value)
             # Call the original method
             __setattr__original(obj, key, value)  # type: ignore
 
@@ -411,7 +442,16 @@ class _SessionState(BaseModel):
         if self._avoid_recursive:
             return
         # Also update Streamlit's state
-        self.session_state[key] = value
+        # Only do this if property is a Field and has the `is_synced` flag
+        if key not in self.model_fields:
+            return
+        field_info = self.model_fields[key]
+        extra = field_info.json_schema_extra
+        if not isinstance(extra, dict):
+            return
+        is_synced = extra.get("is_synced", FieldExtraOptions().is_synced)
+        if is_synced:
+            self.session_state[key] = value
 
     def __setitem__(self, key: str, value: ty.Any) -> None:
         """Set the value of the given key."""
@@ -452,6 +492,8 @@ class SessionState(metaclass=Singleton):
         Args:
             reverse (bool):
                 If `True`, try to sync from `st.session_state` to here. If this raises `AttributeError`, this means the state is empty, so we sync from here to there.
+                Note that if `auto_sync == False`, this won't have any effect.
+                For more information on `auto_sync`, see :class:`_SessionState`.
 
             state (StateType | None):
                 Session state to patch.
@@ -490,6 +532,25 @@ class SessionState(metaclass=Singleton):
         """
         logger.debug(f"Syncing... (reverse={reverse})")
         self.state.sync(reverse=reverse)
+
+    def manual_sync(self, key: str, reverse: bool = False) -> None:
+        """Manually sync a specific `key`.
+
+        Args:
+            key (str):
+                Key that has to be synced.
+
+            reverse (bool, optional):
+                If `True`, values are synced (copied) from `st.session_state` to here.
+                Defaults to `False`.
+        """
+        # Select origina and destination
+        from_state = self.session_state if reverse else self.state
+        to_state = self.state if reverse else self.session_state
+        # Get the value to copy over
+        value = from_state[key]
+        # Sync the value
+        to_state[key] = value
 
     def patch(self, state: StateType | None = None) -> StateType:
         """We patch the original Streamlit state so that when that one is used, it automatically syncs with this class."""

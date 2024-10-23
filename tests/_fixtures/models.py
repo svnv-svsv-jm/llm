@@ -17,6 +17,34 @@ from svsvllm.loaders import load_model
 from svsvllm.defaults import DEFAULT_LLM
 
 
+@pytest.fixture
+def llm(
+    request: pytest.FixtureRequest,
+    bnb_config: BitsAndBytesConfig | None,
+) -> tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
+    """Custom LLM.
+    This can be only used as parametrized fixture, or it will throw an `AttributeError`.
+
+    When this fixture is parametrized INDERECTLY, the parameters are actually received here as inputs (via `request.param`).
+
+    Example usage:
+    ```python
+    @pytest.mark.parametrize('llm', ['mistralai/Mistral-7B-v0.1'], indirect=True)
+    def test_dummy(llm: tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]) -> None:
+        '''Every time this test runs, the current input `str` value is passed to the fixture, which loads the model and returns it.'''
+        print(llm)
+    ```
+    """
+    model_name = request.param
+    model, tokenizer = load_model(
+        model_name,
+        bnb_config=bnb_config,
+        quantize=True,
+        quantize_w_torch=True,
+    )
+    return model, tokenizer
+
+
 @pytest.fixture(scope="session")
 def default_llm(
     bnb_config: BitsAndBytesConfig | None,

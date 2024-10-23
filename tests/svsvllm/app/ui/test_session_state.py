@@ -13,7 +13,7 @@ from svsvllm.app.ui.session_state import SessionState, _SessionState, _VerboseSe
 
 
 @pytest.mark.parametrize("auto_sync", [False, True])
-@pytest.mark.parametrize("key", ["has_chat", "language", "openai_api_key", "callbacks"])
+@pytest.mark.parametrize("key", ["language", "openai_api_key", "callbacks"])
 def test_accessing_session_state(key: str, auto_sync: bool) -> None:
     """Test we can access the session state at any key without errors because they are initialized by default."""
     logger.info("Starting...")
@@ -22,15 +22,15 @@ def test_accessing_session_state(key: str, auto_sync: bool) -> None:
         logger.info(f"{key}: {value}")
 
 
-@pytest.mark.parametrize("value", [False, True])
+@pytest.mark.parametrize("value", ["Italian", "English"])
 def test_session_state_integration_w_apptest(
     apptest_ss: AppTest,
     session_state: SessionState,
     value: bool,
 ) -> None:
     """Test session state integration with `AppTest`."""
-    apptest_ss.session_state["has_chat"] = value
-    assert session_state.state.has_chat == value
+    apptest_ss.session_state["language"] = value
+    assert session_state.state.language == value
 
 
 def test_reverse_sync() -> None:
@@ -60,15 +60,12 @@ def test_session_state_is_singleton(session_state: SessionState) -> None:
 @pytest.mark.parametrize(
     "field, value, validation_fails",
     [
-        ("has_chat", 3, True),
-        ("has_chat", False, False),
-        ("has_chat", True, False),
-        ("new_language", "English", False),
-        ("openai_model_name", "what", False),
-        ("openai_model_name", 14, True),
-        ("page", "yo", True),
-        ("saved_filenames", ["yoyo"], False),
-        ("openai_client", 5, True),
+        pytest.param("new_language", "English", False, id="change language"),
+        pytest.param("openai_model_name", "what", False, id="change model name"),
+        pytest.param("openai_model_name", 14, True, id="invalid model name"),
+        pytest.param("page", "yo", True, id="invalid page"),
+        pytest.param("saved_filenames", ["yoyo"], False, id="saved filenames"),
+        pytest.param("openai_client", 5, True, id="invalid openai client"),
     ],
 )
 def test_session_states_are_synced(

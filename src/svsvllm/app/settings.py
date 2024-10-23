@@ -49,11 +49,13 @@ class Settings(BaseSettings):
     ```
     """
 
+    # Settings configuration
     model_config = SettingsConfigDict(
         env_prefix=ENV_PREFIX,
         case_sensitive=False,  # from the environment
     )
 
+    # Settings
     test_mode: bool = Field(
         False,
         description="If `True`, verbosity and strictness on errors are higher.",
@@ -69,6 +71,38 @@ class Settings(BaseSettings):
     open_source_models_supported: bool = Field(
         OPEN_SOURCE_MODELS_SUPPORTED,
         description="Whether open source models are supported.",
+    )
+    has_chat: bool = Field(
+        default=True,
+        description="Whether the app has a chatbot or not.",
+    )
+    has_sidebar: bool = Field(
+        default=True,
+        description="Whether the app has a sidebar or not.",
+    )
+    app_name: str = Field(
+        default="FiscalAI",
+        description="App's name.",
+    )
+    app_title: str = Field(
+        "💬 FiscalAI",
+        description="App's title.",
+    )
+    app_subheader: str = Field(
+        "Smart Assistant",
+        description="App's subheader.",
+    )
+    app_caption: str = Field(
+        "🚀 Your favorite chatbot, powered by FiscalAI.",
+        description="App's subheader.",
+    )
+    start_message_en: str = Field(
+        "How can I help you?",
+        description="App's starting message (English).",
+    )
+    start_message_it: str = Field(
+        "Come posso aiutarti?",
+        description="App's starting message (Italian).",
     )
 
     @classmethod

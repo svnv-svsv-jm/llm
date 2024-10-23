@@ -30,7 +30,7 @@ from svsvllm.app.ui.session_state import SessionState
 @pytest.fixture
 def session_state() -> ty.Iterator[SessionState]:
     """Session state."""
-    with SessionState(reverse=True, auto_sync=True) as ss:
+    with SessionState(reverse=True, auto_sync=False) as ss:
         yield ss
 
 
@@ -53,14 +53,19 @@ def apptest_ss(apptest: AppTest, session_state: SessionState) -> ty.Iterator[App
 
 @pytest.fixture
 def safe_apptest(apptest: AppTest) -> ty.Iterator[AppTest]:
-    """Patch this method so that we can time out without errors."""
+    """Patch this method so that we can time out without errors.
+
+    No idea why calling `run()` times out, but we do not care.
+    """
+    # Keep ref to original method
+    __run = apptest.run
 
     # Patch the run method to time out safely
     def run(**kwags: ty.Any) -> AppTest | None:
-        """Patch this method so that we can time out without errors."""
+        """Wrap original method in a `try-except` statement."""
         logger.debug("Running patched `run`")
         try:
-            return apptest.run(**kwags)
+            return __run(**kwags)
         except RuntimeError as e:
             logger.debug(e)
             return None
