@@ -1,14 +1,15 @@
-__all__ = ["PageSelectorCallback", "UpdateLanguageCallback"]
+__all__ = ["PageSelectorCallback", "UpdateLanguageCallback", "VectorizeCallback"]
 
 import os
 import typing as ty
 from loguru import logger
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
+from io import BytesIO
 
 from svsvllm.app.settings import settings
 from svsvllm.app.const import PageNames
-from .rag import initialize_rag
+from .rag import initialize_rag, create_history_aware_retriever
 from .session_state import SessionState
 
 
@@ -16,16 +17,45 @@ class BaseCallback:
     """Base callback."""
 
     def __init__(self, name: str) -> None:
-        self.name = name
-        logger.trace(f"Adding {self} to session state")
-        state = SessionState().state
-        state.callbacks[name] = self
+        self._name = name
+        state = SessionState()
+        st.session_state.setdefault("callbacks", state["callbacks"])
+        logger.trace(f"Adding {self.name} to session state.")
+        state["callbacks"][name] = self
+        logger.trace(f"Added {self.name} to session state: {st.session_state}")
+
+    @property
+    def name(self) -> str:
+        """Name of the callback."""
+        nature = self.__class__.__name__
+        name = self._name
+        return f"{nature}({name})"
+
+    def __repr__(self) -> str:
+        return self.name
+
+    def __call__(self) -> None:
+        """Main caller."""
+        logger.trace(f"Running {self.name}")
+        self.run()
+
+    def run(self) -> None:
+        """Subclass method."""
+        raise NotImplementedError()
+
+
+class VectorizeCallback(BaseCallback):
+    """Re-create the RAG with the new settings."""
+
+    def run(self) -> None:
+        """Re-create the RAG with the new settings."""
+        create_history_aware_retriever(force_recreate=True)
 
 
 class SaveFilesCallback(BaseCallback):
     """Save uploaded files to local filesystem."""
 
-    def __call__(self, *args: ty.Any, **kwds: ty.Any) -> ty.Any:
+    def run(self) -> None:
         """Save uploaded files to local filesystem."""
         # Inform user via warning box
         msg = "Uploading files... Please wait for the success message."
@@ -34,11 +64,11 @@ class SaveFilesCallback(BaseCallback):
 
         # Get files from session
         logger.trace("Getting files from session")
-        uploaded_files: list[UploadedFile] | None = SessionState().state.uploaded_files
+        uploaded_files: list[UploadedFile | BytesIO] = SessionState().state.uploaded_files
         logger.trace(f"Got: {uploaded_files}")
 
         # If no files, return
-        if uploaded_files is None:
+        if not uploaded_files:
             logger.trace("No uploaded files.")
             return
 
@@ -62,8 +92,9 @@ class SaveFilesCallback(BaseCallback):
         # Remember saved files
         st.session_state["saved_filenames"] = saved_filenames
 
+        # TODO: just vectorize and add new docs to database
         # Re-create RAG?
-        if SessionState().state.has_chat:
+        if settings.has_chat:
             initialize_rag(force_recreate=True)
         msg = "Files uploaded."
         st.info(msg)
@@ -73,7 +104,7 @@ class SaveFilesCallback(BaseCallback):
 class UpdateLanguageCallback(BaseCallback):
     """Callback to update language."""
 
-    def __call__(self) -> None:
+    def run(self) -> None:
         """Update language."""
         logger.trace(
             f"Updating language: {SessionState().state.language}->{SessionState().state.new_language}"
@@ -99,7 +130,7 @@ class PageSelectorCallback(BaseCallback):
         # Attribute
         self.page = page
 
-    def __call__(self) -> None:
+    def run(self) -> None:
         """Switch page"""
         logger.trace(f"Switching to {self.page}")
         st.session_state["page"] = self.page

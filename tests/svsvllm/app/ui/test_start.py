@@ -13,7 +13,6 @@ from svsvllm.defaults import DEFAULT_LLM
 from svsvllm.app.ui.session_state import SessionState
 from svsvllm.app.settings import settings
 from svsvllm.app.ui import ui
-from svsvllm.utils import pretty_format_dict_str
 
 # TODO: see https://medium.com/@chrisschneider/build-a-high-quality-streamlit-app-with-test-driven-development-eef4e462f65e
 
@@ -47,7 +46,6 @@ def test_page_title(safe_apptest_ss: AppTest) -> None:
         "caption",
     ) as mock_caption:
         apptest.run(timeout=3)
-    logger.info(f"\n{pretty_format_dict_str(apptest.session_state, indent=2)}")
     # Test they were was called once with the correct argument
     mock_title.assert_called_once_with(settings.app_title)
     mock_subheader.assert_called_once_with(settings.app_subheader)

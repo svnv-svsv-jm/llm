@@ -18,7 +18,24 @@ def create_rag_database(
     model_name: str = "BAAI/bge-base-en-v1.5",
     **kwargs: ty.Any,
 ) -> FAISS:
-    """Create RAG database."""
+    """Create RAG database.
+
+    Args:
+        path (str):
+            The path to the directory containing documents to load.
+
+        chunk_size (int, optional):
+            Chunk size for `RecursiveCharacterTextSplitter`. Defaults to `512`.
+
+        chunk_overlap (int, optional):
+            Chunk overlap for `RecursiveCharacterTextSplitter`. Defaults to `30`.
+
+        model_name (str, optional):
+            Chunk embedder model name. Defaults to `"BAAI/bge-base-en-v1.5"`.
+
+    Returns:
+        FAISS: The `VectorStore` database.
+    """
     logger.trace(f"Creating database from folder: {path}")
     documents: ty.List[Document] = load_documents(path)
     if len(documents) < 1:

@@ -23,8 +23,10 @@ from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForCausalLM, SpecialTokensMixin
 import torch
 
+from svsvllm.app.schema import FieldExtraOptions
 from svsvllm.utils.singleton import Singleton
 from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM, OPENAI_DEFAULT_MODEL
+from svsvllm.app.settings import settings
 
 
 StateType = StreamlitSessionState | SessionStateProxy | SafeSessionState
@@ -34,7 +36,7 @@ _locals: dict[str, ty.Any] = {
     "_verbose": False,
     "_depth": 0,
 }
-_cache = {}
+_cache: dict[str, ty.Any] = {}
 
 DEFAULT_REVERSE_SYNC = True
 
@@ -50,40 +52,6 @@ class _PatchRecursive:
     def __exit__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
         """Edit value."""
         _locals["_avoid_recursive"] = False
-
-
-class _VerboseSetItem:
-    """Verbose `setattr` and `setitem` method."""
-
-    def __init__(self, depth: int = 0) -> None:
-        """
-        Args:
-            depth (int):
-                Input to `logger.opt(depth=depth)`.
-        """
-        self.depth = depth
-
-    def __enter__(self) -> "_VerboseSetItem":
-        """Edit value."""
-        _locals["_verbose"] = True
-        _locals["_depth"] = self.depth
-        return self
-
-    def __exit__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
-        """Edit value."""
-        _locals["_verbose"] = False
-        _locals["_depth"] = 0
-
-
-class FieldExtraOptions(BaseModel):
-    """Extra options to be passed in the `Field` at `json_schema_extra`:
-    `Field(json_schema_extra=FieldExtraOptions().model_dump())`
-    """
-
-    is_synced: bool = Field(
-        True,
-        description="Whether this attribute should be propagated to Streamlit's session state.",
-    )
 
 
 class _SessionState(BaseModel):
@@ -123,31 +91,13 @@ class _SessionState(BaseModel):
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    openai_model_name: str = Field(
-        default=OPENAI_DEFAULT_MODEL,
-        description="OpenAI model name.",
-        validate_default=True,
-        json_schema_extra=FieldExtraOptions().model_dump(),
-    )
-    model_name: str = Field(
-        default=DEFAULT_LLM,
-        description="HuggingFace model name.",
-        validate_default=True,
-        json_schema_extra=FieldExtraOptions().model_dump(),
-    )
-    embedding_model_name: str = Field(
-        default=EMBEDDING_DEFAULT_MODEL,
-        description="RAG embedding model name.",
-        validate_default=True,
-        json_schema_extra=FieldExtraOptions().model_dump(),
-    )
     uploaded_files: list[UploadedFile | BytesIO] = Field(
         default=[],
         description="Uploaded files.",
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    callbacks: dict[str, ty.Callable] = Field(
+    callbacks: dict[str, ty.Callable[..., ty.Any]] = Field(
         default={},
         description="Uploaded files.",
         validate_default=True,
@@ -170,6 +120,34 @@ class _SessionState(BaseModel):
         description="OpenAI client.",
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    openai_model_name: str = Field(
+        default=OPENAI_DEFAULT_MODEL,
+        description="OpenAI model name.",
+        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    model_name: str = Field(
+        default=DEFAULT_LLM,
+        description="HuggingFace model name.",
+        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    embedding_model_name: str = Field(
+        default=EMBEDDING_DEFAULT_MODEL,
+        description="RAG embedding model name.",
+        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    chunk_size: int = Field(
+        default=512,
+        description="Chunk size for `RecursiveCharacterTextSplitter`.",
+        validate_default=True,
+    )
+    chunk_overlap: int = Field(
+        default=30,
+        description="Chunk overlap for `RecursiveCharacterTextSplitter`.",
+        validate_default=True,
     )
     hf_model: AutoModelForCausalLM | torch.nn.Module | None = Field(
         default=None,
@@ -227,7 +205,7 @@ class _SessionState(BaseModel):
     )
     # TODO: needs its own schema
     agent_config: RunnableConfig = Field(
-        {},
+        RunnableConfig(),
         description="Agent configuration for streaming.",
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
@@ -272,13 +250,13 @@ class _SessionState(BaseModel):
     @property
     def _verbose_item_set(self) -> bool:
         """Whether to log on item/attribute being set."""
-        r: bool = _locals["_verbose"]
+        r: bool = settings.verbose_item_set
         return r
 
     @property
-    def _logging_depth(self) -> bool:
+    def _logging_depth(self) -> int:
         """Depth when logging."""
-        r: int = _locals["_depth"]
+        r: int = settings.verbose_log_depth_item_set
         return r
 
     @property
@@ -440,7 +418,7 @@ class _SessionState(BaseModel):
 
     def __getitem__(self, key: str | int) -> ty.Any:
         """Return the state or widget value with the given key."""
-        return self.__get(key)
+        return self.__get(f"{key}")
 
     def __getattr__(self, key: str) -> ty.Any:
         """Return the state or widget value with the given key."""
@@ -472,6 +450,9 @@ class _SessionState(BaseModel):
             return
         is_synced = extra.get("is_synced", FieldExtraOptions().is_synced)
         if is_synced:
+            if self._verbose_item_set:
+                _log = logger.opt(depth=self._logging_depth)
+                _log.trace(f"Setting key `{key}` in Streamlit's state")
             self.session_state[key] = value
 
     def __setitem__(self, key: str, value: ty.Any) -> None:
@@ -500,10 +481,11 @@ class SessionState(metaclass=Singleton):
     @classmethod
     def reset(cls) -> None:
         """Reset the singleton."""
-        Singleton.reset(cls)
+        Singleton.reset(cls)  # type: ignore
 
     def __init__(
         self,
+        *,
         reverse: bool = DEFAULT_REVERSE_SYNC,
         state: StateType | None = None,
         **kwargs: ty.Any,
@@ -523,7 +505,7 @@ class SessionState(metaclass=Singleton):
                 See :class:`_SessionState`.
         """
         logger.debug(f"Creating session state with:\n\treverse={reverse}")
-        self.state = _SessionState(**kwargs)
+        self.state = _SessionState(**kwargs)  # type: ignore
         self.bind(state)
         self.sync(reverse=reverse)
         self.patch(state)

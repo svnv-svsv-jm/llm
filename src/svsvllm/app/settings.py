@@ -104,6 +104,14 @@ class Settings(BaseSettings):
         "Come posso aiutarti?",
         description="App's starting message (Italian).",
     )
+    verbose_item_set: bool = Field(
+        False,
+        description="Whether to log TRACE-level information every time session state's items are written.",
+    )
+    verbose_log_depth_item_set: int = Field(
+        4,
+        description="The value for the `dept` argument of the logger's `.opt()` method: `.opt(depth=depth)`. Valid only for logs concerning session state's items being written",
+    )
 
     @classmethod
     @field_validator("uploaded_files_dir")

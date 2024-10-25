@@ -9,7 +9,8 @@ from streamlit.testing.v1 import AppTest
 from pydantic_core import ValidationError
 
 from svsvllm.utils.singleton import Singleton
-from svsvllm.app.ui.session_state import SessionState, _SessionState, _VerboseSetItem
+from svsvllm.app.ui.session_state import SessionState, _SessionState
+from svsvllm.app.settings import settings
 
 
 @pytest.mark.parametrize("auto_sync", [False, True])
@@ -50,7 +51,7 @@ def test_reverse_sync() -> None:
 def test_session_state_is_singleton(session_state: SessionState) -> None:
     """Test there is only one instance always."""
     with SessionState(reverse=False) as ss:
-        assert session_state is ss, f"{Singleton._instances}"
+        assert session_state is ss, f"{Singleton._instances}"  # type: ignore
 
 
 @pytest.mark.parametrize("auto_sync", [False, True])
@@ -79,12 +80,9 @@ def test_session_states_are_synced(
     auto_sync: bool,
 ) -> None:
     """Test `SessionState` is always synced with `st.session_state`."""
-    # Reverse sync?
-    params = dict(auto_sync=auto_sync, reverse=use_reverse_sync)
-
     # Create state
     # Context manager ensures state is reset at the end of the test
-    with SessionState(**params) as our_state:
+    with SessionState(auto_sync=auto_sync, reverse=use_reverse_sync) as our_state:
         logger.info(f"Creating session state: {type(our_state)}")
 
         # Bind
@@ -111,7 +109,7 @@ def test_session_states_are_synced(
 
         # Update field
         logger.info(f"(check_reverse_sync={check_reverse_sync}) Updating `{field}` with `{value}`")
-        with _VerboseSetItem(depth=6):
+        with patch.object(settings, "verbose_item_set", True):
             if check_reverse_sync:
                 st_state[field] = value
             else:

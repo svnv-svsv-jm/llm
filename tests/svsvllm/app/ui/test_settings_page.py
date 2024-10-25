@@ -6,15 +6,23 @@ import sys, os
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 
-from svsvllm.app.const import PageNames
+from svsvllm.app.ui.session_state import SessionState
 
 
-def test_settings_page(apptest: AppTest) -> None:
+def test_settings_page(apptest_ss: AppTest) -> None:
     """Verify we can choose the settings page."""
-    apptest.session_state["page"] = PageNames.SETTINGS
-    apptest.run()
+    apptest = apptest_ss
+    SessionState().state.page = "settings"
+    apptest.run(timeout=5)
+
+    # Test basics
     assert not apptest.exception
-    assert apptest.session_state.page == PageNames.SETTINGS
+
+    # Test buttons
+    logger.info(apptest.button)
+    assert len(apptest.button) > 0
+    logger.info(apptest.number_input)
+    assert len(apptest.number_input) > 0
 
 
 if __name__ == "__main__":

@@ -24,10 +24,12 @@ if __name__ == "__main__":
 
     # In tests, we run this
     if settings.test_mode:
+        logger.trace(f"Running in test mode.")
         chatbot()
 
     # Main application
     else:
+        logger.trace(f"Not running in test mode.")
         if runtime.exists():
             logger.trace("Runtime exists")
             app()

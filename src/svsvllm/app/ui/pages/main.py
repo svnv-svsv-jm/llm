@@ -8,9 +8,9 @@ from langchain_core.messages import AIMessage, HumanMessage
 from svsvllm.app.const import OPEN_SOURCE_MODELS_SUPPORTED
 from svsvllm.app.settings import settings
 from ..response import get_openai_response, get_response_from_open_source_model
-from ..sidebar import sidebar
 from ..messages import initialize_messages
 from ..session_state import SessionState
+from .sidebar import sidebar
 
 
 def main_page() -> None:
@@ -51,8 +51,7 @@ def main_page() -> None:
 
     # Main chat loop
     logger.trace("Starting chat loop")
-    prompt = st.chat_input()  # Prompt from user
-    if prompt:
+    if prompt := st.chat_input():
         # Start session
         state.chat_activated = True
         logger.trace(f"Received prompt: {prompt}")
@@ -63,13 +62,13 @@ def main_page() -> None:
         # LLM's response
         with st.chat_message("assistant"):
             # Check if we have to run OpenAI
-            openai_api_key: str | None = state.openai_api_key
+            openai_api_key = state.openai_api_key
             logger.debug(f"Received OpenAI API key: {type(openai_api_key)}")
             if openai_api_key is not None:
                 logger.trace("Calling OpenAI model")
                 msg = get_openai_response(
                     model=state.openai_model_name,
-                    openai_api_key=openai_api_key,
+                    openai_api_key=str(openai_api_key),
                 )
                 st.write(msg)
                 message = AIMessage(content=msg)

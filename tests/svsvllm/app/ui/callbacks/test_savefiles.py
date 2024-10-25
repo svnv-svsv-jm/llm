@@ -7,19 +7,21 @@ import streamlit as st
 from streamlit.testing.v1 import AppTest
 from io import BytesIO
 
+from svsvllm.app.settings import settings
 from svsvllm.app.ui.callbacks import SaveFilesCallback
 
 
-def test_savefiles_callback(apptest: AppTest, mock_text_file: BytesIO) -> None:
+@patch.object(settings, "verbose_item_set", True)
+@patch.object(settings, "has_chat", False)
+def test_savefiles_callback(apptest_ss: AppTest, mock_text_file: BytesIO) -> None:
     """Test callback works."""
-    # No need for chat
-    apptest.session_state["has_chat"] = False
-
+    apptest = apptest_ss
     # Manually set the file in session state (simulate file upload)
     apptest.session_state["uploaded_files"] = [mock_text_file]
 
     # Run app
     apptest.run()
+    assert len(apptest.exception) == 0
 
     # Test callback exists
     assert apptest.session_state["uploaded_files"] is not None
@@ -27,10 +29,8 @@ def test_savefiles_callback(apptest: AppTest, mock_text_file: BytesIO) -> None:
     assert isinstance(callback, SaveFilesCallback)
 
     # Test: we are calling the callback manually here, so it will interact with `st.session_state`, not with `apptest.session_state`
-    st.session_state["has_chat"] = False
-    st.session_state["uploaded_files"] = [mock_text_file]
-    uploaded_files = st.session_state["uploaded_files"]
-    assert uploaded_files is not None
+    uploaded_files = [mock_text_file]
+    st.session_state["uploaded_files"] = uploaded_files
     callback()
     saved_filenames = st.session_state["saved_filenames"]
     assert saved_filenames is not None

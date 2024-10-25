@@ -16,7 +16,7 @@ class Singleton(type, ty.Generic[_T]):
     In summary, this class ensures that for any class that uses it as its metaclass, only one instance of that class will ever exist, and subsequent calls to create instances of that class will return the same instance.
     """
 
-    _instances: dict[Singleton[_T], _T] = {}
+    _instances: dict[type[Singleton[_T]], _T] = {}
     _lock = threading.Lock()  # A lock to ensure thread safety
 
     def __call__(cls, *args: ty.Any, **kwargs: ty.Any) -> _T:
@@ -35,7 +35,7 @@ class Singleton(type, ty.Generic[_T]):
         return cls._instances[cls]
 
     @classmethod
-    def reset(cls, key: Singleton[_T] = None) -> None:
+    def reset(cls, key: type[Singleton[_T]] = None) -> None:
         """Reset the singleton so that a new one can be created."""
         if key is None:
             key = cls

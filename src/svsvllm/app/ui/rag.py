@@ -22,15 +22,17 @@ from .session_state import SessionState
 @st.cache_resource
 def initialize_database(force_recreate: bool = False) -> FAISS:
     """Initialize the database."""
-    if force_recreate or "db" not in st.session_state:
-        session_state = SessionState()
+    session_state = SessionState()
+    db = session_state.state.db
+    if force_recreate or db is None:
         embedding_model_name = session_state.state.embedding_model_name
-        db: FAISS = create_rag_database(
+        db = create_rag_database(
             settings.uploaded_files_dir,
             model_name=embedding_model_name,
+            chunk_size=session_state.state.chunk_size,
+            chunk_overlap=session_state.state.chunk_overlap,
         )
         st.session_state["db"] = db
-    db = session_state.state.db
     return db
 
 
@@ -51,14 +53,15 @@ def initialize_retriever() -> BaseRetriever:
     return retriever
 
 
-def initialize_rag(force_recreate: bool = False) -> None:
+def initialize_rag(force_recreate: bool = False) -> BaseRetriever:
     """Initialize RAG."""
     initialize_database(force_recreate=force_recreate)
-    initialize_retriever()
+    retriever = initialize_retriever()
+    return retriever
 
 
 @st.cache_resource
-def create_history_aware_retriever() -> RetrieverOutputLike:
+def create_history_aware_retriever(force_recreate: bool = False) -> RetrieverOutputLike:
     """Create history-aware retriever."""
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
         [
@@ -73,9 +76,9 @@ def create_history_aware_retriever() -> RetrieverOutputLike:
         create_chat_model()
     session_state = SessionState()
     retriever = session_state.state.retriever
-    if retriever is None:
+    if retriever is None or force_recreate:
         logger.warning("Retriever not initialized, attempting to initialize it...")
-        initialize_retriever()
+        retriever = initialize_rag(force_recreate=force_recreate)
     history_aware_retriever = create_har(
         chat_model,
         retriever,
