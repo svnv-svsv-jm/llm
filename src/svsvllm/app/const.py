@@ -5,10 +5,12 @@ __all__ = [
     "Q_SYSTEM_PROMPT",
     "OPEN_SOURCE_MODELS_SUPPORTED",
     "PageNames",
+    "CHAT_TEMPLATE",
 ]
 
 import os
 from pathlib import Path
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 # Environment prefix for settings
 ENV_PREFIX = "SVSVLLM_"

@@ -13,7 +13,7 @@ def test_settings_page(apptest_ss: AppTest) -> None:
     """Verify we can choose the settings page."""
     apptest = apptest_ss
     SessionState().state.page = "settings"
-    apptest.run(timeout=5)
+    apptest.run()
 
     # Test basics
     assert not apptest.exception

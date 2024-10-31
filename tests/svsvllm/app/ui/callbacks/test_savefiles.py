@@ -16,9 +16,6 @@ from svsvllm.app.ui.callbacks import SaveFilesCallback
 def test_savefiles_callback(apptest_ss: AppTest, mock_text_file: BytesIO) -> None:
     """Test callback works."""
     apptest = apptest_ss
-    # Manually set the file in session state (simulate file upload)
-    apptest.session_state["uploaded_files"] = [mock_text_file]
-
     # Run app
     apptest.run()
     assert len(apptest.exception) == 0

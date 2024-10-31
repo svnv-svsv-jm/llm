@@ -3,26 +3,28 @@ from unittest.mock import patch, MagicMock
 from loguru import logger
 import typing as ty
 import sys, os
+import streamlit as st
 from streamlit.testing.v1 import AppTest
 from io import BytesIO
 
-from svsvllm.app.ui.session_state import SessionState
+from svsvllm.app.settings import settings
 
 
+@patch.object(settings, "has_chat", False)
 def test_file_uploader(
-    apptest: AppTest,
-    session_state: SessionState,
+    apptest_ss: AppTest,
     mock_text_file: BytesIO,
 ) -> None:
-    """Test sidebar's file uplodaer works."""
-    # No need for chat
-    session_state["has_chat"] = False
-
+    """Test sidebar's file uploader."""
+    apptest = apptest_ss
     # Manually set the file in session state (simulate file upload)
-    session_state["uploaded_files"] = [mock_text_file]
+    apptest.session_state["uploaded_files"] = [mock_text_file]
 
     # Run app
     apptest.run()
+
+    # Test callback exists
+    assert apptest.session_state["uploaded_files"] is not None
 
 
 if __name__ == "__main__":

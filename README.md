@@ -19,6 +19,7 @@ You need the following:
 To install all dependencies for the project, run the following command:
 
 ```bash
+make install-init # only first time
 make install
 ```
 

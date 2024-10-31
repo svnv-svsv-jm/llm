@@ -91,7 +91,7 @@ class _SessionState(BaseModel):
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    uploaded_files: list[UploadedFile | BytesIO] = Field(
+    uploaded_files: list[UploadedFile | BytesIO | ty.Iterator] = Field(
         default=[],
         description="Uploaded files.",
         validate_default=True,
@@ -203,10 +203,21 @@ class _SessionState(BaseModel):
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    # TODO: needs its own schema
     agent_config: RunnableConfig = Field(
         RunnableConfig(),
         description="Agent configuration for streaming.",
+        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    quantize: bool = Field(
+        True,
+        description="Whether to quantize the HuggingFace model.",
+        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    quantize_w_torch: bool = Field(
+        True,
+        description="Whether to quantize the HuggingFace model using PyTorch. No effect if `quantize` is `False`.",
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )

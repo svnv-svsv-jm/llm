@@ -1,16 +1,12 @@
 __all__ = ["Settings", "settings"]
 
-import os
+import typing as ty
 from pathlib import Path
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from .const import (
-    ENV_PREFIX,
-    DEFAULT_UPLOADED_FILES_DIR,
-    Q_SYSTEM_PROMPT,
-    OPEN_SOURCE_MODELS_SUPPORTED,
-)
+from svsvllm.defaults import ZEPHYR_CHAT_TEMPLATE as CHAT_TEMPLATE
+from .const import ENV_PREFIX, DEFAULT_UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT, OPEN_SOURCE_MODELS_SUPPORTED
 
 
 class Settings(BaseSettings):
@@ -111,6 +107,18 @@ class Settings(BaseSettings):
     verbose_log_depth_item_set: int = Field(
         4,
         description="The value for the `dept` argument of the logger's `.opt()` method: `.opt(depth=depth)`. Valid only for logs concerning session state's items being written",
+    )
+    apply_chat_template: bool = Field(
+        False,
+        description="Whether to apply chat template to tokenizer.",
+    )
+    chat_template: str | dict[str, ty.Any] | list[dict[str, ty.Any]] = Field(
+        CHAT_TEMPLATE,
+        description="Chat template to enforce when a default one is not available.",
+    )
+    force_chat_template: bool = Field(
+        False,
+        description="If `True`, the provided chat template will be forced on the tokenizer.",
     )
 
     @classmethod

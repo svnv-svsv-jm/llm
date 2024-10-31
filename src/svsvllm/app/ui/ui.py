@@ -12,7 +12,9 @@ def ui() -> None:
     from svsvllm.app.ui.session_state import SessionState
 
     # Initialize session state
+    # NOTE: Run this regardless. The `SessionState` needs to be initialized asap so that it is bound to Streamlit's session state
     state = SessionState().state
+
     # Display content based on the current page
     page = state.page
     logger.debug(f"Display content based on the current page: {page}")

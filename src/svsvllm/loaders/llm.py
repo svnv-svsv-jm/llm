@@ -23,7 +23,6 @@ def llm_chain(
     database: FAISS | None = None,
     task: str = "text-generation",
     move_to_device: torch.device = None,
-    enable_attention_slicing: bool = False,
     **kwargs: ty.Any,
 ) -> Runnable:
     """LLM chain.
@@ -51,9 +50,6 @@ def llm_chain(
             If passed, the `transformers.pipeline` will be manually moved to the provided device:
             `pipeline.to(device)`.
 
-        enable_attention_slicing (bool):
-            If `True`, the pipeline's method `pipe.enable_attention_slicing()` will be called.
-
     Returns:
         RunnableSerializable: LLM model, with or without RAG.
     """
@@ -72,9 +68,6 @@ def llm_chain(
     )
     if move_to_device is not None:
         pipe = pipe.to(move_to_device)
-    # Recommended if your computer has < 64 GB of RAM
-    if enable_attention_slicing:
-        pipe.enable_attention_slicing()
     pipe = HuggingFacePipeline(pipeline=pipe)
 
     # Chain them

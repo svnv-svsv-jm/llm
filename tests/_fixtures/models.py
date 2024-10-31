@@ -35,9 +35,11 @@ def llm(
         print(llm)
     ```
     """
-    model_name = request.param
+    name = getattr(request, "param", DEFAULT_LLM)
+    if name is None:
+        name = DEFAULT_LLM
     model, tokenizer = load_model(
-        model_name,
+        name,
         bnb_config=bnb_config,
         quantize=True,
         quantize_w_torch=True,

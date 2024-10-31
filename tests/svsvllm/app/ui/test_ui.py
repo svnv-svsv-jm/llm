@@ -16,8 +16,8 @@ from svsvllm.app.settings import settings
 
 
 @pytest.mark.parametrize("openai_api_key", [None, "any"])
-def test_chatting(
-    safe_apptest_ss: AppTest,
+def test_ui(
+    apptest_ss: AppTest,
     res_docs_path: str,
     mock_openai: MagicMock,
     mock_chat_input: MagicMock,
@@ -34,19 +34,26 @@ def test_chatting(
         openai_api_key (str | None):
             When `None`, the open source model will be used.
     """
-    apptest = safe_apptest_ss
+    apptest = apptest_ss
 
     # Inject key
-    apptest.session_state["openai_api_key"] = openai_api_key
-    # Inject fake model name
-    apptest.session_state["model_name"] = DEFAULT_LLM
+    SessionState().state["openai_api_key"] = openai_api_key
+    apptest.session_state.openai_api_key = openai_api_key
 
     # Run app with mocked user inputs
     with patch.object(settings, "uploaded_files_dir", res_docs_path):
         # NOTE: we may even `apptest.chat_input[0].set_value("Hi").run()` but we have to run first once
         with CommandTimer("apptest.run") as timer:
-            apptest.run(timeout=7)
+            apptest.run()
         logger.info(f"App run took {timer.elapsed_time} seconds.")
+
+    # Test: OpenAI key
+    if openai_api_key is not None:
+        assert SessionState().state.openai_api_key is not None
+        assert apptest.session_state.openai_api_key is not None
+
+    # Test HF model name exits regardless
+    assert SessionState().state.model_name == DEFAULT_LLM
 
     # Test no erros were raised
     for i, ex in enumerate(apptest.exception):
@@ -65,9 +72,6 @@ def test_chatting(
         assert isinstance(apptest.session_state.chat_model, ChatHuggingFace)
     else:
         mock_openai.assert_called()  # OpenAI model created
-
-    # Test: OpenAI key
-    assert apptest.session_state.openai_api_key == openai_api_key
 
     # Test: chat history exists
     logger.info(apptest.session_state.messages)

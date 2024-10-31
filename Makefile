@@ -23,6 +23,7 @@ EXAMPLE_DIR:=./examples
 PYTHON?=python
 PYTHON_EXEC?=python -m
 PYTHONVERSION?=3.13
+ENVNAME?=llm
 PYTEST?=pytest
 SYSTEM=$(shell python -c "import sys; print(sys.platform)")
 COV_FAIL_UNDER=95
@@ -44,9 +45,10 @@ IMAGE_PYTHON=/venv/bin/python
 # -----------
 # install project's dependencies
 # -----------
-create-env: ENVNAME=llm
 create-env:
 	pyenv virtualenv $(PYTHONVERSION) $(ENVNAME) || echo "$(ENVNAME) already exists"
+
+activate-env: create-env
 	pyenv shell $(ENVNAME)
 
 install-init:
@@ -54,9 +56,8 @@ install-init:
 	$(PYTHON_EXEC) pip install --upgrade poetry poetry-plugin-export
 	$(PYTHON_EXEC) poetry self update
 
-install: install-init
+install:
 	$(PYTHON_EXEC) poetry install --no-cache
-	$(PYTHON_EXEC) poetry export -f requirements.txt --output requirements.txt
 
 lock: install-init
 	$(PYTHON_EXEC) poetry lock
@@ -102,6 +103,32 @@ git-squash:
 	git reset $(git merge-base main $(git branch --show-current))
 	git add -A
 	git commit -m "squashed commit"
+
+
+# ---------------
+# remote
+# ---------------
+# scp -r $(OBJECT) $(REMOTE_HOST):$(REMOTE_PATH_TO_PROJECT)/$(OBJECT)
+sync-object: OBJECT=
+sync-object:
+	rsync -av $(OBJECT) $(REMOTE_HOST):$(REMOTE_PATH_TO_PROJECT)/. --exclude=__pycache__ --exclude=.coverage --exclude=.models --exclude=.pytest_cache
+
+# Sync code
+sync-remote:
+	$(MAKE) sync-object OBJECT=res
+	$(MAKE) sync-object OBJECT=scripts
+	$(MAKE) sync-object OBJECT=src
+	$(MAKE) sync-object OBJECT=tests
+	$(MAKE) sync-object OBJECT=Makefile
+	$(MAKE) sync-object OBJECT=poetry.lock
+	$(MAKE) sync-object OBJECT=pyproject.toml
+	$(MAKE) sync-object OBJECT=tutorials
+	$(MAKE) sync-object OBJECT=sandbox
+
+# Run
+run-remote: CMD=make tests
+run-remote: sync-remote
+	ssh $(REMOTE_HOST) -t bash -c "cd $(REMOTE_PATH_TO_PROJECT); make activate-env; make install; $(CMD)"
 
 
 # -----------

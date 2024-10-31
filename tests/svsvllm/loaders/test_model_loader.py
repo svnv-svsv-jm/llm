@@ -16,8 +16,8 @@ from svsvllm.defaults import DEFAULT_LLM
 @pytest.mark.parametrize(
     "model_name, quantize, quantize_w_torch",
     [
-        (DEFAULT_LLM, True, False),
         (DEFAULT_LLM, True, True),
+        (DEFAULT_LLM, True, False),
     ],
 )
 def test_load_model(
@@ -45,6 +45,7 @@ def test_load_model(
     model, tokenizer = load_model(
         model_name,
         bnb_config=bnb_config,
+        device=device,
         quantize=quantize,
         quantize_w_torch=quantize_w_torch,
     )
@@ -55,11 +56,12 @@ def test_load_model(
         model=model,
         tokenizer=tokenizer,
         torch_dtype=torch.float16,
-        device_map=device,
+        device=device,
     )
 
     # Run
-    with CommandTimer(model_name):
+    tag = f"{model_name}-generation"
+    with CommandTimer(tag):
         sequences = pipeline(
             "Tell me who you are.",
             do_sample=True,
@@ -88,4 +90,4 @@ def test_load_model(
 if __name__ == "__main__":
     logger.remove()
     logger.add(sys.stderr, level="TRACE")
-    pytest.main([__file__, "-x", "-s", "--pylint"])
+    pytest.main([__file__, "-x", "-s"])

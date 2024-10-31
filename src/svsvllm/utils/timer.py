@@ -9,7 +9,8 @@ class CommandTimer:
     """Run a command and time it."""
 
     def __init__(self, name: str = "no-process-name", sleep_time: float = 1) -> None:
-        """
+        """Run a command and time it.
+
         Args:
             name (str, optional):
                 The name of the process.

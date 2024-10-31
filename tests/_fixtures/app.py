@@ -11,6 +11,7 @@ __all__ = [
     "mock_chat_input",
     "mock_agent_stream",
     "mock_text_file",
+    "mock_rag_docs",
 ]
 
 import pytest
@@ -73,6 +74,13 @@ def dummy_at(trace_logging_level: bool) -> ty.Iterator[AppTest]:
 
 
 @pytest.fixture
+def mock_rag_docs(res_docs_path: str) -> ty.Iterator[str]:
+    """Run app with mocked user inputs."""
+    with patch.object(settings, "uploaded_files_dir", res_docs_path) as mock:
+        yield mock
+
+
+@pytest.fixture
 def session_state() -> ty.Iterator[SessionState]:
     """Session state."""
     with SessionState(reverse=True, auto_sync=False) as ss:
@@ -95,6 +103,7 @@ def apptest(trace_logging_level: bool, app_main_file: str) -> ty.Iterator[AppTes
         yield at
 
 
+# NOTE: Binding to `apptest.session_state` causes `apptest.run()` to hang until timeout. This may be due to `AppTest` not being able to exit threads due to `SessionState` still referencing it
 @pytest.fixture
 def apptest_ss(apptest: AppTest, session_state: SessionState) -> ty.Iterator[AppTest]:
     """App for testing with bound session state."""

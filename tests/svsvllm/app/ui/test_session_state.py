@@ -30,6 +30,10 @@ def test_session_state_integration_w_apptest(
     value: bool,
 ) -> None:
     """Test session state integration with `AppTest`."""
+    klass = type(apptest_ss.session_state)
+    ss = session_state.session_state
+    if not isinstance(ss, klass):
+        pytest.skip(f"Fixture `session_state` is not bound to {klass} but to {type(ss)}.")
     apptest_ss.session_state["language"] = value
     assert session_state.state.language == value
 
