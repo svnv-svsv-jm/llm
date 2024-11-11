@@ -30,26 +30,13 @@ services:
       <<: *image-build
     network_mode: host
     entrypoint: /workdir/scripts/entrypoint.sh
-    command: tail -f /dev/null
+    command: make ui
     volumes:
       - ./:/workdir
     environment:
       <<: *common-variables
       COMPOSE_DOCKER_CLI_BUILD: 1
       DOCKER_BUILDKIT: 1
-
-  dev-container:
-    image: ${IMAGE}
-    container_name: dev-container-${UNIQUE-0}
-    entrypoint: /workdir/scripts/entrypoint.sh
-    # Overrides default command so things don't shut down after the process ends.
-    command: /bin/sh -c "while sleep 1000; do :; done"
-    volumes:
-      - ./:/workdir
-    ports: #server:container
-      - 7502:7502
-    environment:
-      <<: *common-variables
 
   trainer:
     image: ${IMAGE}

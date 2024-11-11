@@ -24,7 +24,7 @@ runner = "svsvllm.__main__:main"
 
 [tool.poetry.dependencies]
 # Python version(s)
-python = ">=3.11,<3.13"
+python = ">=3.10,<3.13"
 # Utilities
 toml = "^0.10.2"
 rich = "^13.7.0"
