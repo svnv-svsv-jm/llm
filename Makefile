@@ -67,7 +67,7 @@ lock: install-init
 # testing
 # -----------
 mypy:
-	$(PYTHON_EXEC) mypy tests
+	$(PYTHON_EXEC) mypy --cache-fine-grained tests
 
 unit-test:
 	$(PYTHON_EXEC) pytest -m "not integtest" -x --pylint --testmon --junitxml=pytest-results.xml --cov=src/ --cov-fail-under $(COV_FAIL_UNDER)

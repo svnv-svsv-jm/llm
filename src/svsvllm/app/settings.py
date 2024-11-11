@@ -109,8 +109,8 @@ class Settings(BaseSettings):
         description="The value for the `dept` argument of the logger's `.opt()` method: `.opt(depth=depth)`. Valid only for logs concerning session state's items being written",
     )
     apply_chat_template: bool = Field(
-        False,
-        description="Whether to apply chat template to tokenizer.",
+        True,
+        description="Whether to apply chat template to tokenizer. Unless `force_chat_template` is `True`, this is applied only if the tokenizer does not have a template already.",
     )
     chat_template: str | dict[str, ty.Any] | list[dict[str, ty.Any]] = Field(
         CHAT_TEMPLATE,

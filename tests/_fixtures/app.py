@@ -1,6 +1,5 @@
 # pylint: disable=reimported
 __all__ = [
-    "dummy_at",
     "app_main_file",
     "apptest",
     "apptest_ss",
@@ -33,47 +32,6 @@ from svsvllm.app.ui.session_state import SessionState
 
 
 @pytest.fixture
-def dummy_at(trace_logging_level: bool) -> ty.Iterator[AppTest]:
-    """Dummy app."""
-
-    ### app.py ###
-    def app() -> None:
-        """Dummy app."""
-        import streamlit as st
-        from svsvllm.app.ui.session_state import SessionState
-        from svsvllm.app.ui.callbacks import PageSelectorCallback
-        from svsvllm.app.const import PageNames
-        from svsvllm.app.ui.pages import sidebar
-        from svsvllm.app.ui.messages import initialize_messages
-
-        state = SessionState(reverse=True, auto_sync=False)
-
-        def run() -> None:
-            """Main app."""
-            st.title("dummy")
-            sidebar()
-            initialize_messages()
-            # Button to go back to the main page
-            st.button(
-                "Go to Main Page",
-                on_click=PageSelectorCallback(
-                    PageNames.MAIN,
-                    name="page-selector",
-                ),
-            )
-            if prompt := st.chat_input():
-                with st.chat_message("user"):
-                    st.markdown(prompt)
-                with st.chat_message("assistant"):
-                    st.write("ok")
-
-        run()
-
-    at = AppTest.from_function(app)
-    yield at
-
-
-@pytest.fixture
 def mock_rag_docs(res_docs_path: str) -> ty.Iterator[str]:
     """Run app with mocked user inputs."""
     with patch.object(settings, "uploaded_files_dir", res_docs_path) as mock:
@@ -84,6 +42,7 @@ def mock_rag_docs(res_docs_path: str) -> ty.Iterator[str]:
 def session_state() -> ty.Iterator[SessionState]:
     """Session state."""
     with SessionState(reverse=True, auto_sync=False) as ss:
+        st.cache_resource.clear()
         yield ss
 
 
@@ -177,18 +136,18 @@ def mock_chat_input() -> ty.Iterator[MagicMock]:
 
 
 @pytest.fixture
-def mock_agent_stream() -> ty.Iterator[MagicMock]:
+def mock_agent_stream(request: pytest.FixtureRequest) -> ty.Iterator[MagicMock]:
     """Mock agent's `CompiledGraph.stream()` method.
     We create a mock `dict` object with the `"messages"` key having a `list[AIMessage]` value.
     """
+    if hasattr(request, "param"):
+        msg = f"{request.param}"
+    else:
+        msg = "This is a mocked message."
     # Create an object to stream
-    stream = MagicMock(
-        return_value={
-            "messages": [AIMessage(content="This is a mocked message.")],
-        }
-    )
+    stream = MagicMock(return_value={"messages": [AIMessage(content=msg)]})
     # Patch and pass a list `side_effect` to simulate the `yield` effect (streaming)
-    with patch.object(CompiledGraph, "stream", side_effect=[stream]) as mock_stream:
+    with patch.object(CompiledGraph, "stream", side_effect=[stream] * 5) as mock_stream:
         yield mock_stream
 
 

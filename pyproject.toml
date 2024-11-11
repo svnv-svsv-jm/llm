@@ -424,6 +424,7 @@ disable = [
     "duplicate-code",
     "too-many-positional-arguments",
     "unknown-option-value",
+    "astroid-error",
 ]
 
 # Enable the message, report, category or checker with the given id(s). You can

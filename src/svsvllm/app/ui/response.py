@@ -1,4 +1,4 @@
-__all__ = ["get_openai_response", "get_response_from_open_source_model"]
+__all__ = ["get_openai_response", "setup_for_streaming", "stream", "get_response_from_open_source_model"]
 
 import typing as ty
 from loguru import logger
@@ -8,8 +8,10 @@ from langgraph.graph.graph import CompiledGraph
 from langchain_core.messages import HumanMessage, BaseMessage
 from langchain_core.utils.interactive_env import is_interactive_env
 from langchain_core.runnables.config import RunnableConfig
+from langchain.agents import AgentExecutor
 from openai import OpenAI
 
+from svsvllm.utils import pop_params_not_in_fn
 from .session_state import SessionState
 from .model import create_chat_model
 from .rag import initialize_rag, create_history_aware_retriever
@@ -58,15 +60,30 @@ def get_openai_response(openai_api_key: str, model: str) -> str:
     return f"{msg}"
 
 
-def get_response_from_open_source_model(
-    query: str,
-) -> ty.Iterator[str | dict[str, list[BaseMessage | ty.Any]]]:
-    """Work in progress."""
-    logger.trace(f"Query: {query}")
+def setup_for_streaming(
+    pipeline_kwargs: dict[str, ty.Any] | None = None,
+    use_react_agent: bool = None,
+) -> tuple[CompiledGraph | AgentExecutor, RunnableConfig]:
+    """Sets up all that is needed to have an agent ready to stream.
 
+    Args:
+        pipeline_kwargs (dict, optional):
+            See :class:`HuggingFacePipeline`.
+
+        use_react_agent (bool, optional):
+            Whether to create an agent via `create_react_agent` (which gives you a `CompiledGraph` agent), or via `create_tool_calling_agent` then `AgentExecutor` (thus giving you a `AgentExecutor`).
+            Defaults to `None`, meaning the value is taken from the state.
+
+    Returns:
+        agent_executor (CompiledGraph):
+            Agent.
+
+        agent_config (RunnableConfig):
+            Agent's configuration.
+    """
     # Initialize model
     logger.trace(f"Initializing model")
-    create_chat_model()
+    create_chat_model(pipeline_kwargs=pipeline_kwargs)
 
     # Initialize RAG
     logger.trace(f"Initializing RAG and history-aware retriever")
@@ -75,7 +92,7 @@ def get_response_from_open_source_model(
 
     # Create agent
     logger.trace(f"Initializing agent")
-    create_agent()
+    agent_executor = create_agent(use_react_agent=use_react_agent)
 
     # Create chat configuration
     logger.trace("Creating chat configuration")
@@ -92,22 +109,103 @@ def get_response_from_open_source_model(
     st.session_state["agent_config"] = agent_config
     logger.trace(f"Using agent config: {agent_config}")
 
-    # Retrieve agent: must be initialized
-    agent_executor: CompiledGraph = st.session_state.agent
+    # Return
+    return agent_executor, agent_config
 
-    # Return stream
-    # NOTE: Stream yields events like: `{'alist': ['Ex for stream_mode="values"'], 'another_list': []}`
+
+def stream(
+    query: str,
+    agent_executor: CompiledGraph | AgentExecutor,
+    agent_config: RunnableConfig,
+    **kwargs: ty.Any,
+) -> ty.Iterator[str | ty.Any]:
+    """Stream response from agent.
+
+    Args:
+        query (str):
+            Input query.
+
+        agent_executor (CompiledGraph | AgentExecutor, optional):
+            Agent. This is created internally when not provided.
+
+        agent_config (RunnableConfig, optional):
+            Agent's configuration. This is created internally when not provided.
+
+        **kwargs:
+            See `langgraph.graph.graph.CompiledGraph.stream()`.
+
+    Yields:
+        str | Any: LLM's response.
+    """
+    # Stream
     logger.trace(f"Streaming")
+    kwargs.setdefault("stream_mode", "values")
 
-    # return agent_executor.stream(  # type: ignore
-    #     {"messages": [HumanMessage(content=query)]},
-    #     config=st.session_state.agent_config,
-    #     stream_mode="values",
-    # )
+    # Pop params
+    logger.trace(f"Kwargs: {kwargs}")
+    kwargs = pop_params_not_in_fn(agent_executor.stream, params=kwargs)
+    logger.trace(f"Kwargs: {kwargs}")
+
+    # NOTE: Stream yields events like: `{'alist': ['Ex for stream_mode="values"'], 'another_list': []}`
     for event in agent_executor.stream(
         {"messages": [HumanMessage(content=query)]},
         config=agent_config,
-        stream_mode="values",
+        **kwargs,
     ):
-        last_message: BaseMessage = event["messages"][-1]
-        yield last_message.pretty_repr(html=is_interactive_env())
+        logger.trace(f"Event ({type(event)}): {event}")
+
+        # If not a `dict`, yield it
+        if not isinstance(event, dict):
+            yield event
+
+        # Get the messages
+        messages: list[BaseMessage] = event.get("messages", None)
+        logger.trace(f"messages ({type(messages)}): {messages}")
+
+        # Make sure nothing can happen after each `yield`
+        if isinstance(messages, list):
+            if len(messages) > 0:
+                last_message: BaseMessage = messages[-1]
+                if isinstance(last_message, BaseMessage):
+                    yield last_message.pretty_repr(html=is_interactive_env())
+                else:
+                    yield last_message
+            else:
+                yield messages
+        else:
+            yield messages
+
+
+def get_response_from_open_source_model(
+    query: str,
+    pipeline_kwargs: dict[str, ty.Any] | None = None,
+    agent_executor: CompiledGraph | AgentExecutor | None = None,
+    agent_config: RunnableConfig | None = None,
+    **kwargs: ty.Any,
+) -> ty.Iterator[str | ty.Any]:
+    """Stream response (given input query) from the open-source LLM.
+
+    Args:
+        query (str):
+            Input query.
+
+        pipeline_kwargs (dict, optional):
+            See :class:`HuggingFacePipeline`.
+
+        agent_executor (CompiledGraph | AgentExecutor, optional):
+            Agent. This is created internally when not provided.
+
+        agent_config (RunnableConfig, optional):
+            Agent's configuration. This is created internally when not provided.
+
+        **kwargs:
+            See `langgraph.graph.graph.CompiledGraph.stream()`.
+
+    Yields:
+        str | Any: LLM's response.
+    """
+    # Create agent
+    if agent_executor is None or agent_config is None:
+        agent_executor, agent_config = setup_for_streaming(pipeline_kwargs=pipeline_kwargs)
+    # Stream
+    yield from stream(query, agent_executor=agent_executor, agent_config=agent_config, **kwargs)

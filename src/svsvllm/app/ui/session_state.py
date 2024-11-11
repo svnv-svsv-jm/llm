@@ -18,6 +18,7 @@ from langchain_community.vectorstores.faiss import FAISS
 from langchain_core.retrievers import BaseRetriever, RetrieverOutputLike
 from langchain_core.messages import BaseMessage
 from langchain_core.runnables.config import RunnableConfig
+from langchain.agents import AgentExecutor
 from langgraph.graph.graph import CompiledGraph
 from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForCausalLM, SpecialTokensMixin
@@ -173,7 +174,7 @@ class _SessionState(BaseModel):
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    history_aware_retriever: RetrieverOutputLike | None = Field(
+    history_aware_retriever: RetrieverOutputLike | BaseRetriever | None = Field(
         default=None,
         description="History aware retriever.",
         validate_default=True,
@@ -191,7 +192,7 @@ class _SessionState(BaseModel):
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    agent: CompiledGraph | None = Field(
+    agent: CompiledGraph | AgentExecutor | None = Field(
         None,
         description="Agent executor.",
         validate_default=True,
@@ -218,6 +219,12 @@ class _SessionState(BaseModel):
     quantize_w_torch: bool = Field(
         True,
         description="Whether to quantize the HuggingFace model using PyTorch. No effect if `quantize` is `False`.",
+        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    use_react_agent: bool = Field(
+        True,
+        description="Whether to create an agent via `create_react_agent` (which gives you a `CompiledGraph` agent), or via `create_tool_calling_agent` then `AgentExecutor` (thus giving you a `AgentExecutor`).",
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )

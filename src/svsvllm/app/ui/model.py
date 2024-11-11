@@ -56,6 +56,7 @@ def create_chat_model(
     Returns:
         ChatHuggingFace: chat model.
     """
+    logger.trace("Creating chat model")
     # Sanitize inputs
     if model_name is None:
         model_name = SessionState().state.model_name
@@ -103,6 +104,7 @@ def create_chat_model(
 
     # Create HuggingFacePipeline
     logger.trace(f"Creating {HuggingFacePipeline}")
+    logger.trace(f"pipeline_kwargs: {pipeline_kwargs}")
     llm = HuggingFacePipeline(pipeline=pipeline, model_id=model_name, pipeline_kwargs=pipeline_kwargs)
     logger.trace(f"Created: {llm}")
 

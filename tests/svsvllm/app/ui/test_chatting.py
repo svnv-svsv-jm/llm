@@ -17,6 +17,7 @@ def test_chatting(
     apptest_ss: AppTest,
     mock_rag_docs: str,
     mock_chat_input: MagicMock,
+    mock_agent_stream: MagicMock,
 ) -> None:
     """Test chatting."""
     apptest = apptest_ss
@@ -43,6 +44,7 @@ def test_chatting(
 
     # Test called
     mock_chat_input.assert_called()  # Input provided
+    mock_agent_stream.assert_called()  # Mocked response
 
     # Test: chat history exists
     logger.info(apptest.session_state.messages)
