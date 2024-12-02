@@ -52,10 +52,6 @@ def test_get_response_from_open_source_model(
             f"Tools: {[(key, type(item)) for key, item in tools_by_name.items()]}\n{pprint.pformat(tools_by_name, indent=2)}"
         )
 
-    with CommandTimer(f"{agent.__class__.__name__}.invoke"):
-        out = agent.invoke({"input": [HumanMessage(content=query)]}, config=cfg)
-    logger.info(f"Response: {out}")
-
     # Stream response
     with CommandTimer("Streaming"):
         for r in get_response_from_open_source_model(
