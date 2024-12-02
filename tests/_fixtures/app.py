@@ -27,8 +27,8 @@ import streamlit as st
 from streamlit.testing.v1 import AppTest
 
 import svsvllm.__main__ as main
-from svsvllm.app.settings import settings
-from svsvllm.app.ui.session_state import SessionState
+from svsvllm.settings import settings
+from svsvllm.ui.session_state import SessionState
 
 
 @pytest.fixture

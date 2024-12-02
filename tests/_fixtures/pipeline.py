@@ -1,4 +1,4 @@
-__all__ = ["pipeline_kwargs", "default_llm_pipeline"]
+__all__ = ["pipeline_kwargs", "llm_pipeline"]
 
 import pytest
 import typing as ty
@@ -23,13 +23,13 @@ def pipeline_kwargs() -> dict:
 
 
 @pytest.fixture
-def default_llm_pipeline(
-    default_llm: tuple[PreTrainedModel, PreTrainedTokenizerBase],
+def llm_pipeline(
+    llm: tuple[PreTrainedModel, PreTrainedTokenizerBase],
     device: torch.device,
     pipeline_kwargs: dict,
 ) -> Pipeline:
     """TinyLlama LLM."""
-    model, tokenizer = default_llm
+    model, tokenizer = llm
     return pipeline(
         task="text-generation",
         model=model,

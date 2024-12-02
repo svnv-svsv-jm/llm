@@ -1,24 +1,22 @@
-__all__ = ["create_chat_model"]
+__all__ = ["load_chat_model"]
 
 import typing as ty
 from loguru import logger
-import streamlit as st
+
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 import transformers
 import torch
 
 from svsvllm.loaders import load_model
 from svsvllm.utils import find_device, add_chat_template
-from svsvllm.app.ui.session_state import SessionState
-from svsvllm.app.settings import settings
+from svsvllm.defaults import ZEPHYR_CHAT_TEMPLATE as CHAT_TEMPLATE
 
 
-@st.cache_resource
-def create_chat_model(
-    model_name: str = None,
+def load_chat_model(
+    model_name: str,
     apply_chat_template: bool = None,
-    chat_template: str | dict[str, ty.Any] | list[dict[str, ty.Any]] | None = None,
-    force_chat_template: bool = None,
+    chat_template: str | dict[str, ty.Any] | list[dict[str, ty.Any]] = CHAT_TEMPLATE,
+    force_chat_template: bool = False,
     device: torch.device = None,
     pipeline_kwargs: dict[str, ty.Any] | None = None,
     **kwargs: ty.Any,
@@ -58,20 +56,10 @@ def create_chat_model(
     """
     logger.trace("Creating chat model")
     # Sanitize inputs
-    if model_name is None:
-        model_name = SessionState().state.model_name
-    if apply_chat_template is None:
-        apply_chat_template = settings.apply_chat_template
-    if chat_template is None:
-        chat_template = settings.chat_template
-    if force_chat_template is None:
-        force_chat_template = settings.force_chat_template
     if device is None:
         device = find_device()
-
-    # Set input params
-    kwargs.setdefault("quantize", SessionState().state.quantize)
-    kwargs.setdefault("quantize_w_torch", SessionState().state.quantize_w_torch)
+    if pipeline_kwargs is None:
+        pipeline_kwargs = {}
 
     # Load this model
     logger.trace(f"Loading model ({device}): {model_name}")
@@ -85,10 +73,8 @@ def create_chat_model(
         force_chat_template=force_chat_template,
     )
 
-    # Save in state
+    # Debug
     logger.trace(f"Loaded model: {model_name}")
-    st.session_state["hf_model"] = hf_model
-    st.session_state["tokenizer"] = tokenizer
 
     # Creating pipeline
     logger.trace(f"Creating `transformers.pipeline`")
@@ -98,7 +84,7 @@ def create_chat_model(
         tokenizer=tokenizer,
         torch_dtype=torch.float16,
         device_map=device,
-        # device=device,
+        **pipeline_kwargs,
     )
     logger.trace(f"Created: {pipeline}")
 
@@ -111,7 +97,6 @@ def create_chat_model(
     # Create and save chat model
     logger.trace(f"Creating {ChatHuggingFace}")
     chat_model = ChatHuggingFace(llm=llm, model_id=model_name)
-    st.session_state["chat_model"] = chat_model
     logger.trace(f"Chat model created: {chat_model}")
 
     # NOTE: This is necessary probably due to a bug in `HuggingFacePipeline`

@@ -11,7 +11,7 @@ import torch
 from transformers import BitsAndBytesConfig, Pipeline, PreTrainedTokenizerBase
 
 
-from svsvllm.app.ui.model import create_chat_model
+from svsvllm.ui.model import create_chat_model
 from svsvllm.defaults import DEFAULT_LLM, ZEPHYR_CHAT_TEMPLATE
 from svsvllm.utils import CommandTimer
 

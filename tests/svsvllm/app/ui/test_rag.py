@@ -9,9 +9,8 @@ from streamlit.testing.v1 import AppTest
 import torch
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 
-from svsvllm.app.ui.rag import initialize_rag, create_history_aware_retriever
-from svsvllm.app.ui.session_state import SessionState
-from svsvllm.app.settings import settings
+from svsvllm.ui.rag import initialize_rag, create_history_aware_retriever
+from svsvllm.ui.session_state import SessionState
 
 
 def test_ui_rag(

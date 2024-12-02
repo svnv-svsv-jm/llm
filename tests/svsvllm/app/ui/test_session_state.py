@@ -9,8 +9,8 @@ from streamlit.testing.v1 import AppTest
 from pydantic_core import ValidationError
 
 from svsvllm.utils.singleton import Singleton
-from svsvllm.app.ui.session_state import SessionState, _SessionState
-from svsvllm.app.settings import settings
+from svsvllm.ui.session_state import SessionState, _SessionState
+from svsvllm.settings import settings
 
 
 @pytest.mark.parametrize("auto_sync", [False, True])

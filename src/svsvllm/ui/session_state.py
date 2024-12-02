@@ -24,10 +24,10 @@ from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForCausalLM, SpecialTokensMixin
 import torch
 
-from svsvllm.app.schema import FieldExtraOptions
+from svsvllm.schema import FieldExtraOptions
 from svsvllm.utils.singleton import Singleton
 from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM, OPENAI_DEFAULT_MODEL
-from svsvllm.app.settings import settings
+from svsvllm.settings import settings
 
 
 StateType = StreamlitSessionState | SessionStateProxy | SafeSessionState
@@ -92,7 +92,7 @@ class _SessionState(BaseModel):
         validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    uploaded_files: list[UploadedFile | BytesIO | ty.Iterator] = Field(
+    uploaded_files: list[UploadedFile | BytesIO] = Field(
         default=[],
         description="Uploaded files.",
         validate_default=True,
@@ -496,11 +496,6 @@ class SessionState(metaclass=Singleton):
     Technically, this is a wrapper around the `pydantic` model :class:`_SessionState`.
     """
 
-    @classmethod
-    def reset(cls) -> None:
-        """Reset the singleton."""
-        Singleton.reset(cls)  # type: ignore
-
     def __init__(
         self,
         *,
@@ -618,6 +613,11 @@ class SessionState(metaclass=Singleton):
             setattr(self._state, key, value)
         else:
             super().__setattr__(key, value)
+
+    @classmethod
+    def reset(cls) -> None:
+        """Reset the singleton."""
+        Singleton.reset(cls)  # type: ignore
 
     def __enter__(self) -> "SessionState":
         """Activate state temporarily."""

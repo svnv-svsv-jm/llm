@@ -9,7 +9,7 @@ from streamlit.testing.v1 import AppTest
 from langchain_core.messages import AIMessage
 
 from svsvllm.defaults import DEFAULT_LLM
-from svsvllm.app.ui.session_state import SessionState
+from svsvllm.ui.session_state import SessionState
 from svsvllm.utils import CommandTimer
 
 

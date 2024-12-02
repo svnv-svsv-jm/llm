@@ -5,8 +5,8 @@ from loguru import logger
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 
-from svsvllm.app.const import OPEN_SOURCE_MODELS_SUPPORTED
-from svsvllm.app.settings import settings
+from svsvllm.const import OPEN_SOURCE_MODELS_SUPPORTED
+from svsvllm.settings import settings
 from ..response import get_openai_response, get_response_from_open_source_model
 from ..messages import initialize_messages
 from ..session_state import SessionState

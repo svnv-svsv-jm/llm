@@ -7,9 +7,9 @@ def ui() -> None:
     from loguru import logger
     import streamlit as st
 
-    from svsvllm.app.const import PageNames
-    from svsvllm.app.ui.pages import settings_page, main_page
-    from svsvllm.app.ui.session_state import SessionState
+    from svsvllm.const import PageNames
+    from svsvllm.ui.pages import settings_page, main_page
+    from svsvllm.ui.session_state import SessionState
 
     # Initialize session state
     # NOTE: Run this regardless. The `SessionState` needs to be initialized asap so that it is bound to Streamlit's session state

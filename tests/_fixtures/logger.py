@@ -3,7 +3,7 @@ __all__ = ["log_level_key", "trace_logging_level"]
 import pytest
 import os
 
-from svsvllm.app.const import LOG_LEVEL_KEY
+from svsvllm.const import LOG_LEVEL_KEY
 
 
 @pytest.fixture

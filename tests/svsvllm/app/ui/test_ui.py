@@ -10,9 +10,9 @@ from langchain_core.messages import AIMessage
 from langchain_huggingface import ChatHuggingFace
 
 from svsvllm.defaults import DEFAULT_LLM
-from svsvllm.app.ui.session_state import SessionState
+from svsvllm.ui.session_state import SessionState
 from svsvllm.utils import CommandTimer
-from svsvllm.app.settings import settings
+from svsvllm.settings import settings
 
 
 @pytest.mark.parametrize("openai_api_key", [None, "any"])

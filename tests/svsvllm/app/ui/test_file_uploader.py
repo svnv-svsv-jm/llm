@@ -7,7 +7,7 @@ import streamlit as st
 from streamlit.testing.v1 import AppTest
 from io import BytesIO
 
-from svsvllm.app.settings import settings
+from svsvllm.settings import settings
 
 
 @patch.object(settings, "has_chat", False)

@@ -5,7 +5,9 @@ from pydantic import BaseModel, Field
 
 class FieldExtraOptions(BaseModel):
     """Extra options to be passed in the `Field` at `json_schema_extra`:
-    `Field(json_schema_extra=FieldExtraOptions().model_dump())`
+    ```python
+    Field(json_schema_extra=FieldExtraOptions().model_dump())
+    ```
     """
 
     is_synced: bool = Field(

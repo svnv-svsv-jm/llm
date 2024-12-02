@@ -1,4 +1,4 @@
-__all__ = ["default_llm", "cerbero", "mistral_small", "mistral7b"]
+__all__ = ["model_id", "llm", "cerbero", "mistral_small", "mistral7b"]
 
 import pytest
 import typing as ty
@@ -18,43 +18,20 @@ from svsvllm.defaults import DEFAULT_LLM
 
 
 @pytest.fixture
+def model_id() -> str:
+    """Model ID."""
+    return DEFAULT_LLM
+
+
+@pytest.fixture
 def llm(
     request: pytest.FixtureRequest,
+    model_id: str,
     bnb_config: BitsAndBytesConfig | None,
 ) -> tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
-    """Custom LLM.
-    This can be only used as parametrized fixture, or it will throw an `AttributeError`.
-
-    When this fixture is parametrized INDERECTLY, the parameters are actually received here as inputs (via `request.param`).
-
-    Example usage:
-    ```python
-    @pytest.mark.parametrize('llm', ['mistralai/Mistral-7B-v0.1'], indirect=True)
-    def test_dummy(llm: tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]) -> None:
-        '''Every time this test runs, the current input `str` value is passed to the fixture, which loads the model and returns it.'''
-        print(llm)
-    ```
-    """
-    name = getattr(request, "param", DEFAULT_LLM)
-    if name is None:
-        name = DEFAULT_LLM
+    """Custom LLM."""
     model, tokenizer = load_model(
-        name,
-        bnb_config=bnb_config,
-        quantize=True,
-        quantize_w_torch=True,
-    )
-    return model, tokenizer
-
-
-@pytest.fixture(scope="session")
-def default_llm(
-    bnb_config: BitsAndBytesConfig | None,
-) -> tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
-    """Default LLM."""
-    model_name = DEFAULT_LLM
-    model, tokenizer = load_model(
-        model_name,
+        model_id,
         bnb_config=bnb_config,
         quantize=True,
         quantize_w_torch=True,

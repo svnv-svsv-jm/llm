@@ -6,13 +6,9 @@ import sys, os
 
 import streamlit as st
 from streamlit.testing.v1 import AppTest
-from langchain_core.messages import AIMessage
-from langchain_huggingface import ChatHuggingFace
 
-from svsvllm.defaults import DEFAULT_LLM
-from svsvllm.app.ui.session_state import SessionState
-from svsvllm.app.settings import settings
-from svsvllm.app.ui import ui
+from svsvllm.ui.session_state import SessionState
+from svsvllm.settings import settings
 
 # TODO: see https://medium.com/@chrisschneider/build-a-high-quality-streamlit-app-with-test-driven-development-eef4e462f65e
 

@@ -6,7 +6,7 @@ import sys, os
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 
-from svsvllm.app.ui.session_state import SessionState
+from svsvllm.ui.session_state import SessionState
 
 
 def test_settings_page(apptest_ss: AppTest) -> None:

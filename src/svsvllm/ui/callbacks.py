@@ -7,8 +7,8 @@ import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 from io import BytesIO
 
-from svsvllm.app.settings import settings
-from svsvllm.app.const import PageNames
+from svsvllm.settings import settings
+from svsvllm.const import PageNames
 from .rag import initialize_rag, create_history_aware_retriever
 from .session_state import SessionState
 
@@ -64,7 +64,7 @@ class SaveFilesCallback(BaseCallback):
 
         # Get files from session
         logger.trace("Getting files from session")
-        uploaded_files: list[UploadedFile | BytesIO] = SessionState().state.uploaded_files
+        uploaded_files = SessionState().state.uploaded_files
         logger.trace(f"Got: {uploaded_files}")
 
         # If no files, return

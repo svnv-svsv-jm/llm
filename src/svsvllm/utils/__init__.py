@@ -6,3 +6,4 @@ from .logger import *
 from .pretty import *
 from .tokenizer import *
 from .inputs import *
+from .singleton import *

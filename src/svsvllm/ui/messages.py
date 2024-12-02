@@ -4,7 +4,7 @@ from loguru import logger
 import streamlit as st
 from langchain_core.messages import AIMessage
 
-from svsvllm.app.settings import settings
+from svsvllm.settings import settings
 from .session_state import SessionState
 
 

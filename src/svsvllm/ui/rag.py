@@ -15,7 +15,7 @@ from langchain.chains.history_aware_retriever import create_history_aware_retrie
 from langchain_community.vectorstores.faiss import FAISS
 
 from svsvllm.rag import create_rag_database
-from svsvllm.app.settings import settings
+from svsvllm.settings import settings
 from .model import create_chat_model
 from .session_state import SessionState
 

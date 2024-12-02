@@ -83,9 +83,7 @@ def llm_chain(
         } | llm
 
     # Sanity check
-    assert isinstance(
-        llm, Runnable
-    ), f"Found LLM of type {type(llm)}. Please contact the developers."
+    assert isinstance(llm, Runnable), f"Found LLM of type {type(llm)}. Please contact the developers."
 
     # Return
     return llm

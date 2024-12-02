@@ -13,8 +13,7 @@ from langchain.agents import AgentExecutor
 from langchain_core.messages import HumanMessage
 
 from svsvllm.utils import CommandTimer
-from svsvllm.app.ui.response import setup_for_streaming, get_response_from_open_source_model
-from svsvllm.app.settings import settings
+from svsvllm.ui.response import setup_for_streaming, get_response_from_open_source_model
 
 
 @pytest.mark.parametrize("query", ["hi"])

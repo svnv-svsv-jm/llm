@@ -7,8 +7,8 @@ import streamlit as st
 from streamlit.testing.v1 import AppTest
 from io import BytesIO
 
-from svsvllm.app.settings import settings
-from svsvllm.app.ui.callbacks import SaveFilesCallback
+from svsvllm.settings import settings
+from svsvllm.ui.callbacks import SaveFilesCallback
 
 
 @patch.object(settings, "verbose_item_set", True)
@@ -18,7 +18,10 @@ def test_savefiles_callback(apptest_ss: AppTest, mock_text_file: BytesIO) -> Non
     apptest = apptest_ss
     # Run app
     apptest.run()
-    assert len(apptest.exception) == 0
+    for ex in apptest.exception:
+        logger.error(ex)
+    n_errors = len(apptest.exception)
+    assert n_errors == 0
 
     # Test callback exists
     assert apptest.session_state["uploaded_files"] is not None

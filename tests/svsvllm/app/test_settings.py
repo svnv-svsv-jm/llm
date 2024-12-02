@@ -4,8 +4,8 @@ from loguru import logger
 import typing as ty
 import sys, os
 
-from svsvllm.app.const import ENV_PREFIX
-from svsvllm.app.settings import Settings
+from svsvllm.const import ENV_PREFIX
+from svsvllm.settings import Settings
 
 
 @pytest.mark.parametrize(
