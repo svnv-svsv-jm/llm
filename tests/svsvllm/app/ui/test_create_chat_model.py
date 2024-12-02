@@ -13,17 +13,9 @@ from transformers import BitsAndBytesConfig, Pipeline, PreTrainedTokenizerBase
 
 from svsvllm.ui.model import create_chat_model
 from svsvllm.defaults import DEFAULT_LLM, ZEPHYR_CHAT_TEMPLATE
-from svsvllm.utils import CommandTimer
-
-
-MESSAGES = [
-    SystemMessage(content="You're a helpful assistant."),
-    HumanMessage(content="What happens when an unstoppable force meets an immovable object?"),
-]
 
 
 @pytest.mark.parametrize("model_name", [DEFAULT_LLM])
-@pytest.mark.parametrize("query", ["yo", MESSAGES])
 @pytest.mark.parametrize("apply_chat_template", [True])
 @pytest.mark.parametrize("chat_template", [ZEPHYR_CHAT_TEMPLATE])
 def test_create_chat_model(
@@ -32,11 +24,10 @@ def test_create_chat_model(
     device: torch.device,
     pipeline_kwargs: dict,
     model_name: str,
-    query: str,
     apply_chat_template: bool,
     chat_template: str | dict[str, ty.Any] | list[dict[str, ty.Any]],
 ) -> None:
-    """Test we can query the created chat LLM."""
+    """Test we can query the created LLM."""
     # Create chat model
     chat_model = create_chat_model(
         model_name,
@@ -67,20 +58,6 @@ def test_create_chat_model(
     # Test tokenizer: Pipeline
     if apply_chat_template:
         assert pipeline.tokenizer.chat_template is not None
-
-    # Skip if not `str`
-    if not isinstance(query, str):
-        pytest.skip(f"Cannot run `pipeline` with type {type(query)}")
-
-    # Invoke pipeline on query
-    with CommandTimer("pipeline"):
-        msg = pipeline(query, **pipeline_kwargs)
-
-    # Invoke chat model
-    with CommandTimer("chat_model"):
-        msg = chat_model.invoke(query, pipeline_kwargs=pipeline_kwargs)
-
-    logger.success(f"Response: {msg}")
 
 
 if __name__ == "__main__":

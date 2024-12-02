@@ -17,7 +17,7 @@ def pipeline_kwargs() -> dict:
         top_k=5,
         num_return_sequences=1,
         repetition_penalty=1.5,
-        max_length=50,
+        max_new_tokens=2**11,
     )
     return pipeline_kwargs
 

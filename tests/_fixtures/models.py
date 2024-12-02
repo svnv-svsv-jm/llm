@@ -43,8 +43,8 @@ def llm(
 def cerbero(
     bnb_config: BitsAndBytesConfig | None,
 ) -> ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
-    """Cerbero."""
-    model_name = "galatolo/cerbero-7b"  # Italian
+    """Cerbero (Italian)."""
+    model_name = "galatolo/cerbero-7b"
     model, tokenizer = load_model(
         model_name,
         bnb_config=bnb_config,

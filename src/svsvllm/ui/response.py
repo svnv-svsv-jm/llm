@@ -8,7 +8,6 @@ from langgraph.graph.graph import CompiledGraph
 from langchain_core.messages import HumanMessage, BaseMessage
 from langchain_core.utils.interactive_env import is_interactive_env
 from langchain_core.runnables.config import RunnableConfig
-from langchain.agents import AgentExecutor
 from openai import OpenAI
 
 from svsvllm.utils import pop_params_not_in_fn
@@ -61,18 +60,20 @@ def get_openai_response(openai_api_key: str, model: str) -> str:
 
 
 def setup_for_streaming(
+    model_name: str = None,
     pipeline_kwargs: dict[str, ty.Any] | None = None,
-    use_react_agent: bool = None,
-) -> tuple[CompiledGraph | AgentExecutor, RunnableConfig]:
+) -> tuple[CompiledGraph, RunnableConfig]:
     """Sets up all that is needed to have an agent ready to stream.
 
     Args:
+        model_name (str, optional):
+            Name of the model to use/download.
+            For example: `"meta-llama/Meta-Llama-3.1-8B-Instruct"`.
+            For all models, see HuggingFace website.
+            Defaults to `None` (chosen from session state).
+
         pipeline_kwargs (dict, optional):
             See :class:`HuggingFacePipeline`.
-
-        use_react_agent (bool, optional):
-            Whether to create an agent via `create_react_agent` (which gives you a `CompiledGraph` agent), or via `create_tool_calling_agent` then `AgentExecutor` (thus giving you a `AgentExecutor`).
-            Defaults to `None`, meaning the value is taken from the state.
 
     Returns:
         agent_executor (CompiledGraph):
@@ -83,7 +84,7 @@ def setup_for_streaming(
     """
     # Initialize model
     logger.trace(f"Initializing model")
-    create_chat_model(pipeline_kwargs=pipeline_kwargs)
+    create_chat_model(model_name=model_name, pipeline_kwargs=pipeline_kwargs)
 
     # Initialize RAG
     logger.trace(f"Initializing RAG and history-aware retriever")
@@ -92,7 +93,7 @@ def setup_for_streaming(
 
     # Create agent
     logger.trace(f"Initializing agent")
-    agent_executor = create_agent(use_react_agent=use_react_agent)
+    agent_executor = create_agent()
 
     # Create chat configuration
     logger.trace("Creating chat configuration")
@@ -115,7 +116,7 @@ def setup_for_streaming(
 
 def stream(
     query: str,
-    agent_executor: CompiledGraph | AgentExecutor,
+    agent_executor: CompiledGraph,
     agent_config: RunnableConfig,
     **kwargs: ty.Any,
 ) -> ty.Iterator[str | ty.Any]:
@@ -125,7 +126,7 @@ def stream(
         query (str):
             Input query.
 
-        agent_executor (CompiledGraph | AgentExecutor, optional):
+        agent_executor (CompiledGraph, optional):
             Agent. This is created internally when not provided.
 
         agent_config (RunnableConfig, optional):
@@ -179,7 +180,7 @@ def stream(
 def get_response_from_open_source_model(
     query: str,
     pipeline_kwargs: dict[str, ty.Any] | None = None,
-    agent_executor: CompiledGraph | AgentExecutor | None = None,
+    agent_executor: CompiledGraph | None = None,
     agent_config: RunnableConfig | None = None,
     **kwargs: ty.Any,
 ) -> ty.Iterator[str | ty.Any]:
@@ -192,7 +193,7 @@ def get_response_from_open_source_model(
         pipeline_kwargs (dict, optional):
             See :class:`HuggingFacePipeline`.
 
-        agent_executor (CompiledGraph | AgentExecutor, optional):
+        agent_executor (CompiledGraph, optional):
             Agent. This is created internally when not provided.
 
         agent_config (RunnableConfig, optional):

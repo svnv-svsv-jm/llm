@@ -9,38 +9,38 @@ import streamlit as st
 from streamlit.testing.v1 import AppTest
 import torch
 from langgraph.graph.graph import CompiledGraph
-from langchain.agents import AgentExecutor
 from langchain_core.messages import HumanMessage
 
+from svsvllm.defaults import DEFAULT_LLM
 from svsvllm.utils import CommandTimer
 from svsvllm.ui.response import setup_for_streaming, get_response_from_open_source_model
 
 
+@pytest.mark.parametrize("model_name", [DEFAULT_LLM])
 @pytest.mark.parametrize("query", ["hi"])
-@pytest.mark.parametrize("use_react_agent", [False, True])
 def test_get_response_from_open_source_model(
     apptest_ss: AppTest,
     mock_rag_docs: str,
     device: torch.device,
+    model_name: str,
     pipeline_kwargs: dict,
     query: str,
-    use_react_agent: bool,
 ) -> None:
     """Test `get_response_from_open_source_model`."""
     # Set up streaming
-    agent, cfg = setup_for_streaming(pipeline_kwargs=pipeline_kwargs, use_react_agent=use_react_agent)
+    agent, cfg = setup_for_streaming(
+        model_name=model_name,
+        pipeline_kwargs=pipeline_kwargs,
+    )
 
     logger.info(f"Config: {cfg}")
     logger.info(f"Agent: {agent}")
 
-    if not use_react_agent:
-        assert isinstance(agent, AgentExecutor)
-    else:
-        assert isinstance(agent, CompiledGraph)
+    assert isinstance(agent, CompiledGraph)
 
+    # Log stuff for debugging
     if isinstance(agent, CompiledGraph):
         logger.info(f"agent.config: {agent.config}")
-
         # Attempt to list tools or nodes in the graph
         tools = agent.nodes  # or `agent.graph.nodes` if it's nested
         # Info on tools
