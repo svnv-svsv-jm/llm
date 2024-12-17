@@ -5,8 +5,8 @@ from pathlib import Path
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from svsvllm.defaults import ZEPHYR_CHAT_TEMPLATE as CHAT_TEMPLATE
-from svsvllm.const import ENV_PREFIX, DEFAULT_UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT
+from .defaults import ZEPHYR_CHAT_TEMPLATE as CHAT_TEMPLATE
+from .const import ENV_PREFIX, DEFAULT_UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT
 
 
 class Settings(BaseSettings):
