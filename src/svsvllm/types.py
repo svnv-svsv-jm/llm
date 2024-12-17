@@ -3,8 +3,6 @@ __all__ = ["TokenizerType", "ModelType", "ChatModelType", "UuidType", "StateType
 import typing as ty
 import torch
 from transformers import AutoTokenizer, SpecialTokensMixin, AutoModelForCausalLM
-from mlx_lm.tokenizer_utils import TokenizerWrapper
-from mlx.nn import Module  # type: ignore
 from langchain_core.language_models.chat_models import BaseChatModel
 from pydantic import AfterValidator
 import uuid
@@ -13,6 +11,14 @@ from streamlit.runtime.state import (
     SessionStateProxy,
     SessionState as StreamlitSessionState,
 )
+
+# mlx is optional
+try:  # pragma: no cover
+    from mlx_lm.tokenizer_utils import TokenizerWrapper
+    from mlx.nn import Module  # type: ignore
+except ImportError:  # pragma: no cover
+    TokenizerWrapper = AutoTokenizer
+    Module = torch.nn.Module
 
 TokenizerType = AutoTokenizer | SpecialTokensMixin | torch.nn.Module | Module | TokenizerWrapper
 ModelType = AutoModelForCausalLM | torch.nn.Module | Module

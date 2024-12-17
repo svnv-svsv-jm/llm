@@ -30,6 +30,7 @@ toml = "^0.10.2"
 rich = "^13.7.0"
 pyrootutils = "*"
 loguru = "*"
+codetiming = "^1.4.0"
 # Data
 matplotlib = "^3.8.2"
 pandas = "^2.2.0"
@@ -69,7 +70,6 @@ pydantic-ai = { extras = ["logfire"], version = "^0.0.9" }
 selenium = "^4.23.1"
 typer = "^0.12.3"
 streamlit = "^1.38.0"
-codetiming = "^1.4.0"
 
 [tool.poetry.extras]
 gpu = ["faiss-gpu"]

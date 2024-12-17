@@ -36,7 +36,7 @@ def test_ui(
     with patch.object(settings, "uploaded_files_dir", res_docs_path):
         # NOTE: we may even `apptest.chat_input[0].set_value("Hi").run()` but we have to run first once
         with Timer("apptest.run"):
-            apptest.run(timeout=3)
+            apptest.run(timeout=1)
 
     # Test: OpenAI key
     if openai_api_key is not None:

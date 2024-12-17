@@ -13,11 +13,10 @@ from svsvchat.settings import Settings
     [
         ("TEST_MODE", False),
         ("TEST_MODE", True),
-        ("uploaded_files_dir", "blabla"),
         ("q_system_prompt", "yo"),
     ],
 )
-def test_settings(key: str, val: bool, artifacts_location: str) -> None:
+def test_settings(key: str, val: bool) -> None:
     """Test fields."""
     # Temporarily patching os.environ
     with patch.dict(os.environ, {f"{ENV_PREFIX}{key}": f"{val}"}):
@@ -26,6 +25,12 @@ def test_settings(key: str, val: bool, artifacts_location: str) -> None:
         logger.info(f"Settings:\n{settings}")
         # Check value is correct
         assert getattr(settings, key.lower()) == val
+
+
+def test_settings_validators(artifacts_location: str) -> None:
+    """Test fields that have custom `@field_validator`'s."""
+    loc = os.path.join(artifacts_location, "blabla")
+    Settings(uploaded_files_dir=loc)
 
 
 if __name__ == "__main__":

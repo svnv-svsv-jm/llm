@@ -25,6 +25,7 @@ PYTHON_EXEC?=python -m
 PYTHONVERSION?=3.13
 ENVNAME?=llm
 PYTEST?=pytest
+PYTEST_PLUGINS=
 SYSTEM=$(shell python -c "import sys; print(sys.platform)")
 COV_FAIL_UNDER=99
 APP=src/svsvllm/__main__.py
@@ -70,13 +71,13 @@ mypy:
 	$(PYTHON_EXEC) mypy --cache-fine-grained tests
 
 unit-test:
-	$(PYTHON_EXEC) pytest -m "not integtest" -x --pylint --testmon --junitxml=pytest-results.xml --cov=src/ --cov-fail-under $(COV_FAIL_UNDER)
+	$(PYTHON_EXEC) pytest -m "not integtest" -x --pylint $(PYTEST_PLUGINS) --junitxml=pytest-results.xml --cov=src/ --cov-fail-under $(COV_FAIL_UNDER)
 
 integ-test:
-	$(PYTHON_EXEC) pytest -m "integtest" --pylint --testmon --junitxml=pytest-results.xml --cov=src/
+	$(PYTHON_EXEC) pytest -m "integtest" --pylint $(PYTEST_PLUGINS) --junitxml=pytest-results.xml --cov=src/
 
 nbmake:
-	$(PYTHON_EXEC) pytest -x --testmon --nbmake --overwrite "$(EXAMPLE_DIR)"
+	$(PYTHON_EXEC) pytest -x --nbmake --overwrite "$(EXAMPLE_DIR)"
 
 test: mypy unit-test nbmake
 
