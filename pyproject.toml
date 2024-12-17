@@ -62,7 +62,7 @@ chardet = "^5.2.0"
 unstructured = { extras = ["pdf"], version = "*" }
 faiss-cpu = "^1.8.0"
 faiss-gpu = { version = "*", optional = true }
-mlx-lm = "^0.20.1"
+mlx-lm = { version = "^0.20.1", platform = "darwin" }
 numexpr = "^2.10.2"
 pydantic-ai = { extras = ["logfire"], version = "^0.0.9" }
 # App
