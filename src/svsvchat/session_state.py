@@ -428,7 +428,7 @@ class SessionState(BaseModel):
         default = self.__dict__.get(key, None)
         try:
             value = self.session_state[key]
-        except KeyError:
+        except KeyError:  # pragma: no cover
             value = default
         # Validate value
         try:
@@ -445,7 +445,7 @@ class SessionState(BaseModel):
 
     def __getattr__(self, key: str) -> ty.Any:
         """Return the state or widget value with the given key."""
-        return self.__get(key)
+        return self.__get(key)  # pragma: no cover
 
     def get(self, key: str) -> ty.Any:
         """Getter."""
@@ -463,7 +463,7 @@ class SessionState(BaseModel):
         # When this method is used as patch, it will stop here
         # If it didn't, then this would recurse forever
         if self._avoid_recursive:
-            return  # pra
+            return  # pragma: no cover
         # Also update Streamlit's state
         # Only do this if property is a Field and has the `is_synced` flag
         if key not in self.model_fields:

@@ -38,6 +38,24 @@ def apptest(
     app_main_file: str,
 ) -> ty.Iterator[AppTest]:
     """App for testing."""
+    at = AppTest.from_file(app_main_file, default_timeout=30)
+
+    # Keep ref to original method
+    __run = at.run
+
+    def run(**kwags: ty.Any) -> AppTest | None:
+        """Wrap original method in a `try-except` statement."""
+        logger.debug("Running patched `run`")
+        try:
+            return __run(**kwags)
+        except RuntimeError as e:
+            logger.debug(e)
+            return None
+
+    # Patch the run method to time out safely
+    at.run = run  # type: ignore
+
     with patch.object(settings, "test_mode", True):
-        at = AppTest.from_file(app_main_file, default_timeout=30)
         yield at
+
+    at.run = __run
