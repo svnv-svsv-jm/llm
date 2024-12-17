@@ -14,6 +14,7 @@ from svsvchat.session_state import SessionState, session_state as ss
 def _clear() -> None:
     st.cache_resource.clear()
     st.session_state.clear()
+    ss.clear()
 
 
 @pytest.fixture

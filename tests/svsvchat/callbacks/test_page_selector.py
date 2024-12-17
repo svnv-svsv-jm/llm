@@ -16,6 +16,7 @@ def test_PageSelectorCallback(
     """Test `PageSelectorCallback`."""
     cb = PageSelectorCallback(page, name="page-selector")
     cb()
+    logger.info(f"Callback: {cb}")
     assert session_state.page == page
 
 

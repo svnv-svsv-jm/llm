@@ -1,13 +1,11 @@
 import pytest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, MagicMock
 from loguru import logger
 import typing as ty
 import sys, os
 
 from codetiming import Timer
 from streamlit.testing.v1 import AppTest
-from langchain_core.messages import AIMessage
-from langchain_huggingface import ChatHuggingFace
 
 from svsvchat.const import DEFAULT_LLM_MLX
 from svsvchat.session_state import SessionState

@@ -286,9 +286,9 @@ class SessionState(BaseModel):
                 State that we sync with the source of truth.
         """
         if not self.auto_sync:
-            logger.debug("Sync is disabled.")
+            logger.trace("Sync is disabled.")
             return
-        logger.debug(f"Syncing from {type(from_state)} to {type(to_state)}")
+        logger.trace(f"Syncing from {type(from_state)} to {type(to_state)}")
         # Get items
         try:
             items = from_state.items()
@@ -304,16 +304,16 @@ class SessionState(BaseModel):
                 to_state[key] = val  # type: ignore
             except (KeyError, AttributeError):  # pragma: no cover
                 logger.debug(f"Failed to sync `{key}`")
-        logger.debug(f"Synced from {type(from_state)} to {type(to_state)}")
+        logger.trace(f"Synced from {type(from_state)} to {type(to_state)}")
 
     def _sync_direct(self) -> None:
         """Direct synchronization."""
-        logger.debug("Direct synchronization")
+        logger.trace("Direct synchronization")
         self._sync(from_state=self.model_dump(), to_state=self.session_state)  # type: ignore
 
     def _sync_reverse(self) -> None:
         """Reverse synchronization."""
-        logger.debug("Reverse synchronization")
+        logger.trace("Reverse synchronization")
         self._sync(from_state=self.session_state, to_state=self)  # type: ignore
 
     def sync(self, reverse: bool = DEFAULT_REVERSE_SYNC) -> None:
@@ -460,9 +460,10 @@ class SessionState(BaseModel):
             _log = logger.opt(depth=self._logging_depth)
             _log.trace(f"Set key `{key}` to `{value}`")
             assert getattr(self, key) == value
-        # When this method is used as patch, it will halt here
+        # When this method is used as patch, it will stop here
+        # If it didn't, then this would recurse forever
         if self._avoid_recursive:
-            return
+            return  # pra
         # Also update Streamlit's state
         # Only do this if property is a Field and has the `is_synced` flag
         if key not in self.model_fields:
@@ -485,6 +486,16 @@ class SessionState(BaseModel):
     def __setattr__(self, key: str, value: ty.Any) -> None:
         """Set the value of the given key."""
         self.__set__(key, value)
+
+    def clear(self) -> None:
+        """Clear all fields to default values."""
+        for field, field_info in self.model_fields.items():
+            if field_info.default_factory:
+                default_value = field_info.default_factory()
+            else:
+                default_value = field_info.default
+            setattr(self, field, default_value)
+        self.model_fields_set.clear()
 
 
 session_state = SessionState(

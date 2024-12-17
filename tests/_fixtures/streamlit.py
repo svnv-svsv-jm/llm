@@ -6,7 +6,6 @@ import sys, os
 import typing as ty
 from loguru import logger
 
-import streamlit as st
 from streamlit.testing.v1 import AppTest
 
 from svsvchat.settings import settings
@@ -22,7 +21,10 @@ def app_main_file() -> str:
 
 
 @pytest.fixture
-def apptest(trace_logging_level: bool, app_main_file: str) -> ty.Iterator[AppTest]:
+def apptest(
+    trace_logging_level: bool,
+    app_main_file: str,
+) -> ty.Iterator[AppTest]:
     """App for testing."""
     with patch.object(settings, "test_mode", True):
         at = AppTest.from_file(app_main_file, default_timeout=30)
