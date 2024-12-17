@@ -88,7 +88,7 @@ tests: test
 # -----------
 ui: LOG_LEVEL=TRACE
 ui:
-	LOG_LEVEL=$(LOG_LEVEL) python -m svsvllm
+	LOG_LEVEL=$(LOG_LEVEL) python -m svsvchat
 
 
 # -----------
