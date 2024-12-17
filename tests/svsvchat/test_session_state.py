@@ -18,21 +18,6 @@ def test_session_state_sync(session_state: SessionState) -> None:
     assert session_state.language == st.session_state["language"]
 
 
-@pytest.mark.parametrize("value", ["Italian", "English"])
-def test_session_state_integration_w_apptest(
-    apptest: AppTest,
-    session_state: SessionState,
-    value: bool,
-) -> None:
-    """Test session state integration with `AppTest`."""
-    klass = type(apptest.session_state)
-    ss = session_state.session_state
-    if not isinstance(ss, klass):
-        pytest.skip(f"Fixture `session_state` is not bound to {klass} but to {type(ss)}.")
-    apptest.session_state["language"] = value
-    assert session_state.language == value
-
-
 @pytest.mark.parametrize("auto_sync", [False, True])
 @pytest.mark.parametrize("key", ["language", "openai_api_key", "callbacks"])
 def test_accessing_session_state(key: str, auto_sync: bool) -> None:
@@ -53,6 +38,21 @@ def test_reverse_sync() -> None:
     ) as mock:
         SessionState(reverse=True, auto_sync=True)
         mock.assert_called()
+
+
+@pytest.mark.parametrize("value", ["Italian", "English"])
+def test_session_state_integration_w_apptest(
+    apptest: AppTest,
+    session_state: SessionState,
+    value: bool,
+) -> None:
+    """Test session state integration with `AppTest`."""
+    klass = type(apptest.session_state)
+    ss = session_state.session_state
+    if not isinstance(ss, klass):
+        pytest.skip(f"Fixture `session_state` is not bound to {klass} but to {type(ss)}.")
+    apptest.session_state["language"] = value
+    assert session_state.language == value
 
 
 @pytest.mark.parametrize("auto_sync", [False, True])
