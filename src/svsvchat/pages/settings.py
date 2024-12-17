@@ -3,6 +3,8 @@ __all__ = ["settings_page"]
 from loguru import logger
 import streamlit as st
 
+from svsvchat.callbacks import PageSelectorCallback
+
 
 def settings_page() -> None:
     """Function to display the settings page content."""
@@ -10,14 +12,11 @@ def settings_page() -> None:
     st.title("Settings")
     st.write("Here you can modify the settings.")
 
-    # # Button to go back to the main page
-    # st.button(
-    #     "Go to Main Page",
-    #     on_click=PageSelectorCallback(
-    #         PageNames.MAIN,
-    #         name="page-selector",
-    #     ),
-    # )
+    # Button to go back to the main page
+    st.button(
+        "Go to Main Page",
+        on_click=PageSelectorCallback("main", name="page-selector"),
+    )
 
     # Settings for the database
     st.number_input(
@@ -38,6 +37,7 @@ def settings_page() -> None:
         help="Input a integer number.",
         on_change=None,
     )
+
     # # Button to revectorize the databse with the new settings
     # st.button(
     #     "Vectorize the databse with the new settings",

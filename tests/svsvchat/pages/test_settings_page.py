@@ -17,9 +17,13 @@ def test_settings_page(session_state: SessionState, apptest: AppTest) -> None:
     # Test basics
     assert not apptest.exception
 
-    # Test buttons
+    # Test number_input
     logger.info(apptest.number_input)
     assert len(apptest.number_input) > 0
+
+    # Test buttons
+    logger.info(apptest.button)
+    assert len(apptest.button) > 0
 
 
 if __name__ == "__main__":
