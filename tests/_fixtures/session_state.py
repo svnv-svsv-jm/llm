@@ -11,9 +11,15 @@ import streamlit as st
 from svsvchat.session_state import SessionState, session_state as ss
 
 
+def _clear() -> None:
+    st.cache_resource.clear()
+    st.session_state.clear()
+
+
 @pytest.fixture
 def session_state() -> ty.Iterator[SessionState]:
     """Session state."""
+    _clear()
     with patch.object(
         ss,
         "reverse",
@@ -27,6 +33,6 @@ def session_state() -> ty.Iterator[SessionState]:
         "state",
         st.session_state,
     ):
-        st.cache_resource.clear()
         ss.initialize()
         yield ss
+    _clear()

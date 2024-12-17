@@ -216,13 +216,13 @@ class SessionState(BaseModel):
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
 
+    @field_validator("uploaded_files", mode="before")
     @classmethod
-    @field_validator("uploaded_files")
-    def _uploaded_files(cls, value: list[UploadedFile]) -> list[UploadedFile]:
+    def _uploaded_files(cls, value: list[UploadedFile | BytesIO]) -> list[UploadedFile | BytesIO]:
         """Validate `uploaded_files`."""
         assert isinstance(value, list)
         for v in value:
-            assert isinstance(v, UploadedFile)
+            assert isinstance(v, BytesIO)
         return value
 
     def __init__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
@@ -298,11 +298,11 @@ class SessionState(BaseModel):
         # Sync
         for key, val in items:
             if "__setattr__" in key.lower():
-                continue
+                continue  # pragma: no cover
             logger.trace(f"Syncing: {key}")
             try:
                 to_state[key] = val  # type: ignore
-            except (KeyError, AttributeError):
+            except (KeyError, AttributeError):  # pragma: no cover
                 logger.debug(f"Failed to sync `{key}`")
         logger.debug(f"Synced from {type(from_state)} to {type(to_state)}")
 
@@ -368,29 +368,27 @@ class SessionState(BaseModel):
         if state is None:
             state = self.session_state
 
-        # # Do nothing if auto-sync is disabled
-        # if not self.auto_sync:
-        #     logger.trace("Auto sync is disabled.")
-        #     return state
-
         logger.trace("Patching `__setitem__` and `__setattr__`")
 
         # By using a local cache, we understand if the state coming in is different or the same as before
         _last_state = _cache.get("last", None)
-        # If there is not last state, this is the first time this runs, so save everything
+
+        # If there is no last state, this is the first time this runs, so save everything
         if _last_state is None:
             _cache["last"] = state
             _cache["__setitem__"] = state.__class__.__setitem__
             _cache["__setattr__"] = state.__class__.__setattr__
+
         # If they are not the same, we save the references to its methods
         if state is not _cache["last"]:
             _cache["__setitem__"] = state.__class__.__setitem__
             _cache["__setattr__"] = state.__class__.__setattr__
-        # Now we get them. We explictly use the `[]` access to let an error be raised if these keys do not exist
+
+        # Now we get them
+        # We explictly use the `[]` access to let an error be raised if these keys do not exist
         _cache["last"] = state
         __setitem__original = _cache["__setitem__"]
         __setattr__original = _cache["__setattr__"]
-
         __setattr_here = super().__setattr__
 
         # Patch
@@ -435,7 +433,7 @@ class SessionState(BaseModel):
         # Validate value
         try:
             SessionState(**{key: value})
-        except Exception:
+        except Exception:  # pragma: no cover
             # If validation fails, choose the default
             value = default
         self.session_state[key] = value

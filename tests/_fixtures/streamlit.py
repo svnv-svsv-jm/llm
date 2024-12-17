@@ -18,7 +18,7 @@ def app_main_file() -> str:
     """App file."""
     path = os.path.abspath(__main__.__file__)
     logger.debug(f"Loading script: {path}")
-    return path
+    return str(path)
 
 
 @pytest.fixture

@@ -57,6 +57,9 @@ class Settings(BaseSettings):
         env_file=".env",
         extra="ignore",
         env_nested_delimiter="_",
+        validate_assignment=True,
+        revalidate_instances="always",
+        validate_default=True,
     )
 
     # Settings
@@ -126,13 +129,12 @@ class Settings(BaseSettings):
     )
     pipeline_kwargs: dict = Field({}, description="Pipeline kwargs.")
 
+    @field_validator("uploaded_files_dir", mode="before")
     @classmethod
-    @field_validator("uploaded_files_dir")
     def _uploaded_files_dir(cls, value: str) -> str:
         """Make sure it's a `str` and create the location."""
-        value = f"{value}"
         Path(value).mkdir(parents=True, exist_ok=True)
-        return value
+        return f"{value}"
 
 
 settings = Settings()

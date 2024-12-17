@@ -43,10 +43,7 @@ def serialize(record: logging.LogRecord, show_file_info: bool = False) -> str:
     module = record["module"]  # type: ignore
     function = record["function"]  # type: ignore
     line = record["line"]  # type: ignore
-    if show_file_info:
-        line_info = f"{file_path}:{line}"
-    else:
-        line_info = f"{name}.{module}.{function}:{line}"
+    line_info = f"{file_path}:{line}" if show_file_info else f"{name}.{module}.{function}:{line}"
     # Create set
     subset = {
         "timestamp": record["time"].timestamp(),  # type: ignore
@@ -63,9 +60,10 @@ def serialize(record: logging.LogRecord, show_file_info: bool = False) -> str:
     return json.dumps(subset)
 
 
-def formatter(record: logging.LogRecord) -> str:
+def formatter(record: logging.LogRecord, show_file_info: bool = False) -> str:
     """Note this function returns the string to be formatted, not the actual message to be logged."""
-    record["extra"]["serialized"] = serialize(record)  # type: ignore
+    serialized = serialize(record, show_file_info=show_file_info)
+    record["extra"]["serialized"] = serialized  # type: ignore
     return "{extra[serialized]}\n"
 
 
@@ -89,5 +87,5 @@ class Formatter:
     def __call__(self, record: logging.LogRecord) -> str:
         """Main."""
         if self.serialize:
-            return formatter(record)
+            return formatter(record, show_file_info=self.show_file_info)
         return DEFAULT_FORMAT

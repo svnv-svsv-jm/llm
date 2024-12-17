@@ -5,6 +5,7 @@ import typing as ty
 import sys, os
 import streamlit as st
 from streamlit.testing.v1 import AppTest
+from streamlit.runtime.uploaded_file_manager import UploadedFile, UploadedFileRec
 from pydantic_core import ValidationError
 
 from svsvchat.session_state import SessionState
@@ -15,6 +16,21 @@ def test_session_state_sync(session_state: SessionState) -> None:
     """Test syncing works: we set a value in `st.session_state`, and we should have the same value in `session_state`."""
     st.session_state["language"] = "Italian"
     assert session_state.language == st.session_state["language"]
+    st.session_state.language = "English"
+    assert session_state.language == st.session_state["language"]
+    session_state.uploaded_files = [
+        UploadedFile(
+            record=UploadedFileRec(file_id="xxx", name="xxx", type="xxx", data=bytes(1)),
+            file_urls=None,
+        )
+    ]
+    session_state.language = "Italian"
+    assert session_state.language == "Italian"
+    assert session_state.get("language") == "Italian"
+    assert getattr(session_state, "language") == "Italian"
+    session_state.manual_sync("language")
+    assert session_state.language == st.session_state["language"]
+    assert len(session_state) > 0
 
 
 @pytest.mark.parametrize("auto_sync", [False, True])

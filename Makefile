@@ -26,7 +26,7 @@ PYTHONVERSION?=3.13
 ENVNAME?=llm
 PYTEST?=pytest
 SYSTEM=$(shell python -c "import sys; print(sys.platform)")
-COV_FAIL_UNDER=95
+COV_FAIL_UNDER=99
 APP=src/svsvllm/__main__.py
 # poetry
 POETRY=poetry

@@ -4,15 +4,17 @@ import typing as ty
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from langchain_core.messages import AIMessage, BaseMessage
+import uuid
 
 from svsvllm.types import UuidType
+from svsvllm.utils import uuid_str
 
 
 class AgentPayload(BaseModel):
     """LLM agent payload. This is the schema for event objects returned by a streaming LLM agent."""
 
-    id: UuidType = Field(description="ID.")
-    name: str = Field(description="Name of the streamer.", examples=["agent"])
+    id: UuidType = Field(default_factory=uuid_str, description="ID.")
+    name: str = Field("agent", description="Name of the streamer.", examples=["agent"])
     error: ty.Any = Field(None, description="Encountered error(s).")
     interrupts: list[ty.Any] = Field([], description="List of interruptions.")
     result: list[tuple[str, list[BaseMessage]]] = Field(
@@ -80,10 +82,24 @@ class ChatMLXEvent(BaseModel):
         validate_default=True,
     )
 
-    type: str = Field("task_result", description="Type of event.", examples=["task_result"])
-    timestamp: datetime = Field(description="Timestamp.")
-    step: int = Field(0, description="Step.", ge=0)
-    payload: AgentPayload = Field(description="Payload. This is what the LLM agent is streaming.")
+    type: str = Field(
+        "task_result",
+        description="Type of event.",
+        examples=["task_result"],
+    )
+    timestamp: datetime = Field(
+        default_factory=datetime.now,
+        description="Timestamp.",
+    )
+    step: int = Field(
+        0,
+        description="Step number.",
+        ge=0,
+    )
+    payload: AgentPayload = Field(
+        AgentPayload(),
+        description="Payload. This is what the LLM agent is streaming.",
+    )
 
     @classmethod
     def is_valid(cls, obj: dict) -> bool:
