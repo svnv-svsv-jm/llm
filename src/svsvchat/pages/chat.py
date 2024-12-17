@@ -9,6 +9,7 @@ from langchain_core.messages import HumanMessage
 from svsvchat.settings import settings
 from svsvchat.session_state import session_state
 from svsvchat.chat import initialize_chat_history, add_prompt_to_chat_history
+from .sidebar import sidebar
 
 
 def chat_page() -> None:
@@ -18,6 +19,10 @@ def chat_page() -> None:
     """
     # Log START
     logger.debug(f"Main page: START")
+
+    # Sidebar
+    if settings.has_sidebar:
+        sidebar()
 
     # Title and initialization
     logger.trace("Title and initialization")

@@ -1,4 +1,4 @@
-__all__ = ["TokenizerType", "ModelType", "ChatModelType", "UuidType", "StateType"]
+__all__ = ["TokenizerType", "ModelType", "ChatModelType", "UuidType", "StateType", "Languages"]
 
 import typing as ty
 import torch
@@ -19,3 +19,4 @@ ModelType = AutoModelForCausalLM | torch.nn.Module | Module
 ChatModelType = BaseChatModel
 UuidType = ty.Annotated[str, AfterValidator(lambda x: str(uuid.UUID(x)))]
 StateType = StreamlitSessionState | SessionStateProxy | SafeSessionState
+Languages = ty.Literal["English", "Italian"]

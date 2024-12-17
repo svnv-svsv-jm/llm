@@ -16,7 +16,7 @@ from langgraph.graph.graph import CompiledGraph
 from openai import OpenAI
 
 from svsvllm.schema import FieldExtraOptions
-from svsvllm.types import ChatModelType, TokenizerType, ModelType, StateType
+from svsvllm.types import ChatModelType, TokenizerType, ModelType, StateType, Languages
 from .const import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM_MLX, OPENAI_DEFAULT_MODEL
 from .settings import settings
 
@@ -82,12 +82,12 @@ class SessionState(BaseModel):
         description="Whether the chat has been set up or not.",
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    language: ty.Literal["English", "Italian"] = Field(
+    language: Languages = Field(
         default="English",
         description="App language.",
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    new_language: ty.Literal["English", "Italian"] = Field(
+    new_language: Languages = Field(
         default="English",
         description="App language we are switching to.",
         json_schema_extra=FieldExtraOptions().model_dump(),
