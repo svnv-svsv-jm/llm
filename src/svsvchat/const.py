@@ -1,4 +1,9 @@
 __all__ = [
+    "HUGGINFACE_TOKEN_KEY",
+    "ENV_PREFIX",
+    "LOG_LEVEL_KEY",
+    "DEFAULT_UPLOADED_FILES_DIR",
+    "Q_SYSTEM_PROMPT",
     "DEFAULT_LLM",
     "DEFAULT_LLM_MLX",
     "OPENAI_DEFAULT_MODEL",
@@ -7,9 +12,11 @@ __all__ = [
     "CUSTOM_CHAT_TEMPLATE",
 ]
 
+import os
+from pathlib import Path
 from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
 
-DEFAULT_LLM = "TinyLlama/TinyLlama_v1.1"
+EFAULT_LLM = "TinyLlama/TinyLlama_v1.1"
 DEFAULT_LLM_MLX = "mlx-community/quantized-gemma-2b-it"
 OPENAI_DEFAULT_MODEL = "gpt-3.5-turbo"
 EMBEDDING_DEFAULT_MODEL = "BAAI/bge-base-en-v1.5"
@@ -23,3 +30,18 @@ CUSTOM_CHAT_TEMPLATE = [
     AIMessage(content="How can I help you today?").model_dump(),
     HumanMessage(content="I'd like to show off how chat templating works!").model_dump(),
 ]
+
+HUGGINFACE_TOKEN_KEY = "HF_TOKEN"
+
+# Environment prefix for settings
+ENV_PREFIX = "SVSVLLM_"
+
+# Logging level key
+LOG_LEVEL_KEY = "LOG_LEVEL"
+
+# Default location for documents
+DEFAULT_UPLOADED_FILES_DIR = os.path.join(".rag")
+Path(DEFAULT_UPLOADED_FILES_DIR).mkdir(parents=True, exist_ok=True)
+
+
+Q_SYSTEM_PROMPT = "Given a chat history and the latest user question which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, just reformulate it if needed and otherwise return it as is."
