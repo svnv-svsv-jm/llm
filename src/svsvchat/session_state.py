@@ -1,4 +1,3 @@
-# pylint: disable=no-member,unnecessary-dunder-call,global-variable-not-assigned
 __all__ = ["SessionState"]
 
 import typing as ty
@@ -6,11 +5,6 @@ from loguru import logger
 from pydantic import BaseModel, Field, SecretStr, field_validator, ConfigDict
 from io import BytesIO
 import streamlit as st
-from streamlit.runtime.state import (
-    SafeSessionState,
-    SessionStateProxy,
-    SessionState as StreamlitSessionState,
-)
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from langchain_core.retrievers import BaseRetriever, RetrieverOutputLike
@@ -22,11 +16,10 @@ from langgraph.graph.graph import CompiledGraph
 from openai import OpenAI
 
 from svsvllm.schema import FieldExtraOptions
-from svsvllm.types import ChatModelType, TokenizerType, ModelType
+from svsvllm.types import ChatModelType, TokenizerType, ModelType, StateType
 from .const import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM_MLX, OPENAI_DEFAULT_MODEL
 from .settings import settings
 
-StateType = StreamlitSessionState | SessionStateProxy | SafeSessionState
 _locals: dict[str, ty.Any] = {
     "_avoid_recursive": False,
     "_bind": None,
@@ -316,7 +309,7 @@ class SessionState(BaseModel):
     def _sync_direct(self) -> None:
         """Direct synchronization."""
         logger.debug("Direct synchronization")
-        self._sync(from_state=self.to_dict(), to_state=self.session_state)  # type: ignore
+        self._sync(from_state=self.model_dump(), to_state=self.session_state)  # type: ignore
 
     def _sync_reverse(self) -> None:
         """Reverse synchronization."""
@@ -494,10 +487,6 @@ class SessionState(BaseModel):
     def __setattr__(self, key: str, value: ty.Any) -> None:
         """Set the value of the given key."""
         self.__set__(key, value)
-
-    def to_dict(self) -> dict[str, ty.Any]:
-        """Dump model."""
-        return self.model_dump()
 
 
 session_state = SessionState(
