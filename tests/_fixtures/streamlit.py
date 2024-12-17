@@ -7,14 +7,16 @@ import typing as ty
 from loguru import logger
 
 import streamlit as st
+from streamlit.testing.v1 import AppTest
 
 from svsvchat.settings import settings
+from svsvchat import __main__
 
 
 @pytest.fixture
 def app_main_file() -> str:
     """App file."""
-    path = os.path.abspath(main.__file__)
+    path = os.path.abspath(__main__.__file__)
     logger.debug(f"Loading script: {path}")
     return path
 

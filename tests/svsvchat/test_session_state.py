@@ -1,4 +1,3 @@
-# pylint: disable=unnecessary-dunder-call
 import pytest
 from unittest.mock import patch, MagicMock
 from loguru import logger
