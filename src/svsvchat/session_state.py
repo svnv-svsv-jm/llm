@@ -22,9 +22,9 @@ from langgraph.graph.graph import CompiledGraph
 from openai import OpenAI
 
 from svsvllm.schema import FieldExtraOptions
-from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM_MLX, OPENAI_DEFAULT_MODEL
-from svsvllm.settings import settings
 from svsvllm.types import ChatModelType, TokenizerType, ModelType
+from .const import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM_MLX, OPENAI_DEFAULT_MODEL
+from .settings import settings
 
 StateType = StreamlitSessionState | SessionStateProxy | SafeSessionState
 _locals: dict[str, ty.Any] = {
