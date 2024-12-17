@@ -10,7 +10,7 @@ from svsvllm.const import PageNames
 from ..file_upload import file_uploader
 from ..locale import LANGUAGES
 from ..callbacks import PageSelectorCallback, UpdateLanguageCallback
-from ..session_state import SessionState
+from ..session_state import session_state
 
 
 def sidebar() -> None:
@@ -26,13 +26,12 @@ def sidebar() -> None:
         )
 
         # Create a selectbox for language selection
-        state = SessionState().state
-        logger.trace(f"Language selection: {state.language}")
+        logger.trace(f"Language selection: {session_state.language}")
         st.selectbox(
             label="Select a Language",
             options=LANGUAGES,
             key="new_language",
-            index=LANGUAGES.index(state.language),
+            index=LANGUAGES.index(session_state.language),
             on_change=UpdateLanguageCallback("language-update"),
         )
 
@@ -48,12 +47,12 @@ def sidebar() -> None:
         st.text_input(
             "HuggingFace LLM name",
             key="model_name",
-            placeholder=DEFAULT_LLM,
+            placeholder=session_state.model_name,
         )
         st.text_input(
             "RAG embedding model name",
             key="embedding_model_name",
-            placeholder=EMBEDDING_DEFAULT_MODEL,
+            placeholder=session_state.embedding_model_name,
         )
 
         # File uploader for multiple files (simulate folder upload)

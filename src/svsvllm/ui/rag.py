@@ -17,7 +17,7 @@ from langchain_community.vectorstores.faiss import FAISS
 from svsvllm.rag import create_rag_database
 from svsvllm.settings import settings
 from .model import create_chat_model
-from .session_state import SessionState
+from .session_state import session_state
 
 
 @st.cache_resource
@@ -32,7 +32,7 @@ def initialize_database(force_recreate: bool = False) -> FAISS:
     Returns:
         FAISS: Created database.
     """
-    state = SessionState().state
+    state = session_state
     db = state.db
     logger.trace(f"DB: {db}")
     if force_recreate or db is None:
@@ -50,7 +50,7 @@ def initialize_database(force_recreate: bool = False) -> FAISS:
 @st.cache_resource
 def initialize_retriever() -> BaseRetriever:
     """Initialize the retriever."""
-    state = SessionState().state
+    state = session_state
     retriever = state.retriever
     if retriever is not None:
         logger.debug(f"Retriever already initialized: {retriever}")
@@ -94,13 +94,16 @@ def create_history_aware_retriever(
             If `True`, database is re-created even if it exists already.
             Defaults to `False`.
 
+        **kwargs:
+            See :func:`create_chat_model`.
+
     Returns:
         RetrieverOutputLike:
             History aware retriever.
     """
     logger.trace("Creating history-aware retriever")
     # Get current state
-    state = SessionState().state
+    state = session_state
 
     # Create prompt
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
@@ -135,5 +138,6 @@ def create_history_aware_retriever(
         contextualize_q_prompt,
     )
     logger.trace(f"Created history-aware retriever: {history_aware_retriever}")
+    state.history_aware_retriever = history_aware_retriever
     st.session_state["history_aware_retriever"] = history_aware_retriever
     return history_aware_retriever

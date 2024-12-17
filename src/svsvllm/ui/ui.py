@@ -9,11 +9,11 @@ def ui() -> None:
 
     from svsvllm.const import PageNames
     from svsvllm.ui.pages import settings_page, main_page
-    from svsvllm.ui.session_state import SessionState
+    from svsvllm.ui.session_state import session_state
 
     # Initialize session state
     # NOTE: Run this regardless. The `SessionState` needs to be initialized asap so that it is bound to Streamlit's session state
-    state = SessionState().state
+    state = session_state
 
     # Display content based on the current page
     page = state.page

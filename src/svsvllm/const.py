@@ -4,7 +4,6 @@ __all__ = [
     "LOG_LEVEL_KEY",
     "DEFAULT_UPLOADED_FILES_DIR",
     "Q_SYSTEM_PROMPT",
-    "OPEN_SOURCE_MODELS_SUPPORTED",
     "PageNames",
 ]
 
@@ -25,8 +24,6 @@ Path(DEFAULT_UPLOADED_FILES_DIR).mkdir(parents=True, exist_ok=True)
 
 
 Q_SYSTEM_PROMPT = "Given a chat history and the latest user question which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, just reformulate it if needed and otherwise return it as is."
-
-OPEN_SOURCE_MODELS_SUPPORTED = True
 
 
 class PageNames:

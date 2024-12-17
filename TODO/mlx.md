@@ -9,6 +9,7 @@ Check this one out:
 - [mlx-llm](https://github.com/riccardomusmeci/mlx-llm/tree/main)
 - [mlx (ml-explore)](https://github.com/ml-explore/mlx-examples/tree/main/llms)
 - [llm-mlc](https://llm.mlc.ai/docs/get_started/introduction.html).
+- [mlx-llm+langchain](https://python.langchain.com/docs/integrations/chat/mlx/)
 
 Libraries to load and use LLMs on Mac M1. They also have their collections of models.
 

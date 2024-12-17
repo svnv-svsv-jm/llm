@@ -16,9 +16,10 @@ from transformers import (
 from optimum.quanto import QuantizedModelForCausalLM, qint4
 import huggingface_hub
 from pathlib import Path
+from codetiming import Timer as CommandTimer
 
 from svsvllm.const import HUGGINFACE_TOKEN_KEY
-from svsvllm.utils import CommandTimer, get_default_backend
+from svsvllm.utils import get_default_backend
 
 DEFAULT_BACKEND = get_default_backend()
 
@@ -113,6 +114,7 @@ def load_model(
     tokenizer_class: ty.Type[AutoTokenizer] | None = None,
     backend: str = DEFAULT_BACKEND,
     models_dir: str = ".models",
+    load_in_4bit: bool = False,
 ) -> ty.Tuple[PreTrainedModel, PreTrainedTokenizerBase]:
     """Load LLM.
 
@@ -157,6 +159,10 @@ def load_model(
             Directory where to save quantized models.
             Defaults to `".models"`.
 
+        load_in_4bit (bool):
+            Whether to try to load an already quantized model.
+            Defaults to `False`.
+
     Returns:
         ty.Tuple[AutoModelForCausalLM | QuantizedModelForCausalLM, AutoTokenizer]:
             Loaded LLM and its corresponding tokenizer.
@@ -189,6 +195,7 @@ def load_model(
                 token=token,
                 revision=revision,
                 device_map=device,
+                load_in_4bit=load_in_4bit,
             )
         return model
 

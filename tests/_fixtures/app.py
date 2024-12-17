@@ -28,7 +28,7 @@ from streamlit.testing.v1 import AppTest
 
 import svsvllm.__main__ as main
 from svsvllm.settings import settings
-from svsvllm.ui.session_state import SessionState
+from svsvllm.ui.session_state import SessionState, session_state as ss
 
 
 @pytest.fixture
@@ -41,8 +41,21 @@ def mock_rag_docs(res_docs_path: str) -> ty.Iterator[str]:
 @pytest.fixture
 def session_state() -> ty.Iterator[SessionState]:
     """Session state."""
-    with SessionState(reverse=True, auto_sync=False) as ss:
+    with patch.object(
+        ss,
+        "reverse",
+        True,
+    ), patch.object(
+        ss,
+        "auto_sync",
+        False,
+    ), patch.object(
+        ss,
+        "state",
+        st.session_state,
+    ):
         st.cache_resource.clear()
+        ss.initialize()
         yield ss
 
 
@@ -140,10 +153,7 @@ def mock_agent_stream(request: pytest.FixtureRequest) -> ty.Iterator[MagicMock]:
     """Mock agent's `CompiledGraph.stream()` method.
     We create a mock `dict` object with the `"messages"` key having a `list[AIMessage]` value.
     """
-    if hasattr(request, "param"):
-        msg = f"{request.param}"
-    else:
-        msg = "This is a mocked message."
+    msg = f'{getattr(request, "param", "This is a mocked message.")}'
     # Create an object to stream
     stream = MagicMock(return_value={"messages": [AIMessage(content=msg)]})
     # Patch and pass a list `side_effect` to simulate the `yield` effect (streaming)

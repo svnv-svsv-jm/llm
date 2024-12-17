@@ -6,7 +6,7 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from svsvllm.defaults import ZEPHYR_CHAT_TEMPLATE as CHAT_TEMPLATE
-from .const import ENV_PREFIX, DEFAULT_UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT, OPEN_SOURCE_MODELS_SUPPORTED
+from svsvllm.const import ENV_PREFIX, DEFAULT_UPLOADED_FILES_DIR, Q_SYSTEM_PROMPT
 
 
 class Settings(BaseSettings):
@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix=ENV_PREFIX,
         case_sensitive=False,  # from the environment
+        env_file_encoding="utf-8",
+        env_file=".env",
+        extra="ignore",
+        env_nested_delimiter="_",
     )
 
     # Settings
@@ -63,10 +67,6 @@ class Settings(BaseSettings):
     q_system_prompt: str = Field(
         Q_SYSTEM_PROMPT,
         description="Prompt for history aware retriever.",
-    )
-    open_source_models_supported: bool = Field(
-        OPEN_SOURCE_MODELS_SUPPORTED,
-        description="Whether open source models are supported.",
     )
     has_chat: bool = Field(
         default=True,
@@ -120,6 +120,7 @@ class Settings(BaseSettings):
         False,
         description="If `True`, the provided chat template will be forced on the tokenizer.",
     )
+    pipeline_kwargs: dict = Field({}, description="Pipeline kwargs.")
 
     @classmethod
     @field_validator("uploaded_files_dir")

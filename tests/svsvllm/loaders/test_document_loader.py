@@ -4,6 +4,8 @@ import typing as ty
 import sys, os
 
 import uuid
+from langchain_core.documents import Document
+
 from svsvllm.loaders import load_documents
 
 
@@ -13,10 +15,9 @@ def test_load_documents_error() -> None:
         load_documents(f"{uuid.uuid4()}")
 
 
-def test_load_documents(docs_path: str) -> None:
+def test_load_documents(documents: list[Document]) -> None:
     """Test `load_documents` and check it raises an error."""
-    docs = load_documents(docs_path)
-    logger.success(f"Loaded: {docs}")
+    logger.success(f"Loaded: {documents}")
 
 
 if __name__ == "__main__":

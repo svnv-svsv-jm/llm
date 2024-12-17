@@ -13,7 +13,7 @@ from svsvllm.rag import create_rag_database
 
 
 @pytest.fixture(scope="session")
-def documents(docs_path: str) -> ty.List[Document]:
+def documents(docs_path: str) -> list[Document]:
     """Loaded documents."""
     docs: ty.List[Document] = load_documents(docs_path)
     return docs

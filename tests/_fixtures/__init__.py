@@ -2,10 +2,11 @@ from .loc import *
 from .patches import *
 from .accelerators import *
 from .quantize import *
-from .models import *
+from .llms import *
 from .rag import *
 from .web import *
 from .chains import *
 from .pipeline import *
 from .app import *
 from .logger import *
+from .queries import *

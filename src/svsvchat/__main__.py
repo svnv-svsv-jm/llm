@@ -4,8 +4,8 @@ import typer
 from streamlit.web import cli
 from streamlit import runtime
 
-from svsvllm.settings import settings
-from svsvllm.ui import ui
+from svsvchat.settings import settings
+from svsvchat.ui import ui
 from svsvllm.utils.logger import set_up_logging
 
 # Define app

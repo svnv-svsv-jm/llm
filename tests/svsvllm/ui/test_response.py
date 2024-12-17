@@ -5,32 +5,33 @@ import typing as ty
 import sys, os
 
 import pprint
-import streamlit as st
+from codetiming import Timer as CommandTimer
 from streamlit.testing.v1 import AppTest
 import torch
 from langgraph.graph.graph import CompiledGraph
-from langchain_core.messages import HumanMessage
 
-from svsvllm.defaults import DEFAULT_LLM
-from svsvllm.utils import CommandTimer
-from svsvllm.ui.response import setup_for_streaming, get_response_from_open_source_model
+from svsvllm.ui.response import setup_for_streaming, stream_open_source_model
 
 
-@pytest.mark.parametrize("model_name", [DEFAULT_LLM])
-@pytest.mark.parametrize("query", ["hi"])
+@pytest.mark.parametrize("query", ["hi", "what day is today?"])
+@pytest.mark.parametrize("use_mlx", [True])
 def test_get_response_from_open_source_model(
     apptest_ss: AppTest,
     mock_rag_docs: str,
     device: torch.device,
-    model_name: str,
+    model_id: str,
     pipeline_kwargs: dict,
     query: str,
+    use_mlx: bool,
+    mlx_model_id: str,
 ) -> None:
     """Test `get_response_from_open_source_model`."""
     # Set up streaming
+    model_name = mlx_model_id if use_mlx else model_id
     agent, cfg = setup_for_streaming(
         model_name=model_name,
         pipeline_kwargs=pipeline_kwargs,
+        use_mlx=use_mlx,
     )
 
     logger.info(f"Config: {cfg}")
@@ -52,9 +53,15 @@ def test_get_response_from_open_source_model(
             f"Tools: {[(key, type(item)) for key, item in tools_by_name.items()]}\n{pprint.pformat(tools_by_name, indent=2)}"
         )
 
+    # Early stop?
+    if not use_mlx:
+        logger.success("No mlx.")
+        return
+
     # Stream response
     with CommandTimer("Streaming"):
-        for r in get_response_from_open_source_model(
+        streamed_responses = []
+        for r in stream_open_source_model(
             query,
             agent_executor=agent,
             agent_config=cfg,
@@ -63,6 +70,8 @@ def test_get_response_from_open_source_model(
             stream_mode="debug",
         ):
             logger.info(f"streamed: {r}")
+            streamed_responses.append(r)
+    logger.success(streamed_responses)
 
 
 if __name__ == "__main__":

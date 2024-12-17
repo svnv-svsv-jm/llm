@@ -4,14 +4,13 @@ from loguru import logger
 import typing as ty
 import sys, os
 
-import streamlit as st
+from codetiming import Timer
 from streamlit.testing.v1 import AppTest
 from langchain_core.messages import AIMessage
 from langchain_huggingface import ChatHuggingFace
 
 from svsvllm.defaults import DEFAULT_LLM
 from svsvllm.ui.session_state import SessionState
-from svsvllm.utils import CommandTimer
 from svsvllm.settings import settings
 
 
@@ -43,9 +42,8 @@ def test_ui(
     # Run app with mocked user inputs
     with patch.object(settings, "uploaded_files_dir", res_docs_path):
         # NOTE: we may even `apptest.chat_input[0].set_value("Hi").run()` but we have to run first once
-        with CommandTimer("apptest.run") as timer:
+        with Timer("apptest.run"):
             apptest.run()
-        logger.info(f"App run took {timer.elapsed_time} seconds.")
 
     # Test: OpenAI key
     if openai_api_key is not None:

@@ -3,7 +3,7 @@ __all__ = ["SessionState"]
 
 import typing as ty
 from loguru import logger
-from pydantic import BaseModel, Field, SecretStr, field_validator
+from pydantic import BaseModel, Field, SecretStr, field_validator, ConfigDict
 from io import BytesIO
 import streamlit as st
 from streamlit.runtime.state import (
@@ -13,22 +13,18 @@ from streamlit.runtime.state import (
 )
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
-from langchain_huggingface import ChatHuggingFace
-from langchain_community.vectorstores.faiss import FAISS
 from langchain_core.retrievers import BaseRetriever, RetrieverOutputLike
 from langchain_core.messages import BaseMessage
 from langchain_core.runnables.config import RunnableConfig
+from langchain_community.vectorstores.faiss import FAISS
 from langchain.agents import AgentExecutor
 from langgraph.graph.graph import CompiledGraph
 from openai import OpenAI
-from transformers import AutoTokenizer, AutoModelForCausalLM, SpecialTokensMixin
-import torch
 
 from svsvllm.schema import FieldExtraOptions
-from svsvllm.utils.singleton import Singleton
-from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM, OPENAI_DEFAULT_MODEL
+from svsvllm.defaults import EMBEDDING_DEFAULT_MODEL, DEFAULT_LLM_MLX, OPENAI_DEFAULT_MODEL
 from svsvllm.settings import settings
-
+from svsvllm.types import ChatModelType, TokenizerType, ModelType
 
 StateType = StreamlitSessionState | SessionStateProxy | SafeSessionState
 _locals: dict[str, ty.Any] = {
@@ -55,185 +51,177 @@ class _PatchRecursive:
         _locals["_avoid_recursive"] = False
 
 
-class _SessionState(BaseModel):
+class SessionState(BaseModel):
     """Custom Streamlit session state, in order to revise all present keys, validate them, etc.
 
     Instances of this class are fully synced with Streamlit's session state. This means that changes to `import streamlit as st; st.session_state` will be reflected in instances of this class, and reverse.
     Thus, please ensure only one instance of this class exists at a time.
     """
 
+    model_config = ConfigDict(
+        validate_default=True,
+        arbitrary_types_allowed=True,
+        validate_assignment=True,
+    )
+
+    state: StateType | None = Field(
+        default=None,
+        description="Streamlit state to bind to.",
+        json_schema_extra=FieldExtraOptions(is_synced=False).model_dump(),
+    )
+    reverse: bool = Field(
+        default=DEFAULT_REVERSE_SYNC,
+        description="Whether the sync with Streamlit state should be reversed.",
+        json_schema_extra=FieldExtraOptions(is_synced=False).model_dump(),
+    )
     auto_sync: bool = Field(
         default=False,
         description="Whether to automatically sync with Streamlit's state.",
-        validate_default=True,
+        json_schema_extra=FieldExtraOptions(is_synced=False).model_dump(),
+    )
+    streaming: bool = Field(
+        default=True,
+        description="Whether we should stream response or not.",
         json_schema_extra=FieldExtraOptions(is_synced=False).model_dump(),
     )
     chat_activated: bool = Field(
         default=False,
         description="Whether the chat has been set up or not.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     language: ty.Literal["English", "Italian"] = Field(
         default="English",
         description="App language.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     new_language: ty.Literal["English", "Italian"] = Field(
         default="English",
         description="App language we are switching to.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     openai_api_key: SecretStr | None = Field(
         default=None,
         description="API key for OpenAI.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     uploaded_files: list[UploadedFile | BytesIO] = Field(
         default=[],
         description="Uploaded files.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     callbacks: dict[str, ty.Callable[..., ty.Any]] = Field(
         default={},
         description="Uploaded files.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     saved_filenames: list[str] = Field(
         default=[],
         description="Names of the uploaded files after written to disk.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     page: ty.Literal["main", "settings"] = Field(
         default="main",
         description="Page we are displaying.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     openai_client: OpenAI | None = Field(
         default=None,
         description="OpenAI client.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     openai_model_name: str = Field(
         default=OPENAI_DEFAULT_MODEL,
         description="OpenAI model name.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     model_name: str = Field(
-        default=DEFAULT_LLM,
+        default=DEFAULT_LLM_MLX,
         description="HuggingFace model name.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     embedding_model_name: str = Field(
         default=EMBEDDING_DEFAULT_MODEL,
         description="RAG embedding model name.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     chunk_size: int = Field(
         default=512,
         description="Chunk size for `RecursiveCharacterTextSplitter`.",
-        validate_default=True,
     )
     chunk_overlap: int = Field(
         default=30,
         description="Chunk overlap for `RecursiveCharacterTextSplitter`.",
-        validate_default=True,
     )
-    hf_model: AutoModelForCausalLM | torch.nn.Module | None = Field(
+    model: ModelType | None = Field(
         default=None,
         description="HuggingFace model.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    tokenizer: AutoTokenizer | SpecialTokensMixin | torch.nn.Module | None = Field(
+    tokenizer: TokenizerType | None = Field(
         default=None,
         description="HuggingFace tokenizer.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     db: FAISS | None = Field(
         default=None,
         description="Document database.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     retriever: BaseRetriever | None = Field(
         default=None,
         description="Retriever object created from databse.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     history_aware_retriever: RetrieverOutputLike | BaseRetriever | None = Field(
         default=None,
         description="History aware retriever.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    chat_model: ChatHuggingFace | None = Field(
+    chat_model: ChatModelType | None = Field(
         default=None,
-        description="Open source HuggingFace model LangChain wrapper.",
-        validate_default=True,
+        description="LangChain wrapper for open-source LLM.",
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    messages: list[BaseMessage] = Field(
+    chat_history: list[BaseMessage] = Field(
         default=[],
         description="History of messages.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     agent: CompiledGraph | AgentExecutor | None = Field(
         None,
         description="Agent executor.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     thread_id: str | None = Field(
         None,
         description="Thread ID for streaming.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     agent_config: RunnableConfig = Field(
         RunnableConfig(),
         description="Agent configuration for streaming.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     quantize: bool = Field(
         True,
         description="Whether to quantize the HuggingFace model.",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     quantize_w_torch: bool = Field(
         True,
         description="Whether to quantize the HuggingFace model using PyTorch. No effect if `quantize` is `False`.",
-        validate_default=True,
+        json_schema_extra=FieldExtraOptions().model_dump(),
+    )
+    use_mlx: bool = Field(
+        True,
+        description="Whether to use `mlx` or not.",
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
     use_react_agent: bool = Field(
         True,
         description="Whether to create an agent via `create_react_agent` (which gives you a `CompiledGraph` agent), or via `create_tool_calling_agent` then `AgentExecutor` (thus giving you a `AgentExecutor`).",
-        validate_default=True,
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-
-    class Config:
-        """Lets you re-run the validation functions on attribute assignments."""
-
-        validate_assignment = True
-        arbitrary_types_allowed = True
 
     @classmethod
     @field_validator("uploaded_files")
@@ -244,9 +232,16 @@ class _SessionState(BaseModel):
             assert isinstance(v, UploadedFile)
         return value
 
-    # -------------
-    # Custom implementation
-    # -------------
+    def __init__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
+        """Run custom methods after all fields are set."""
+        super().__init__(*args, **kwargs)
+        self.initialize()
+
+    def initialize(self) -> None:
+        """Initialize: run binding, syncing and patching."""
+        self.bind(self.state)
+        self.sync(reverse=self.reverse)
+        self.patch(self.state)
 
     @property
     def _bind(self) -> StateType | None:
@@ -339,6 +334,25 @@ class _SessionState(BaseModel):
             self._sync_reverse()
         self._sync_direct()
 
+    def manual_sync(self, key: str, reverse: bool = False) -> None:
+        """Manually sync a specific `key`.
+
+        Args:
+            key (str):
+                Key that has to be synced.
+
+            reverse (bool, optional):
+                If `True`, values are synced (copied) from `st.session_state` to here.
+                Defaults to `False`.
+        """
+        # Select origina and destination
+        from_state = self.session_state if reverse else self
+        to_state = self if reverse else self.session_state
+        # Get the value to copy over
+        value = from_state[key]
+        # Sync the value
+        to_state[key] = value
+
     def bind(self, session_state: StateType | None = None) -> None:
         """Bind this model to Streamlit's session state."""
         logger.trace(f"Binding to {type(session_state)}")
@@ -427,7 +441,7 @@ class _SessionState(BaseModel):
             value = default
         # Validate value
         try:
-            _SessionState(**{key: value})
+            SessionState(**{key: value})
         except Exception:
             # If validation fails, choose the default
             value = default
@@ -486,143 +500,8 @@ class _SessionState(BaseModel):
         return self.model_dump()
 
 
-class SessionState(metaclass=Singleton):
-    """Custom Streamlit session state, in order to revise all present keys, validate them, etc.
-
-    Instances of this class are fully synced with Streamlit's session state. This means that changes to `import streamlit as st; st.session_state` will be reflected in instances of this class, and reverse.
-
-    This class is a singleton, so only one instance can be created at a time.
-
-    Technically, this is a wrapper around the `pydantic` model :class:`_SessionState`.
-    """
-
-    def __init__(
-        self,
-        *,
-        reverse: bool = DEFAULT_REVERSE_SYNC,
-        state: StateType | None = None,
-        **kwargs: ty.Any,
-    ) -> None:
-        """Constructor.
-
-        Args:
-            reverse (bool):
-                If `True`, try to sync from `st.session_state` to here. If this raises `AttributeError`, this means the state is empty, so we sync from here to there.
-                Note that if `auto_sync == False`, this won't have any effect.
-                For more information on `auto_sync`, see :class:`_SessionState`.
-
-            state (StateType | None):
-                Session state to patch.
-
-            **kwargs (Any):
-                See :class:`_SessionState`.
-        """
-        logger.debug(f"Creating session state with:\n\treverse={reverse}")
-        self.state = _SessionState(**kwargs)  # type: ignore
-        self.bind(state)
-        self.sync(reverse=reverse)
-        self.patch(state)
-
-    @property
-    def state(self) -> _SessionState:
-        """Return the state of the session."""
-        return self._state
-
-    @state.setter
-    def state(self, state: _SessionState) -> None:
-        """Set the state of the session."""
-        assert isinstance(state, _SessionState)
-        self._state = state
-
-    @property
-    def session_state(self) -> StateType:
-        """Streamlit session state."""
-        return self.state.session_state
-
-    def sync(self, reverse: bool = DEFAULT_REVERSE_SYNC) -> None:
-        """Sync states.
-
-        Args:
-            reverse (bool):
-                If `True`, try to sync from `st.session_state` to here. If this raises `AttributeError`, this means the state is empty, so we sync from here to there.
-        """
-        logger.debug(f"Syncing... (reverse={reverse})")
-        self.state.sync(reverse=reverse)
-
-    def manual_sync(self, key: str, reverse: bool = False) -> None:
-        """Manually sync a specific `key`.
-
-        Args:
-            key (str):
-                Key that has to be synced.
-
-            reverse (bool, optional):
-                If `True`, values are synced (copied) from `st.session_state` to here.
-                Defaults to `False`.
-        """
-        # Select origina and destination
-        from_state = self.session_state if reverse else self.state
-        to_state = self.state if reverse else self.session_state
-        # Get the value to copy over
-        value = from_state[key]
-        # Sync the value
-        to_state[key] = value
-
-    def patch(self, state: StateType | None = None) -> StateType:
-        """We patch the original Streamlit state so that when that one is used, it automatically syncs with this class."""
-        return self.state.patch(state)
-
-    def bind(self, session_state: StateType | None) -> None:
-        """Bind this model to Streamlit's session state."""
-        self.state.bind(session_state)
-
-    def unbind(self) -> None:
-        """Unbind."""
-        logger.trace(f"Unbinding {self}")
-        self.state.unbind()
-
-    def to_dict(self) -> dict[str, ty.Any]:
-        """Dump model."""
-        return self.state.to_dict()
-
-    def get(self, key: str) -> ty.Any:
-        """Getter."""
-        return self.state[key]
-
-    def __len__(self) -> int:
-        """Number of user state and keyed widget values in session_state."""
-        return len(self.state)
-
-    def __getitem__(self, key: str) -> ty.Any:
-        """Return the state or widget value with the given key."""
-        return self.state[key]
-
-    def __setitem__(self, key: str, value: ty.Any) -> None:
-        """Set the value of the given key."""
-        self.state[key] = value
-
-    def __getattr__(self, key: str) -> ty.Any:
-        """get the value from the wrapped state."""
-        if key not in ["_state", "state"]:
-            return getattr(self._state, key)
-        # return super().__getattr__(key)
-
-    def __setattr__(self, key: str, value: ty.Any) -> None:
-        """Set the value of the given key, but set it on the wrapped satte."""
-        if key not in ["_state", "state"]:
-            setattr(self._state, key, value)
-        else:
-            super().__setattr__(key, value)
-
-    @classmethod
-    def reset(cls) -> None:
-        """Reset the singleton."""
-        Singleton.reset(cls)  # type: ignore
-
-    def __enter__(self) -> "SessionState":
-        """Activate state temporarily."""
-        return self
-
-    def __exit__(self, *args: ty.Any, **kwargs: ty.Any) -> None:
-        """Reset state."""
-        type(self).reset()
+session_state = SessionState(
+    session_state=st.session_state,
+    reverse=True,
+    auto_sync=False,
+)

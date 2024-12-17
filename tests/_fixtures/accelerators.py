@@ -9,7 +9,7 @@ from svsvllm.utils import find_device
 
 @pytest.fixture
 def device(request: pytest.FixtureRequest) -> ty.Iterator[torch.device]:
-    """Torch device."""
+    """Torch device. Just call this fixture to make sure everything is on the indicated device."""
     name = getattr(request, "param", "auto")
     if name is None:
         name = "auto"

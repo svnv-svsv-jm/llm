@@ -1,5 +1,6 @@
 __all__ = [
     "DEFAULT_LLM",
+    "DEFAULT_LLM_MLX",
     "OPENAI_DEFAULT_MODEL",
     "EMBEDDING_DEFAULT_MODEL",
     "ZEPHYR_CHAT_TEMPLATE",
@@ -9,6 +10,7 @@ __all__ = [
 from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
 
 DEFAULT_LLM = "TinyLlama/TinyLlama_v1.1"
+DEFAULT_LLM_MLX = "mlx-community/quantized-gemma-2b-it"
 OPENAI_DEFAULT_MODEL = "gpt-3.5-turbo"
 EMBEDDING_DEFAULT_MODEL = "BAAI/bge-base-en-v1.5"
 

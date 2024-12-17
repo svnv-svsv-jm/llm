@@ -9,7 +9,7 @@ description = "RAG system for LLMs, and more."
 authors = ["Gianmarco <janmail1990@gmail.com>"]
 license = "LICENSE"
 readme = "README.md"
-packages = [{ include = "*", from = "src" }]
+packages = [{ include = "svsvllm", from = "src" }, { include = "svsvchat", from = "src" }]
 include = ["*.py", "src/**/*.json", "src/**/*.toml"]
 exclude = ["tests/*"]
 
@@ -20,7 +20,7 @@ repository = "https://github.com/svnv-svsv-jm/llm"
 changelog = "https://github.com/svnv-svsv-jm/llm/main/changelog.md"
 
 [tool.poetry.scripts]
-runner = "svsvllm.__main__:main"
+runner = "svsvchat.__main__:main"
 
 [tool.poetry.dependencies]
 # Python version(s)
@@ -53,6 +53,7 @@ gguf = "^0.10.0"
 sentence-transformers = "^2.5.1"
 langchain = "*"
 langchain-huggingface = "^0.1.0"
+langchain-ollama = "^0.2.1"
 langgraph = "*"
 deepeval = "^2.0.0"
 lm-format-enforcer = "^0.10.7"
@@ -61,10 +62,14 @@ chardet = "^5.2.0"
 unstructured = { extras = ["pdf"], version = "*" }
 faiss-cpu = "^1.8.0"
 faiss-gpu = { version = "*", optional = true }
+mlx-lm = "^0.20.1"
+numexpr = "^2.10.2"
+pydantic-ai = { extras = ["logfire"], version = "^0.0.9" }
 # App
 selenium = "^4.23.1"
 typer = "^0.12.3"
 streamlit = "^1.38.0"
+codetiming = "^1.4.0"
 
 [tool.poetry.extras]
 gpu = ["faiss-gpu"]

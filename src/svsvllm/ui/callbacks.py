@@ -4,13 +4,12 @@ import os
 import typing as ty
 from loguru import logger
 import streamlit as st
-from streamlit.runtime.uploaded_file_manager import UploadedFile
 from io import BytesIO
 
 from svsvllm.settings import settings
 from svsvllm.const import PageNames
 from .rag import initialize_rag, create_history_aware_retriever
-from .session_state import SessionState
+from .session_state import session_state
 
 
 class BaseCallback:
@@ -18,10 +17,9 @@ class BaseCallback:
 
     def __init__(self, name: str) -> None:
         self._name = name
-        state = SessionState()
-        st.session_state.setdefault("callbacks", state["callbacks"])
+        st.session_state.setdefault("callbacks", session_state.callbacks)
         logger.trace(f"Adding {self.name} to session state.")
-        state["callbacks"][name] = self
+        session_state.callbacks[name] = self
         logger.trace(f"Added {self.name} to session state: {st.session_state}")
 
     @property
@@ -64,7 +62,7 @@ class SaveFilesCallback(BaseCallback):
 
         # Get files from session
         logger.trace("Getting files from session")
-        uploaded_files = SessionState().state.uploaded_files
+        uploaded_files = session_state.uploaded_files
         logger.trace(f"Got: {uploaded_files}")
 
         # If no files, return
@@ -73,7 +71,7 @@ class SaveFilesCallback(BaseCallback):
             return
 
         # File manager
-        saved_filenames: list[str] = SessionState().state.saved_filenames
+        saved_filenames: list[str] = session_state.saved_filenames
         assert isinstance(saved_filenames, list)
 
         # Save each file
@@ -87,7 +85,7 @@ class SaveFilesCallback(BaseCallback):
             with open(filename, "wb") as f:
                 logger.trace(f"Writing: {filename}")
                 f.write(bytes_data)  # write this content elsewhere
-                saved_filenames.append(filename)
+                saved_filenames.append(filename)  # pylint: disable=no-member
 
         # Remember saved files
         st.session_state["saved_filenames"] = saved_filenames
@@ -106,10 +104,8 @@ class UpdateLanguageCallback(BaseCallback):
 
     def run(self) -> None:
         """Update language."""
-        logger.trace(
-            f"Updating language: {SessionState().state.language}->{SessionState().state.new_language}"
-        )
-        st.session_state["language"] = SessionState().state.new_language
+        logger.trace(f"Updating language: {session_state.language}->{session_state.new_language}")
+        st.session_state["language"] = session_state.new_language
 
 
 class PageSelectorCallback(BaseCallback):

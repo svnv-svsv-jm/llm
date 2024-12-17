@@ -33,7 +33,7 @@ def get_fn_default_value(fn: ty.Callable, name: str) -> ty.Any:
     raise ValueError(f"Could not find parameter with name '{name}'")
 
 
-def pop_params_not_in_fn(fn: ty.Callable, params: dict) -> dict:
+def pop_params_not_in_fn(fn: ty.Callable, params: dict) -> tuple[dict[str, ty.Any], dict[str, ty.Any]]:
     """Pops parameters not in callable's signature.
 
     Args:
@@ -44,14 +44,15 @@ def pop_params_not_in_fn(fn: ty.Callable, params: dict) -> dict:
             Keyword arguments that have to be in the callable's signature, or they'll be popped.
 
     Returns:
-        (dict): Sanitized dictionary containing only the keys and values of `params` that are present in the `fn`'s signature.
+        (tuple[dict, dict]): Tuple with a sanitized dictionary containing only the keys and values of `params` that are present in the `fn`'s signature and dictionary of popped parameters.
     """
     sig = signature(fn)
     logger.trace(f"Signature: {sig}")
     inputs = params.copy()
+    popped: dict[str, ty.Any] = {}
     for name, _ in params.items():
         if name not in sig.parameters:
             logger.trace(f"Popping {name}")
-            inputs.pop(name, None)
+            popped[name] = inputs.pop(name, None)
     logger.trace(f"Returning: {pprint.pformat(inputs, indent=2)}")
-    return inputs
+    return inputs, popped

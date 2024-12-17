@@ -7,10 +7,10 @@ import sys, os
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 from langchain_core.messages import AIMessage
+from codetiming import Timer as CommandTimer
 
 from svsvllm.defaults import DEFAULT_LLM
 from svsvllm.ui.session_state import SessionState
-from svsvllm.utils import CommandTimer
 
 
 def test_chatting(
@@ -27,9 +27,8 @@ def test_chatting(
     apptest.session_state.openai_api_key = None
 
     # NOTE: we may even `apptest.chat_input[0].set_value("Hi").run()` but we have to run once first
-    with CommandTimer("apptest.run") as timer:
+    with CommandTimer("apptest.run"):
         apptest.run(timeout=300)
-    logger.info(f"App run took {timer.elapsed_time} seconds.")
 
     # Test HF model name exits regardless
     assert SessionState().state.model_name == DEFAULT_LLM
