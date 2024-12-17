@@ -4,6 +4,7 @@ from loguru import logger
 import streamlit as st
 
 from svsvchat.callbacks import PageSelectorCallback
+from svsvchat.session_state import session_state
 
 
 def settings_page() -> None:
@@ -22,19 +23,21 @@ def settings_page() -> None:
     st.number_input(
         "Chunk size.",
         min_value=1,
-        value="min",
+        step=1,
+        value=session_state.chunk_size,
         format="%1f",
         key="chunk_size",
-        help="Input a integer number.",
+        help="Input a integer number to select the chunk size for the RAG.",
         on_change=None,
     )
     st.number_input(
         "Chunk overlap.",
         min_value=1,
-        value="min",
+        step=1,
+        value=session_state.chunk_overlap,
         format="%1f",
         key="chunk_overlap",
-        help="Input a integer number.",
+        help="Input a integer number to select the chunk overlap for the RAG.",
         on_change=None,
     )
 

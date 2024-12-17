@@ -12,7 +12,7 @@ from svsvchat.settings import settings
 @pytest.mark.parametrize("has_chat", [False, True])
 @pytest.mark.parametrize("language", ["English", "Italian"])
 @pytest.mark.parametrize("mock_chat_input", [["Hi", "Ok", None], [None]], indirect=True)
-def test_settings_page_simple(
+def test_chat_page(
     session_state: SessionState,
     apptest: AppTest,
     mock_chat_input: MagicMock,

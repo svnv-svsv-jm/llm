@@ -4,12 +4,11 @@ __all__ = ["chat_page"]
 import typing as ty
 from loguru import logger
 import streamlit as st
-from langchain_core.messages import HumanMessage
 
 from svsvchat.settings import settings
 from svsvchat.session_state import session_state
 from svsvchat.chat import initialize_chat_history, add_prompt_to_chat_history
-from .sidebar import sidebar
+from svsvchat.pages.sidebar import sidebar
 
 
 def chat_page() -> None:

@@ -57,5 +57,6 @@ def sidebar() -> None:
         # Button to go to the settings page
         st.button(
             "Go to Settings",
-            on_click=PageSelectorCallback("main", name="page-selector"),
+            on_click=PageSelectorCallback("settings", name="page-selector"),
+            help="Button that lets you go to the settings page.",
         )
