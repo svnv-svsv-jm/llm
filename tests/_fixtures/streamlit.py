@@ -7,9 +7,21 @@ import typing as ty
 from loguru import logger
 
 from streamlit.testing.v1 import AppTest
+import streamlit as st
+from streamlit.runtime.scriptrunner import get_script_run_ctx
 
 from svsvchat.settings import settings
 from svsvchat import __main__
+
+
+@pytest.fixture(autouse=True)
+def reset_state() -> None:
+    """Reset Streamlit's session state."""
+    st.cache_resource.clear()
+    st.session_state.clear()
+    ctx = get_script_run_ctx()
+    if ctx is not None:
+        ctx.session_state.clear()
 
 
 @pytest.fixture

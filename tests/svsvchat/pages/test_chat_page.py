@@ -23,7 +23,7 @@ def test_settings_page_simple(
     session_state.page = "main"
     session_state.language = language
     with patch.object(settings, "has_chat", has_chat):
-        apptest.run()
+        apptest.run(timeout=5)
     logger.info(f"App: {apptest}")
 
     # Test basics
