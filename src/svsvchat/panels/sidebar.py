@@ -22,6 +22,13 @@ def sidebar() -> None:
             "[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnv-svsv-jm/llm?quickstart=1)"
         )
 
+        # Button to go to the settings page
+        st.button(
+            "Go to Settings",
+            on_click=PageSelectorCallback("settings", name="page-selector"),
+            help="Button that lets you go to the settings page.",
+        )
+
         # Create a selectbox for language selection
         logger.trace(f"Language selection: {session_state.language}")
         languages = ty.get_args(Languages)
@@ -52,11 +59,4 @@ def sidebar() -> None:
             "RAG embedding model name",
             key="embedding_model_name",
             placeholder=session_state.embedding_model_name,
-        )
-
-        # Button to go to the settings page
-        st.button(
-            "Go to Settings",
-            on_click=PageSelectorCallback("settings", name="page-selector"),
-            help="Button that lets you go to the settings page.",
         )
