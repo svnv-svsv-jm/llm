@@ -3,7 +3,7 @@ __all__ = ["ui"]
 from loguru import logger
 
 from .session_state import session_state
-from .pages import settings_page, chat_page
+from .panels import settings_page, chat_page
 
 
 def ui() -> None:

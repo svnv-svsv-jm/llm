@@ -8,7 +8,7 @@ import streamlit as st
 from svsvchat.settings import settings
 from svsvchat.session_state import session_state
 from svsvchat.chat import initialize_chat_history, add_prompt_to_chat_history
-from svsvchat.pages.sidebar import sidebar
+from svsvchat.panels.sidebar import sidebar
 
 
 def chat_page() -> None:
