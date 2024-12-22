@@ -25,3 +25,10 @@ def res_docs_path() -> str:
     """Path to test folder with documents."""
     path = os.path.join("tests", "res", "rag")
     return path
+
+
+@pytest.fixture(scope="session")
+def sample_file(res_docs_path: str) -> str:
+    """Path to a sample file that can be read in the RAG or uploaded."""
+    path = os.path.join(res_docs_path, "doc.txt")
+    return path

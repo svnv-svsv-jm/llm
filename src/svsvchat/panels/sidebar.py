@@ -8,6 +8,7 @@ import streamlit as st
 from svsvchat.callbacks import PageSelectorCallback, UpdateLanguageCallback
 from svsvchat.session_state import session_state
 from svsvllm.types import Languages
+from .file_upload import file_uploader
 
 
 def sidebar() -> None:
@@ -60,3 +61,6 @@ def sidebar() -> None:
             key="embedding_model_name",
             placeholder=session_state.embedding_model_name,
         )
+
+        # File uploader
+        file_uploader()

@@ -5,25 +5,16 @@ import typing as ty
 import sys, os
 from streamlit.testing.v1 import AppTest
 
-from svsvchat.callbacks import PageSelectorCallback, UpdateLanguageCallback
+from svsvchat.callbacks import PageSelectorCallback, UpdateLanguageCallback, SaveFilesCallback
 from svsvchat.session_state import SessionState
 from svsvchat.settings import settings
 
 
-def _has_cb(
+def test_sidebar(
+    apptest: AppTest,
     session_state: SessionState,
-    cb_class: type[PageSelectorCallback | UpdateLanguageCallback],
+    check_state_has_cb: ty.Callable,
 ) -> None:
-    has_cb = False
-    for _, cb in session_state.callbacks.items():
-        if isinstance(cb, cb_class):
-            has_cb = True
-            cb.run()
-            break
-    assert has_cb
-
-
-def test_sidebar(apptest: AppTest, session_state: SessionState) -> None:
     """Test `main` page setup: title, headers, etc."""
     # Run
     with patch.object(settings, "has_chat", False):
@@ -42,8 +33,9 @@ def test_sidebar(apptest: AppTest, session_state: SessionState) -> None:
 
     # Test callbacks
     logger.info(session_state.callbacks)
-    _has_cb(session_state, PageSelectorCallback)
-    _has_cb(session_state, UpdateLanguageCallback)
+    check_state_has_cb(PageSelectorCallback)
+    check_state_has_cb(UpdateLanguageCallback)
+    check_state_has_cb(SaveFilesCallback)
 
     # Success
     logger.success("Ok.")

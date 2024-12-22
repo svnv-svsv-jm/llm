@@ -52,6 +52,7 @@ coverage.xml
 .pytest_cache/
 cover/
 pytest_artifacts
+latest_logs
 
 # Translations
 *.mo

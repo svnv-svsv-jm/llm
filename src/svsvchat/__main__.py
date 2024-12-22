@@ -35,4 +35,4 @@ if __name__ == "__main__":
             app()
         else:
             logger.trace("Creating new runtime")
-            cli.main_run([__file__, "--server.port", "8501"])
+            cli.main_run([__file__, "--server.port", f"{settings.app_server_port}"])

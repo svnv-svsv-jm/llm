@@ -67,9 +67,17 @@ class Settings(BaseSettings):
         False,
         description="If `True`, verbosity and strictness on errors are higher.",
     )
+    file_uploader_label: str = Field(
+        "Upload files",
+        description="Label of the file uploader widget. By default, uploaded files are limited to 200MB. You can configure this using the server.maxUploadSize config option. For more info on how to set config options, see https://docs.streamlit.io/develop/api-reference/configuration/config.toml",
+    )
     uploaded_files_dir: str = Field(
         DEFAULT_UPLOADED_FILES_DIR,
         description="Location (in the file system) of the uploaded files.",
+    )
+    uploaded_files_key: str = Field(
+        "uploaded_files",
+        description="Key in the session state for the file uploader widget.",
     )
     q_system_prompt: str = Field(
         Q_SYSTEM_PROMPT,
@@ -128,6 +136,21 @@ class Settings(BaseSettings):
         description="If `True`, the provided chat template will be forced on the tokenizer.",
     )
     pipeline_kwargs: dict = Field({}, description="Pipeline kwargs.")
+    allowed_rag_file_extensions: list[str] = Field(
+        [".pdf", ".txt", "csv", ".md"],
+        description="List of accepted extensions for the files that we let the user upload to the RAG.",
+        examples=[
+            [".pdf", ".txt", "csv", ".md"],
+            [".pdf"],
+            [".md", ".txt"],
+        ],
+    )
+    app_server_port: int = Field(
+        8501,
+        description="Port where the app is listening.",
+        ge=0,
+        le=65_535,
+    )
 
     @field_validator("uploaded_files_dir", mode="before")
     @classmethod

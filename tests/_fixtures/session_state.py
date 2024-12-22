@@ -19,7 +19,9 @@ def _clear() -> None:
 
 @pytest.fixture
 def session_state() -> ty.Iterator[SessionState]:
-    """Session state."""
+    """Session state.
+    The state is cleared before and after each use.
+    """
     _clear()
     with patch.object(
         ss,
