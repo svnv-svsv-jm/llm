@@ -3,6 +3,7 @@ __all__ = ["SaveFilesCallback"]
 import os
 import typing as ty
 from loguru import logger
+from pathlib import Path
 import streamlit as st
 
 from svsvchat.settings import settings
@@ -38,11 +39,13 @@ class SaveFilesCallback(BaseCallback):
         msg = "Saving files... Please wait for the success message."
         st.info(msg)
         logger.debug(msg)
+        Path(settings.uploaded_files_dir).mkdir(parents=True, exist_ok=True)
         logger.trace(f"Upload location: {settings.uploaded_files_dir}")
         for file in uploaded_files:
             logger.trace(f"Reading: {file.name}")
             bytes_data = file.read()  # read the content of the file in binary
-            filename = os.path.join(settings.uploaded_files_dir, file.name)
+            filename = os.path.abspath(os.path.join(settings.uploaded_files_dir, file.name))
+            Path(filename).touch()
             with open(filename, "wb") as f:
                 logger.trace(f"Writing: {filename}")
                 f.write(bytes_data)  # write this content elsewhere
