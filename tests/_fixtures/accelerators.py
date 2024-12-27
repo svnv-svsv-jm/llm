@@ -1,3 +1,5 @@
+__all__ = ["device"]
+
 import pytest
 import typing as ty
 from loguru import logger

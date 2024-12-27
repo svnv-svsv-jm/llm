@@ -4,9 +4,19 @@ from loguru import logger
 import typing as ty
 import sys, os
 
-from svsvchat.rag import initialize_rag, initialize_retriever
+from svsvllm.exceptions import RetrieverNotInitializedError
+from svsvchat.rag import initialize_rag, initialize_retriever, create_history_aware_retriever
 from svsvchat.session_state import SessionState
 from svsvchat.settings import Settings
+
+
+def test_create_history_aware_retriever(session_state: SessionState) -> None:
+    """Test `create_history_aware_retriever`.
+    We expect this to raise an error because no retriever has been initialized before.
+    """
+    assert session_state.retriever is None
+    with pytest.raises(RetrieverNotInitializedError):
+        create_history_aware_retriever()
 
 
 def test_initialize_retriever(

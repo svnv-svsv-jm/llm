@@ -14,10 +14,7 @@ from svsvchat.model import create_chat_model
 
 
 @st.cache_resource
-def create_history_aware_retriever(
-    force_recreate: bool = False,
-    **kwargs: ty.Any,
-) -> RetrieverOutputLike:
+def create_history_aware_retriever(**kwargs: ty.Any) -> RetrieverOutputLike:
     """Create history-aware retriever.
 
     Args:
@@ -36,6 +33,11 @@ def create_history_aware_retriever(
     # Get current state
     state = session_state
 
+    # RAG
+    logger.trace(f"retriever: {state.retriever}")
+    if state.retriever is None:
+        raise RetrieverNotInitializedError()
+
     # Create prompt
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
         [
@@ -52,11 +54,6 @@ def create_history_aware_retriever(
         logger.trace("Chat model not initialized, attempting to initialize it...")
         chat_model = create_chat_model(**kwargs)
         logger.trace(f"chat_model: {chat_model}")
-
-    # RAG
-    logger.trace(f"retriever: {state.retriever}")
-    if state.retriever is None:
-        raise RetrieverNotInitializedError()
 
     # Our history aware retriever
     history_aware_retriever = create_har(chat_model, state.retriever, contextualize_q_prompt)

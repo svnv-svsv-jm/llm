@@ -9,6 +9,20 @@ from svsvchat.model import create_chat_model
 from svsvllm.types import ChatModelType
 
 
+def test_create_chat_model(
+    session_state: SessionState,
+    model_id: str,
+    use_mlx: bool,
+    query: str,
+) -> None:
+    """Test `create_chat_model`."""
+    with patch.object(session_state, "model_name", model_id):
+        chat_model = create_chat_model(use_mlx=use_mlx)
+    assert isinstance(chat_model, ChatModelType)
+    output = chat_model.invoke(query)
+    logger.success(output)
+
+
 def test_create_chat_model_cuda(session_state: SessionState, tiny_llama_model_id: str) -> None:
     """Test `create_chat_model` with CUDA-like settings."""
     with patch.object(session_state, "model_name", tiny_llama_model_id):
@@ -20,13 +34,6 @@ def test_create_chat_model_mps(session_state: SessionState, mlx_model_id: str) -
     """Test `create_chat_model` with CUDA-like settings."""
     with patch.object(session_state, "model_name", mlx_model_id):
         chat_model = create_chat_model(use_mlx=True)
-    assert isinstance(chat_model, ChatModelType)
-
-
-def test_create_chat_model(session_state: SessionState, model_id: str, use_mlx: bool) -> None:
-    """Test `create_chat_model`."""
-    with patch.object(session_state, "model_name", model_id):
-        chat_model = create_chat_model(use_mlx=use_mlx)
     assert isinstance(chat_model, ChatModelType)
 
 

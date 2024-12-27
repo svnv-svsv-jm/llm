@@ -9,7 +9,7 @@ from pytorch_lightning.accelerators import find_usable_cuda_devices
 from svsvllm.exceptions import NoGPUError
 
 
-def pick_single_gpu(exclude_gpus: list[int] = []) -> int:  # pragma: no cover
+def pick_single_gpu(exclude_gpus: list[int] = []) -> int:
     """
     Raises:
         RuntimeError:

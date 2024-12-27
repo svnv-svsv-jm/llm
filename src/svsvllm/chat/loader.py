@@ -21,10 +21,14 @@ from svsvllm.types import ModelType, TokenizerType, ChatModelType
 
 
 # TODO: check if new version fixed this
+# NOTE: This code is copy-pasted from `ChatHuggingFace` because the current `langchain_community` version forgot to do it
 class ChatMLX(ChatMLX_):
-    """We patch the original class by adding the `bind_tools` method."""
+    """We patch the original class by adding the `bind_tools` method.
 
-    def bind_tools(
+    This code is copy-pasted from `ChatHuggingFace` because the current `langchain_community` version forgot to do it
+    """
+
+    def bind_tools(  # pragma: no cover
         self,
         tools: ty.Sequence[ty.Union[dict[str, ty.Any], type, ty.Callable, BaseTool]],
         *,
