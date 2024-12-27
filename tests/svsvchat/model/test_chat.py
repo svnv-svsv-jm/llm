@@ -7,6 +7,7 @@ import sys, os
 from svsvchat.session_state import SessionState
 from svsvchat.model import create_chat_model
 from svsvllm.types import ChatModelType
+from svsvllm.prompts import DEFAULT_TEMPLATE
 
 
 def test_create_chat_model(
@@ -19,7 +20,7 @@ def test_create_chat_model(
     with patch.object(session_state, "model_name", model_id):
         chat_model = create_chat_model(use_mlx=use_mlx)
     assert isinstance(chat_model, ChatModelType)
-    output = chat_model.invoke(query)
+    output = chat_model.invoke(DEFAULT_TEMPLATE + query)
     logger.success(output)
 
 
