@@ -41,7 +41,7 @@ class SaveFilesCallback(BaseCallback):
         logger.debug(msg)
         Path(settings.uploaded_files_dir).mkdir(parents=True, exist_ok=True)
         logger.trace(f"Upload location: {settings.uploaded_files_dir}")
-        for file in uploaded_files:
+        for file in uploaded_files:  # pylint: disable=not-an-iterable
             logger.trace(f"Reading: {file.name}")
             bytes_data = file.read()  # read the content of the file in binary
             filename = os.path.abspath(os.path.join(settings.uploaded_files_dir, file.name))
