@@ -99,11 +99,19 @@ ui:
 git-clean:
 	bash scripts/git-clean.sh
 
-# squash all commits before rebasing, see https://stackoverflow.com/questions/25356810/git-how-to-squash-all-commits-on-branch
+# Squash all commits before rebasing, see https://stackoverflow.com/questions/25356810/git-how-to-squash-all-commits-on-branch
 git-squash:
 	git reset $(git merge-base main $(git branch --show-current))
 	git add -A
 	git commit -m "squashed commit"
+
+# Merge to `develop` and delete
+git-merge: CURRENT_BRANCH=$(shell git branch --show-current)
+git-merge:
+	git checkout develop
+	git pull
+	git merge $(CURRENT_BRANCH)
+	git branch -D $(CURRENT_BRANCH)
 
 
 # ---------------
