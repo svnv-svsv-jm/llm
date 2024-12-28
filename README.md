@@ -1,18 +1,16 @@
 # LLM's: RAGs and more
 
-This repository shows you how one can locally build a RAG from some documents in a folder for a pre-trained LLM.
+By using this repository, you can easily build a local RAG (from some documents in a folder) with a (pre-trained or not) LLM.
 
-## Contributing
-
-If you wish to contribute to this repository, see [here](./contributing.md).
+The repository also includes a UI made using Streamlit which, of course, you can deploy locally, too.
 
 ## Pre-requisites
 
 You need the following:
 
-- Python and a virtual environment (even better if you have `pyenv`)
+- `python = ">=3.10,<3.13"` (see [pyproject.toml](./pyproject.toml))
 - `make`
-- `HUGGINGFACE_TOKEN` declared in a `.env` file.
+- `HF_TOKEN` in a `.env` file
 
 ## Installation
 
@@ -25,7 +23,7 @@ make install
 
 ## Run app locally
 
-To run the UI, run the following command:
+To run the UI locally, run the following command:
 
 ```bash
 make ui
@@ -34,3 +32,7 @@ make ui
 ## Usage
 
 For more examples, see [examples](./examples) and [tutorials](./tutorials).
+
+## Contributing
+
+If you wish to contribute to this repository, see [here](./contributing.md).
