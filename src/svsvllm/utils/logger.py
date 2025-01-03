@@ -16,6 +16,7 @@ def set_up_logging(
     serialize: bool = False,
     show_file_info: bool = False,
     remove: bool = True,
+    **kwargs: ty.Any,
 ) -> ty.Any:
     """Set up logging."""
     # Remove
@@ -31,6 +32,7 @@ def set_up_logging(
         sys.stdout,
         level=level.upper(),
         format=Formatter(serialize=serialize, show_file_info=show_file_info),  # type: ignore
+        **kwargs,
     )
     return logger_id
 

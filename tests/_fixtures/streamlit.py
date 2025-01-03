@@ -1,4 +1,4 @@
-__all__ = ["app_main_file", "apptest"]
+__all__ = ["reset_state", "app_main_file", "apptest"]
 
 import pytest
 from unittest.mock import patch, MagicMock
@@ -8,7 +8,8 @@ from loguru import logger
 
 from streamlit.testing.v1 import AppTest
 import streamlit as st
-from streamlit.runtime.scriptrunner import get_script_run_ctx
+from streamlit.runtime.scriptrunner import get_script_run_ctx, add_script_run_ctx
+from streamlit.runtime.scriptrunner import ScriptRunContext
 
 from svsvchat.settings import settings
 from svsvchat import __main__
@@ -34,10 +35,25 @@ def app_main_file() -> str:
 
 @pytest.fixture
 def apptest(
+    reset_state: None,
     trace_logging_level: bool,
     app_main_file: str,
 ) -> ty.Iterator[AppTest]:
     """App for testing."""
+    # Create the ScriptRunContext
+    ctx = ScriptRunContext(
+        session_id="mock",
+        uploaded_file_mgr=MagicMock(),
+        session_state=MagicMock(),
+        _enqueue=MagicMock(),
+        query_string="mock",
+        main_script_path=MagicMock(),
+        user_info=MagicMock(),
+        fragment_storage=MagicMock(),
+        pages_manager=MagicMock(),
+    )
+    add_script_run_ctx(ctx)
+
     at = AppTest.from_file(app_main_file, default_timeout=30)
 
     # Keep ref to original method

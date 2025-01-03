@@ -5,14 +5,15 @@ import streamlit as st
 from langchain_community.vectorstores.faiss import FAISS
 from langchain_core.retrievers import BaseRetriever
 
+from svsvllm.exceptions import RetrieverNotInitializedError
+from svsvllm.rag import create_rag_database
 from svsvchat.session_state import session_state
 from svsvchat.settings import settings
-from svsvllm.rag import create_rag_database
 from .history_aware_retriever import create_history_aware_retriever
 
 
 @st.cache_resource
-def initialize_database(force_recreate: bool = False) -> FAISS:
+def initialize_database(force_recreate: bool = False) -> FAISS | None:
     """Initialize the database.
 
     Args:
@@ -62,7 +63,12 @@ def initialize_retriever() -> BaseRetriever:
     return retriever
 
 
-def initialize_rag(force_recreate: bool = False) -> tuple[FAISS, BaseRetriever]:
+@logger.catch(
+    exception=(IndexError, RetrieverNotInitializedError),
+    message="No RAG documents found.",
+    reraise=settings.test_mode,
+)
+def initialize_rag(force_recreate: bool = False) -> None:
     """Initializes the RAG.
 
     Args:
@@ -76,11 +82,12 @@ def initialize_rag(force_recreate: bool = False) -> tuple[FAISS, BaseRetriever]:
     """
     logger.trace("Initializing RAG")
     db = initialize_database(force_recreate=force_recreate)
-    logger.trace("RAG initialized")
+    logger.trace(f"RAG initialized: {db}")
+
     logger.trace("Initializing retriever")
     retriever = initialize_retriever()
-    logger.trace("Retriever initialized ")
+    logger.trace(f"Retriever initialized: {retriever}")
+
     logger.trace("Initializing history-aware retriever")
-    create_history_aware_retriever()
-    logger.trace("History-aware retriever initialized")
-    return db, retriever
+    har = create_history_aware_retriever()
+    logger.trace(f"History-aware retriever initialized: {har}")

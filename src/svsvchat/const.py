@@ -3,7 +3,7 @@ __all__ = ["ENV_PREFIX", "LOG_LEVEL_KEY", "DEFAULT_UPLOADED_FILES_DIR"]
 import os
 from pathlib import Path
 
-from svsvllm.const import *
+from svsvllm.const import *  # pylint: disable=unused-wildcard-import
 
 # Environment prefix for settings
 ENV_PREFIX = "SVSVLLM_"

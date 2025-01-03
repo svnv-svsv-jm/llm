@@ -56,7 +56,7 @@ def create_history_aware_retriever(**kwargs: ty.Any) -> RetrieverOutputLike:
         logger.trace(f"chat_model: {chat_model}")
 
     # Our history aware retriever
-    history_aware_retriever = create_har(chat_model, state.retriever, contextualize_q_prompt)
+    history_aware_retriever = create_har(state.chat_model, state.retriever, contextualize_q_prompt)
     logger.trace(f"Created history-aware retriever: {history_aware_retriever}")
     state.history_aware_retriever = history_aware_retriever
     st.session_state["history_aware_retriever"] = history_aware_retriever

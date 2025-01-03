@@ -14,4 +14,5 @@ from svsvchat.settings import Settings, settings as sttng
 @pytest.fixture
 def settings() -> ty.Iterator[Settings]:
     """App settings."""
-    yield sttng
+    with patch.object(sttng, "test_mode", True):
+        yield sttng

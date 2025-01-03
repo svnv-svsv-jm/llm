@@ -1,6 +1,7 @@
 __all__ = ["load_documents"]
 
 import os
+from pathlib import Path
 from loguru import logger
 from langchain_community.document_loaders.directory import DirectoryLoader
 from langchain_community.document_loaders.pdf import PyPDFLoader
@@ -17,20 +18,22 @@ def load_documents(path: str) -> list[Document]:
     file types and uses the corresponding loader to load the documents into a list.
 
     Args:
-        path (str): The path to the directory containing documents to load.
+        path (str):
+            The path to the directory containing documents to load.
 
     Raises:
-        FileNotFoundError: If the specified path does not exist.
+        FileNotFoundError:
+            If the specified path does not exist.
 
     Returns:
-        List[Document]: A list of loaded documents.
+        List[Document]:
+            A list of loaded documents.
     """
-    # Sanitize input
+    # Sanitize input: cast to `str`
     path = f"{path}"
 
-    # Raise error if path does not exist
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"The specified path does not exist: {path}")  # pragma: no cover
+    # Force existance of folder
+    Path(path).mkdir(parents=True, exist_ok=True)
 
     # Create loaders
     loaders = {
@@ -56,8 +59,10 @@ def load_documents(path: str) -> list[Document]:
     }
 
     # Load docs
+    logger.trace(f"Loading documents from: {path}")
     docs = []
     for file_type, loader in loaders.items():
         logger.info(f"Loading {file_type} files from {path}...")
         docs.extend(loader.load())
+    logger.trace(f"Loaded {len(docs)} documents.")
     return docs

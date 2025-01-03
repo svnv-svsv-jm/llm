@@ -9,6 +9,7 @@ from svsvchat.settings import settings
 from svsvchat.session_state import session_state
 from svsvchat.chat import initialize_chat_history, add_prompt_to_chat_history
 from svsvchat.panels.sidebar import sidebar
+from svsvchat.chat import chat_with_user
 
 
 def chat_page() -> None:
@@ -46,6 +47,9 @@ def chat_page() -> None:
 
     # If prompt exists, add it to chat history
     add_prompt_to_chat_history(prompt)
+
+    # Chat
+    chat_with_user(prompt)
 
     # Log END
     logger.debug(f"Main page: END")

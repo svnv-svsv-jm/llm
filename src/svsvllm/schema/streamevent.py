@@ -1,16 +1,42 @@
-__all__ = ["ChatMLXEvent", "AgentPayload"]
+__all__ = ["BasicStreamEvent", "ChatMLXEvent", "AgentPayload"]
 
 import typing as ty
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-from langchain_core.messages import AIMessage, BaseMessage
-import uuid
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
 from svsvllm.types import UuidType
 from svsvllm.utils import uuid_str
+from ._base import BaseModelWithValidation
 
 
-class AgentPayload(BaseModel):
+class BasicStreamEvent(BaseModelWithValidation):
+    """Schema for basic event objects.
+
+    These should be simple `dict` objects with a `messages` key.
+    """
+
+    model_config = ConfigDict(
+        extra="allow",
+        validate_assignment=True,
+        validate_default=True,
+    )
+
+    messages: list[BaseMessage] = Field(
+        [],
+        description="List of exchanged messages.",
+        examples=[
+            [
+                HumanMessage(content="What happens when an unstoppable force meets an immovable object?"),
+                AIMessage(
+                    content="The unstoppable force will be unable to move the immovable object, as the immovable object is not capable of being moved by an unstoppable force."
+                ),
+            ]
+        ],
+    )
+
+
+class AgentPayload(BaseModelWithValidation):
     """LLM agent payload. This is the schema for event objects returned by a streaming LLM agent."""
 
     id: UuidType = Field(default_factory=uuid_str, description="ID.")
@@ -38,7 +64,7 @@ class AgentPayload(BaseModel):
     )
 
 
-class ChatMLXEvent(BaseModel):
+class ChatMLXEvent(BaseModelWithValidation):
     """When streaming from a `ChatMLX` chat model, we get:
 
     ```python
@@ -82,6 +108,18 @@ class ChatMLXEvent(BaseModel):
         validate_default=True,
     )
 
+    messages: list[BaseMessage] = Field(
+        [],
+        description="List of exchanged messages.",
+        examples=[
+            [
+                HumanMessage(content="What happens when an unstoppable force meets an immovable object?"),
+                AIMessage(
+                    content="The unstoppable force will be unable to move the immovable object, as the immovable object is not capable of being moved by an unstoppable force."
+                ),
+            ]
+        ],
+    )
     type: str = Field(
         "task_result",
         description="Type of event.",
@@ -100,12 +138,3 @@ class ChatMLXEvent(BaseModel):
         AgentPayload(),
         description="Payload. This is what the LLM agent is streaming.",
     )
-
-    @classmethod
-    def is_valid(cls, obj: dict) -> bool:
-        """`True` if input complies to schema."""
-        try:
-            cls.model_validate(obj)
-            return True
-        except:
-            return False

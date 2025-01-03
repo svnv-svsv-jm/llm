@@ -77,7 +77,7 @@ pytest-mock = "*"
 pytest-pylint = "*"
 pytest-mypy = "*"
 pytest-testmon = "*"
-pytest-xdist = "*"
+pytest-xdist = "^3.6.1"
 nbmake = "*"
 virtualenv = "*"
 seleniumbase = "^4.33.11"
@@ -111,6 +111,7 @@ exclude_lines = [
 [tool.pytest.ini_options]
 minversion = "6.0"
 log_cli = true
+log_file = "pytest_output.log"
 testpaths = ["tests"]
 norecursedirs = ["tests/res", "tests/helpers"]
 addopts = [

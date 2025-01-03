@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     )
     uploaded_files_dir: str = Field(
         DEFAULT_UPLOADED_FILES_DIR,
-        description="Location (in the file system) of the uploaded files.",
+        description="Path to the folder (in the file system) where the files uploaded by the user will be stored. This also serves as the source folder for the RAG.",
     )
     uploaded_files_key: str = Field(
         "uploaded_files",

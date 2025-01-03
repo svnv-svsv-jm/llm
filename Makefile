@@ -17,12 +17,13 @@ export $(shell sed 's/=.*//' .env)
 LOCAL_USER:=$(shell whoami)
 LOCAL_USER_ID:=$(shell id -u)
 # project
-PROJECT_NAME:=shark-chess
+PROJECT_NAME:=svsv-llm
 EXAMPLE_DIR:=./examples
+LOGS_DIR:=./logs
 # python
 PYTHON?=python
 PYTHON_EXEC?=python -m
-PYTHONVERSION?=3.13
+PYTHONVERSION?=3.12
 ENVNAME?=llm
 PYTEST?=pytest
 PYTEST_PLUGINS=
@@ -41,6 +42,13 @@ DOCKER_COMMON_FLAGS=--cpus=$(CPUS) --memory=$(MEMORY) --shm-size=$(SHM) --networ
 REGISTRY=registry.gitlab.com/svnv-svsv-jm/chess-rl
 IMAGE=$(PROJECT_NAME)
 IMAGE_PYTHON=/venv/bin/python
+
+
+# -----------
+# utilities
+# -----------
+init-directories:
+	mkdir -p $(LOGS_DIR)
 
 
 # -----------
@@ -67,17 +75,19 @@ lock: install-init
 # -----------
 # testing
 # -----------
-mypy:
+init-tests: init-directories
+
+mypy: init-tests
 	$(PYTHON_EXEC) mypy --cache-fine-grained tests
 
-unit-test:
-	$(PYTHON_EXEC) pytest -m "not integtest" -x --pylint $(PYTEST_PLUGINS) --junitxml=pytest-results.xml --cov=src/ --cov-fail-under $(COV_FAIL_UNDER)
+unit-test: init-tests
+	$(PYTHON_EXEC) pytest -m "not integtest" --pylint $(PYTEST_PLUGINS) --junitxml=pytest-results.xml --cov=src/ --cov-fail-under $(COV_FAIL_UNDER)
 
-integ-test:
+integ-test: init-tests
 	$(PYTHON_EXEC) pytest -m "integtest" --pylint $(PYTEST_PLUGINS) --junitxml=pytest-results.xml --cov=src/
 
-nbmake:
-	$(PYTHON_EXEC) pytest -x --nbmake --overwrite "$(EXAMPLE_DIR)"
+nbmake: init-tests
+	$(PYTHON_EXEC) pytest --nbmake --overwrite "$(EXAMPLE_DIR)"
 
 test: mypy unit-test nbmake
 

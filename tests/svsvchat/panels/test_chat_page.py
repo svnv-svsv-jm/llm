@@ -16,18 +16,35 @@ def test_chat_page(
     session_state: SessionState,
     apptest: AppTest,
     mock_chat_input: MagicMock,
+    res_docs_path: str,
     has_chat: bool,
     language: str,
 ) -> None:
     """Test `main` page setup: title, headers, etc."""
-    session_state.page = "main"
-    session_state.language = language
-    with patch.object(settings, "has_chat", has_chat):
-        apptest.run(timeout=5)
-    logger.info(f"App: {apptest}")
+    with patch.object(
+        settings,
+        "has_chat",
+        has_chat,
+    ), patch.object(
+        settings,
+        "uploaded_files_dir",
+        res_docs_path,
+    ), patch.object(
+        session_state,
+        "page",
+        "main",
+    ), patch.object(
+        session_state,
+        "language",
+        language,
+    ):
+        apptest.run(timeout=30)
 
     # Test basics
-    assert not apptest.exception
+    if apptest.exception:
+        ex = apptest.exception[0]
+        ex_msg = "\n".join(ex.stack_trace + [ex.message])
+        raise Exception(f"{ex_msg}")
 
     # Test init message
     logger.info(f"Chat history: {session_state.chat_history}")
@@ -38,19 +55,19 @@ def test_chat_page(
         assert init_msg == settings.start_message_en
 
     # Test title
-    assert len(apptest.title) > 0
+    assert len(apptest.title) > 0, "No title"
     title = apptest.title[0]
     logger.info(f"Title: {title.value}")
     assert title.value == settings.app_title
 
     # Test subheader
-    assert len(apptest.subheader) > 0
+    assert len(apptest.subheader) > 0, "No subheader"
     subheader = apptest.subheader[0]
     logger.info(f"Subheader: {subheader.value}")
     assert subheader.value == settings.app_subheader
 
     # Test subheader
-    assert len(apptest.caption) > 0
+    assert len(apptest.caption) > 0, "No caption"
     caption = apptest.caption[0]
     logger.info(f"Caption: {caption.value}")
     assert caption.value == settings.app_caption

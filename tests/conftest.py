@@ -1,10 +1,7 @@
 import pytest
-import sys, os
+from unittest.mock import MagicMock
 import typing as ty
-from loguru import logger as loguru_logger
 import warnings
-from pathlib import Path
-import shutil
 import pyrootutils
 
 warnings.filterwarnings("ignore")
@@ -16,6 +13,9 @@ from _fixtures import *  # pylint: disable=unused-wildcard-import
 
 
 @pytest.fixture(autouse=True)
-def setup(delete_all_files_in_rag: None) -> ty.Iterator[None]:
+def setup(
+    log_to_file: int,
+    copy_res_docs_to_rag: None,
+) -> ty.Iterator[None]:
     """Set up and clean up."""
     yield
