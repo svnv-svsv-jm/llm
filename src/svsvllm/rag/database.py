@@ -39,7 +39,7 @@ def create_rag_database(
     logger.trace(f"Creating database from folder: {path}")
     documents: list[Document] = load_documents(path)
     if len(documents) < 1:
-        logger.warning(f"No documents found at location: {path}.")
+        logger.warning(f"No documents found at location: {path}.")  # pragma: no cover
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunked_docs: list[Document] = splitter.split_documents(documents)
     embedder = HuggingFaceEmbeddings(model_name=model_name)

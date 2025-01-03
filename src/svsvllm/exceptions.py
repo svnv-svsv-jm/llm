@@ -1,4 +1,4 @@
-__all__ = ["NoGPUError", "RetrieverNotInitializedError", "NoChatModelError"]
+__all__ = ["NoGPUError", "RetrieverNotInitializedError", "NoChatModelError", "UnsupportedLLMResponse"]
 
 
 class NoGPUError(Exception):
@@ -11,3 +11,9 @@ class RetrieverNotInitializedError(Exception):
 
 class NoChatModelError(Exception):
     """Raised when the chat model is not available but it should've been, like when calling `create_agent`."""
+
+
+class UnsupportedLLMResponse(Exception):
+    """When the streaming LLM returns an object that we do not expect.
+    This just means that we do not know how to get the LLM's string output out of it, not necessarily that something is wrong.
+    """

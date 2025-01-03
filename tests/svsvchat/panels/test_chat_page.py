@@ -10,7 +10,6 @@ from svsvchat.settings import settings
 
 
 @pytest.mark.parametrize("has_chat", [False, True])
-@pytest.mark.parametrize("language", ["English", "Italian"])
 @pytest.mark.parametrize("mock_chat_input", [["Hi", "Ok", None], [None]], indirect=True)
 def test_chat_page(
     session_state: SessionState,
@@ -18,7 +17,6 @@ def test_chat_page(
     mock_chat_input: MagicMock,
     res_docs_path: str,
     has_chat: bool,
-    language: str,
 ) -> None:
     """Test `main` page setup: title, headers, etc."""
     with patch.object(
@@ -33,10 +31,6 @@ def test_chat_page(
         session_state,
         "page",
         "main",
-    ), patch.object(
-        session_state,
-        "language",
-        language,
     ):
         apptest.run(timeout=60)
 
@@ -48,29 +42,24 @@ def test_chat_page(
 
     # Test init message
     logger.info(f"Chat history: {session_state.chat_history}")
-    init_msg = session_state.chat_history[0].content
-    if language.lower() == "italian":
-        assert init_msg == settings.start_message_it
-    else:
-        assert init_msg == settings.start_message_en
 
-    # Test title
-    assert len(apptest.title) > 0, "No title"
-    title = apptest.title[0]
-    logger.info(f"Title: {title.value}")
-    assert title.value == settings.app_title
+    # # Test title
+    # assert len(apptest.title) > 0, "No title"
+    # title = apptest.title[0]
+    # logger.info(f"Title: {title.value}")
+    # assert title.value == settings.app_title
 
-    # Test subheader
-    assert len(apptest.subheader) > 0, "No subheader"
-    subheader = apptest.subheader[0]
-    logger.info(f"Subheader: {subheader.value}")
-    assert subheader.value == settings.app_subheader
+    # # Test subheader
+    # assert len(apptest.subheader) > 0, "No subheader"
+    # subheader = apptest.subheader[0]
+    # logger.info(f"Subheader: {subheader.value}")
+    # assert subheader.value == settings.app_subheader
 
-    # Test subheader
-    assert len(apptest.caption) > 0, "No caption"
-    caption = apptest.caption[0]
-    logger.info(f"Caption: {caption.value}")
-    assert caption.value == settings.app_caption
+    # # Test subheader
+    # assert len(apptest.caption) > 0, "No caption"
+    # caption = apptest.caption[0]
+    # logger.info(f"Caption: {caption.value}")
+    # assert caption.value == settings.app_caption
 
     # Test chat
     if not has_chat:

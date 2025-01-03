@@ -5,14 +5,13 @@ from loguru import logger
 import streamlit as st
 import uuid
 from langgraph.graph.graph import CompiledGraph
-from langgraph.pregel.io import AddableValuesDict
-from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_core.messages import HumanMessage
 from langchain_core.utils.interactive_env import is_interactive_env
 from langchain_core.runnables.config import RunnableConfig
 
 from svsvllm.exceptions import RetrieverNotInitializedError
-from svsvllm.schema import ChatMLXEvent, BasicStreamEvent
 from svsvllm.utils import pop_params_not_in_fn
+from svsvllm.chat import extract_message_from_event
 from svsvchat.model import create_chat_model
 from svsvchat.rag import initialize_rag, create_history_aware_retriever
 from svsvchat.agent import create_agent
@@ -48,7 +47,7 @@ def setup(
     initialize_rag()
     try:
         create_history_aware_retriever()
-    except RetrieverNotInitializedError as ex:
+    except RetrieverNotInitializedError as ex:  # pragma: no cover
         if settings.test_mode:
             raise ex
 
@@ -139,54 +138,8 @@ def stream(
 
         # NOTE: Make sure nothing can happen after each `yield`
         # Thus, we use many nested blocks
-
-        messages: list[BaseMessage]
-
-        # Check if `BasicStreamEvent`
-        if BasicStreamEvent.is_valid(event):
-            messages = event["messages"]
-            msg = messages[-1]
-            yield msg.content
-
-        # MLX events are a special case
-        elif ChatMLXEvent.is_valid(event):
-            logger.trace("ChatMLXEvent")
-            ev = ChatMLXEvent(**event)
-            if ev.messages:
-                yield ev.messages[-1].content  # pylint: disable=unsubscriptable-object
-            else:
-                out = ev.payload.result  # pylint: disable=no-member
-                logger.trace(f"ChatMLXEvent result: {out}")
-                if len(out) < 1:
-                    yield ""
-                else:
-                    name, messages = out[-1]
-                    logger.trace(f"{name}: {messages}")
-                    message = messages[-1]
-                    yield message.content
-
-        # If not a `dict`, we really have no idea what happened
-        elif not isinstance(event, dict):
-            yield event
-
-        # Here we have no idea what has been returned, but it is at least a `dict`
-        else:
-            # Get the messages
-            messages = event.get("messages", None)
-            logger.trace(f"messages ({type(messages)}): {messages}")
-
-            # We are expecting `list[BaseMessage]`
-            if isinstance(messages, list):
-                if len(messages) > 0:
-                    last_message = messages[-1]
-                    if isinstance(last_message, BaseMessage):
-                        yield last_message.pretty_repr(html=is_interactive_env())
-                    else:
-                        yield last_message
-                else:
-                    yield messages
-            else:
-                yield messages
+        message = extract_message_from_event(event)
+        yield message.pretty_repr(html=is_interactive_env())
 
 
 def stream_open_source_model(

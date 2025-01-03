@@ -2,7 +2,6 @@ import pytest
 from loguru import logger
 import typing as ty
 import sys, os
-import yaml
 
 import torch
 from transformers import BitsAndBytesConfig, PreTrainedModel, PreTrainedTokenizerBase

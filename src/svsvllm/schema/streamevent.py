@@ -46,21 +46,7 @@ class AgentPayload(BaseModelWithValidation):
     result: list[tuple[str, list[BaseMessage]]] = Field(
         [],
         description="List of messages.",
-        examples=[
-            [
-                (
-                    "messages",
-                    [
-                        AIMessage(
-                            content="Hi, how can I help you?",
-                            additional_kwargs={},
-                            response_metadata={},
-                            id="run-b65f58d7-0ded-47c7-952e-c1dd0ae244ee-0",
-                        )
-                    ],
-                )
-            ]
-        ],
+        examples=[[("messages", [AIMessage(content="Hi, how can I help you?")])]],
     )
 
 
@@ -135,6 +121,5 @@ class ChatMLXEvent(BaseModelWithValidation):
         ge=0,
     )
     payload: AgentPayload = Field(
-        AgentPayload(),
         description="Payload. This is what the LLM agent is streaming.",
     )

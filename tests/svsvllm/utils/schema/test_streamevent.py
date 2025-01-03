@@ -4,12 +4,12 @@ import os
 import typing as ty
 from loguru import logger
 
-from svsvllm.schema import ChatMLXEvent
+from svsvllm.schema import ChatMLXEvent, AgentPayload
 
 
 def test_ChatMLXEvent() -> None:
     """Test `ChatMLXEvent`."""
-    event = ChatMLXEvent()
+    event = ChatMLXEvent(payload=AgentPayload())
     assert ChatMLXEvent.is_valid(event.model_dump())
     assert not ChatMLXEvent.is_valid({"timestamp": "ok"})
 
