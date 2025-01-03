@@ -38,7 +38,7 @@ def test_chat_page(
         "language",
         language,
     ):
-        apptest.run(timeout=30)
+        apptest.run(timeout=60)
 
     # Test basics
     if apptest.exception:

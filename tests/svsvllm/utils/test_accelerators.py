@@ -37,6 +37,24 @@ def test_choose_auto_accelerator_cuda() -> None:
         assert "cuda" in choose_auto_accelerator()
 
 
+def test_choose_auto_accelerator_cuda_pick_single_gpu(device_count: int) -> None:
+    """Test `choose_auto_accelerator` on CUDA device."""
+    with patch.object(
+        MPSAccelerator,
+        "is_available",
+        return_value=False,
+    ), patch.object(
+        CUDAAccelerator,
+        "is_available",
+        return_value=True,
+    ), patch.object(
+        torch.Tensor,
+        "to",
+        return_value=torch.zeros(1),
+    ):
+        assert "cuda:" in choose_auto_accelerator()
+
+
 def test_choose_auto_accelerator_cpu() -> None:
     """Test `choose_auto_accelerator` on CPU-only device."""
     with patch.object(

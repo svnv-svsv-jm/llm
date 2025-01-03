@@ -51,6 +51,6 @@ def create_chat_model(model_name: str = None, **kwargs: ty.Any) -> ChatModelType
     session_state.model = model
     session_state.tokenizer = tokenizer
     session_state.chat_model = chat_model
-    logger.trace(f"Chat model created: {chat_model}")
+    logger.trace(f"Chat model created: {type(chat_model)}")
 
     return chat_model

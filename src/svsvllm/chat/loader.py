@@ -122,8 +122,7 @@ def load_hf_pipeline(
     logger.trace(f"Creating {HuggingFacePipeline}")
     logger.trace(f"pipeline_kwargs: {pipeline_kwargs}")
     llm = HuggingFacePipeline(pipeline=pipeline, model_id=model_name, pipeline_kwargs=pipeline_kwargs)
-    logger.trace(f"Created: {llm}")
-
+    logger.trace(f"Created: {type(llm)}")
     return llm
 
 
@@ -154,7 +153,7 @@ def load_mlx_pipeline(
         apply_chat_template=apply_chat_template,
         force_chat_template=force_chat_template,
     )
-    logger.trace(f"Created: {llm}")
+    logger.trace(f"Created: {type(llm)}")
     return llm
 
 
@@ -244,15 +243,15 @@ def load_chat_model(
         chat_model = ChatHuggingFace(llm=llm, model_id=model_name)
 
     # Create and save chat model
-    logger.trace(f"Chat model created: {chat_model}")
+    logger.trace(f"Chat model created: {type(chat_model)}")
 
     # NOTE: This is necessary probably due to a bug in `HuggingFacePipeline`
     if isinstance(chat_model, ChatHuggingFace):
         setattr(chat_model, "tokenizer", tokenizer)
 
-    logger.trace(f"Chat model ({type(chat_model)}): {chat_model}")
-    logger.trace(f"LLM ({type(llm)}): {llm}")
-    logger.trace(f"Model ({type(model)}): {model}")
-    logger.trace(f"Tokenizer ({type(tokenizer)}): {tokenizer}")
+    logger.trace(f"Chat model ({type(chat_model)})")
+    logger.trace(f"LLM ({type(llm)})")
+    logger.trace(f"Model ({type(model)})")
+    logger.trace(f"Tokenizer ({type(tokenizer)})")
 
     return chat_model, model, tokenizer
