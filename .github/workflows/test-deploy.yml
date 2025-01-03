@@ -37,6 +37,8 @@ jobs:
           make install-init
           make install
           make ${{ matrix.cmd }}
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
   push-to-main:
     needs: test
