@@ -21,6 +21,7 @@ from svsvchat.settings import settings
 def setup(
     model_name: str = None,
     pipeline_kwargs: dict[str, ty.Any] | None = None,
+    create_agent_kwargs: dict[str, ty.Any] | None = None,
     **kwargs: ty.Any,
 ) -> CompiledGraph:
     """General setup.
@@ -34,6 +35,12 @@ def setup(
 
         pipeline_kwargs (dict, optional):
             See :class:`HuggingFacePipeline`.
+
+        create_agent_kwargs (dict, optional):
+            See :func:`svsvchat.agent.create_agent`.
+
+        **kwargs:
+            See :func:`svsvchat.model.create_chat_model`.
 
     Returns:
         CompiledGraph: LLM agent.
@@ -53,7 +60,9 @@ def setup(
 
     # Create agent
     logger.trace(f"Initializing agent")
-    agent_executor = create_agent()
+    if create_agent_kwargs is None:
+        create_agent_kwargs = {}
+    agent_executor = create_agent(**create_agent_kwargs)
     return agent_executor
 
 
@@ -132,9 +141,9 @@ def stream(
             **kwargs,
         )
     ):
-        # if i == 0:
-        #     yield "\n"
         logger.trace(f"[{i}] Event ({type(event)}): {event}")
+        if i == 0:
+            continue
 
         # NOTE: Make sure nothing can happen after each `yield`
         # Thus, we use many nested blocks

@@ -79,6 +79,14 @@ class Settings(BaseSettings):
         "uploaded_files",
         description="Key in the session state for the file uploader widget.",
     )
+    prompt_role: str = Field(
+        "system",
+        description="Role for the prompt that is appended before each user message.",
+    )
+    system_prompt: str | None = Field(
+        None,
+        description="Prompt for LLM.",
+    )
     q_system_prompt: str = Field(
         Q_SYSTEM_PROMPT,
         description="Prompt for history aware retriever.",
