@@ -18,7 +18,7 @@ def _clear() -> None:
 
 
 @pytest.fixture
-def session_state(use_mlx: bool) -> ty.Iterator[SessionState]:
+def session_state(use_mlx: bool, model_id: str) -> ty.Iterator[SessionState]:
     """Session state.
     The state is cleared before and after each use.
     """
@@ -39,6 +39,10 @@ def session_state(use_mlx: bool) -> ty.Iterator[SessionState]:
         ss,
         "use_mlx",
         use_mlx,
+    ), patch.object(
+        ss,
+        "model_name",
+        model_id,
     ):
         ss.initialize()
         yield ss
