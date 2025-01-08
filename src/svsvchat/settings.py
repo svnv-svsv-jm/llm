@@ -8,6 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from .const import (
     ENV_PREFIX,
     DEFAULT_UPLOADED_FILES_DIR,
+    SYSTEM_PROMPT,
     Q_SYSTEM_PROMPT,
     ZEPHYR_CHAT_TEMPLATE as CHAT_TEMPLATE,
 )
@@ -83,9 +84,9 @@ class Settings(BaseSettings):
         "system",
         description="Role for the prompt that is appended before each user message.",
     )
-    system_prompt: str | None = Field(
-        None,
-        description="Prompt for LLM.",
+    system_prompt: str = Field(
+        SYSTEM_PROMPT,
+        description="Prompt for the LLM agent.",
     )
     q_system_prompt: str = Field(
         Q_SYSTEM_PROMPT,
