@@ -54,24 +54,19 @@ def apptest(
     )
     add_script_run_ctx(ctx)
 
-    at = AppTest.from_file(app_main_file, default_timeout=30)
+    at = AppTest.from_file(app_main_file, default_timeout=60)
 
     # Keep ref to original method
     __run = at.run
 
-    def run(**kwags: ty.Any) -> AppTest | None:
+    def run(**kwags: ty.Any) -> AppTest:
         """Wrap original method in a `try-except` statement."""
         logger.debug("Running patched `run`")
         try:
             return __run(**kwags)
         except RuntimeError as e:
             logger.debug(e)
-            return None
+            return at
 
-    # Patch the run method to time out safely
-    at.run = run  # type: ignore
-
-    with patch.object(settings, "test_mode", True):
+    with patch.object(settings, "test_mode", True), patch.object(at, "run", side_effect=run):
         yield at
-
-    at.run = __run

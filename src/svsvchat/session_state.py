@@ -2,6 +2,7 @@ __all__ = ["SessionState"]
 
 import typing as ty
 from loguru import logger
+import uuid
 from pydantic import BaseModel, Field, SecretStr, field_validator, ConfigDict
 from io import BytesIO
 import streamlit as st
@@ -185,8 +186,8 @@ class SessionState(BaseModel):
         description="Agent executor.",
         json_schema_extra=FieldExtraOptions().model_dump(),
     )
-    thread_id: str | None = Field(
-        None,
+    thread_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
         description="Thread ID for streaming.",
         json_schema_extra=FieldExtraOptions().model_dump(),
     )

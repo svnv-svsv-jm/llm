@@ -4,10 +4,9 @@ from loguru import logger
 import typing as ty
 import sys, os
 
-from codetiming import Timer
-from streamlit.testing.v1 import AppTest
 from langchain_core.vectorstores import VectorStoreRetriever
 
+from svsvllm.const import SYSTEM_PROMPT
 from svsvllm.exceptions import NoChatModelError
 from svsvchat.settings import Settings
 from svsvchat.session_state import SessionState
@@ -16,15 +15,25 @@ from svsvchat.agent import create_agent
 
 
 @pytest.mark.parametrize("create_chat", [False, True])
+@pytest.mark.parametrize("system_prompt", [SYSTEM_PROMPT])
 def test_create_agent(
     settings: Settings,
     session_state: SessionState,
     model_id: str,
     retriever: VectorStoreRetriever,
     create_chat: bool,
+    system_prompt: str,
 ) -> None:
     """Test `create_agent`."""
-    with patch.object(session_state, "retriever", retriever):
+    with patch.object(
+        settings,
+        "system_prompt",
+        system_prompt,
+    ), patch.object(
+        session_state,
+        "retriever",
+        retriever,
+    ):
         if create_chat:
             create_history_aware_retriever(model_name=model_id)
 
@@ -36,6 +45,7 @@ def test_create_agent(
 
         # If chat model is present, we can create the agent
         agent = create_agent()
+
     logger.success(f"Agent: {agent}")
 
 

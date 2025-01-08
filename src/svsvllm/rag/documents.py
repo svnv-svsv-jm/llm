@@ -62,7 +62,7 @@ def load_documents(path: str) -> list[Document]:
     logger.trace(f"Loading documents from: {path}")
     docs = []
     for file_type, loader in loaders.items():
-        logger.info(f"Loading {file_type} files from {path}...")
+        logger.debug(f"Loading {file_type} files from {path}...")
         docs.extend(loader.load())
     logger.trace(f"Loaded {len(docs)} documents.")
     return docs

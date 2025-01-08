@@ -7,9 +7,10 @@ import sys, os
 from svsvchat.settings import Settings
 from svsvchat.session_state import SessionState
 from svsvchat.chat import chat_with_user
+from svsvllm.const import SYSTEM_PROMPT
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Your name is Antonio"])
+@pytest.mark.parametrize("system_prompt", [SYSTEM_PROMPT, "Your name is Antonio"])
 def test_chat_with_user(
     session_state: SessionState,
     settings: Settings,
@@ -29,7 +30,7 @@ def test_chat_with_user(
     logger.info(message)
     assert message.content
 
-    if system_prompt:
+    if "antonio" in system_prompt.lower():
         assert "antonio" in message.content.lower()
 
 

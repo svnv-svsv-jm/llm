@@ -102,6 +102,7 @@ def create_agent(
 
         state_modifier = format_for_model
 
+    # Create agent
     agent_executor = create_react_agent(
         chat_model,
         tools,

@@ -16,6 +16,7 @@ from svsvchat.model import create_chat_model
 from svsvchat.rag import initialize_rag, create_history_aware_retriever
 from svsvchat.agent import create_agent
 from svsvchat.settings import settings
+from svsvchat.session_state import session_state
 
 
 def setup(
@@ -85,19 +86,17 @@ def setup_for_streaming(**kwargs: ty.Any) -> tuple[CompiledGraph, RunnableConfig
     # Create chat configuration
     logger.trace("Creating chat configuration")
     # Generate thread ID if not exists, or use the one in the session state
-    thread_id = st.session_state.get("thread_id", None)
-    if thread_id is None:
-        thread_id = str(uuid.uuid4())
-        st.session_state["thread_id"] = thread_id
+    thread_id = session_state.thread_id
+    session_state.manual_sync("thread_id")
     logger.trace(f"Using thread ID: {thread_id}")
 
     # Create configuration
-    agent_config = RunnableConfig(**{"configurable": {"thread_id": thread_id}})
-    st.session_state["agent_config"] = agent_config
-    logger.trace(f"Using agent config: {agent_config}")
+    session_state.agent_config = RunnableConfig(**{"configurable": {"thread_id": thread_id}})
+    session_state.manual_sync("agent_config")
+    logger.trace(f"Using agent config: {session_state.agent_config}")
 
     # Return
-    return agent_executor, agent_config
+    return agent_executor, session_state.agent_config
 
 
 def stream(
