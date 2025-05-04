@@ -9,6 +9,14 @@ repos:
         types: [python]
         pass_filenames: false
 
+      - id: black
+        name: black
+        entry: uv run just black-check
+        language: system
+        files: \.py$
+        types: [python]
+        pass_filenames: false
+
       - id: mypy
         name: mypy
         entry: uv run just mypy
@@ -24,7 +32,7 @@ repos:
         files: \.py$
         types: [python]
         pass_filenames: false
-      
+
       - id: unit-test
         name: unit-test
         entry: uv run just unit-test
