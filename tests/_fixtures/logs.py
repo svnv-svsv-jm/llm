@@ -3,11 +3,20 @@ import typing as ty
 from loguru import logger
 import json
 
+import svsv
+
 
 @pytest.fixture
 def log_level() -> str:
     """Log level."""
     return "TRACE"
+
+
+@pytest.fixture(autouse=True)
+def enable_logs() -> ty.Iterator[bool]:
+    """Enable logs."""
+    svsv.configure_logger(True)
+    yield True
 
 
 @pytest.fixture

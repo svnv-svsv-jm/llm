@@ -47,6 +47,7 @@ pytest-results.xml
 nosetests.xml
 coverage.xml
 *-test.xml
+*-tests*.xml
 *.cover
 *.py,cover
 .hypothesis/

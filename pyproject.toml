@@ -14,21 +14,25 @@ exclude = ["tests/*"]
 "src/svsv" = "svsv"
 
 [project]
-name = "svsv-llm"
+name = "svsv"
 version = "0.1.0"
 description = "RAG system for LLMs, and more."
 authors = [{ name = "Gianmarco", email = "janmail1990@gmail.com" }]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
 license = { file = "LICENSE" }
-dependencies = []
+dependencies = [
+    "loguru>=0.7.3",
+    "pydantic>=2.11.4",
+    "pydantic-settings>=2.9.1",
+]
 
 [project.urls]
 repository = "https://github.com/svnv-svsv-jm/llm"
 changelog = "https://github.com/svnv-svsv-jm/llm/main/changelog.md"
 
 [project.scripts]
-runner = "svsvchat.__main__:main"
+runner = "svsv.__main__:main"
 
 [dependency-groups]
 dev = [
@@ -49,7 +53,6 @@ dev = [
     "pytest-testmon",
     "pytest-xdist>=3.6.1,<4",
     "nbmake",
-    "seleniumbase>=4.33.11,<5",
 ]
 
 [tool.black]
