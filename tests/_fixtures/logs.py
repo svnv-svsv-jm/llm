@@ -1,7 +1,8 @@
-import pytest
-import typing as ty
-from loguru import logger
 import json
+import typing as ty
+
+import pytest
+from loguru import logger
 
 import svsv
 
@@ -17,6 +18,12 @@ def enable_logs() -> ty.Iterator[bool]:
     """Enable logs."""
     svsv.configure_logger(True)
     yield True
+
+
+@pytest.fixture(autouse=True)
+def set_up_logging(log_level: str) -> ty.Iterator[int]:
+    """Creates logger for tests."""
+    yield svsv.set_up_logging(log_level=log_level)
 
 
 @pytest.fixture

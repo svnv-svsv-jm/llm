@@ -5,10 +5,15 @@ import streamlit as st
 
 def run_ui() -> None:
     """Run UI."""
+    # Title
     st.title("Chat App")
-    user_input = st.chat_input("Type a message")
-    if user_input:
-        st.write(f"You said: {user_input}")
+
+    # Accept user input
+    if prompt := st.chat_input("What's up?"):
+
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
+from pprint import pprint
+
 import pytest
 from loguru import logger
-from pprint import pprint
 
 
 @pytest.mark.parametrize("log_level", ["TRACE", "DEBUG", "INFO"])

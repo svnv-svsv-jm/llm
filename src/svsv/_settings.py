@@ -1,5 +1,5 @@
-import pydantic_settings
 import pydantic
+import pydantic_settings
 
 
 class Settings(pydantic_settings.BaseSettings):
@@ -19,6 +19,7 @@ class Settings(pydantic_settings.BaseSettings):
     )
 
     debug_mode: bool = pydantic.Field(False, description="Whether to run in debug mode or not.")
+    log_level: str = pydantic.Field("INFO", description="Logging level.")
 
 
 settings = Settings()
