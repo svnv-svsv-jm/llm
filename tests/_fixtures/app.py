@@ -7,4 +7,4 @@ import svsv
 @pytest.fixture
 def app() -> AppTest:
     """App."""
-    return AppTest.from_function(svsv.run_ui)
+    return AppTest.from_file(svsv.ui.core.__file__)
