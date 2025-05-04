@@ -46,6 +46,7 @@ htmlcov/
 pytest-results.xml
 nosetests.xml
 coverage.xml
+*-test.xml
 *.cover
 *.py,cover
 .hypothesis/
@@ -176,3 +177,4 @@ llama.cpp
 
 # RAG
 .rag
+data

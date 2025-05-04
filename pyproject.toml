@@ -1,96 +1,98 @@
 [build-system]
-requires = ["poetry-core>=1.0.0", "cython"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[tool.hatch.build.targets.sdist]
+include = ["src/svsvllm", "src/svsvchat", "*.py", "src/**/*.json", "src/**/*.toml"]
+exclude = ["tests/*"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/svsvllm", "src/svsvchat", "*.py", "src/**/*.json", "src/**/*.toml"]
+exclude = ["tests/*"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/svsvllm" = "svsvllm"
+"src/svsvchat" = "svsvchat"
+
+[project]
 name = "svsv-llm"
 version = "0.1.0"
 description = "RAG system for LLMs, and more."
-authors = ["Gianmarco <janmail1990@gmail.com>"]
-license = "LICENSE"
+authors = [{ name = "Gianmarco", email = "janmail1990@gmail.com" }]
+requires-python = ">=3.10,<3.13"
 readme = "README.md"
-packages = [{ include = "svsvllm", from = "src" }, { include = "svsvchat", from = "src" }]
-include = ["*.py", "src/**/*.json", "src/**/*.toml"]
-exclude = ["tests/*"]
+license = "LICENSE"
+dependencies = [
+    "rich>=13.7.0,<14",
+    "pyrootutils",
+    "loguru",
+    "codetiming>=1.4.0,<2",
+    "pydantic>=2.6.0,<3",
+    "pydantic-settings>=2.6.0,<3",
+    "lightning>=2.1.4,<3",
+    "bitsandbytes>=0.42,<0.43",
+    "torch>=2.2.1,<3",
+    "transformers>=4.38.2,<5",
+    "accelerate>=0.28.0,<0.29",
+    "optimum-quanto>=0.2.4,<0.3",
+    "huggingface-hub>=0.24.6,<0.25",
+    "gguf>=0.10.0,<0.11",
+    "sentence-transformers>=2.5.1,<3",
+    "langchain>=0.3.0,<0.4",
+    "langchain-huggingface>=0.1.0,<0.2",
+    "langchain-ollama>=0.2.1,<0.3",
+    "langchain-community>=0.3.13,<0.4",
+    "langgraph",
+    "lm-format-enforcer>=0.10.7,<0.11",
+    "sentencepiece>=0.2.0,<0.3",
+    "chardet>=5.2.0,<6",
+    "unstructured[pdf]",
+    "faiss-cpu>=1.8.0,<2",
+    "mlx-lm>=0.20.1,<0.21 ; sys_platform == 'darwin'",
+    "numexpr>=2.10.2,<3",
+    "selenium>=4.23.1,<5",
+    "typer>=0.12.3,<0.13",
+    "streamlit>=1.38.0,<2",
+    "openai>=1.58.1,<2",
+]
 
-[tool.poetry.urls]
-# homepage = "https://example.com"
-# documentation = "https://readthedocs.org"
+[project.optional-dependencies]
+gpu = ["faiss-gpu"]
+
+[project.urls]
 repository = "https://github.com/svnv-svsv-jm/llm"
 changelog = "https://github.com/svnv-svsv-jm/llm/main/changelog.md"
 
-[tool.poetry.scripts]
+[project.scripts]
 runner = "svsvchat.__main__:main"
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-rich = "^13.7.0"
-pyrootutils = "*"
-loguru = "*"
-codetiming = "^1.4.0"
-pydantic = "^2.6.0"
-pydantic-settings = "^2.6.0"
-lightning = "^2.1.4"
-bitsandbytes = "^0.42"
-torch = "^2.2.1"
-transformers = "^4.38.2"
-accelerate = "^0.28.0"
-optimum-quanto = "^0.2.4"
-huggingface-hub = "^0.24.6"
-gguf = "^0.10.0"
-sentence-transformers = "^2.5.1"
-langchain = "^0.3.0"
-langchain-huggingface = "^0.1.0"
-langchain-ollama = "^0.2.1"
-langchain-community = "^0.3.13"
-langgraph = "*"
-lm-format-enforcer = "^0.10.7"
-sentencepiece = "^0.2.0"
-chardet = "^5.2.0"
-unstructured = { extras = ["pdf"], version = "*" }
-faiss-cpu = "^1.8.0"
-faiss-gpu = { version = "*", optional = true }
-mlx-lm = { version = "^0.20.1", platform = "darwin" }
-numexpr = "^2.10.2"
-selenium = "^4.23.1"
-typer = "^0.12.3"
-streamlit = "^1.38.0"
-openai = "^1.58.1"
+[dependency-groups]
+dev = [
+    "jupyter",
+    "jupyterlab_server",
+    "jupyterlab",
+    "black[jupyter]",
+    "flake8",
+    "ipython",
+    "isort",
+    "mypy",
+    "types-pyyaml",
+    "pylint",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-pylint",
+    "pytest-mypy",
+    "pytest-testmon",
+    "pytest-xdist>=3.6.1,<4",
+    "nbmake",
+    "virtualenv",
+    "seleniumbase>=4.33.11,<5",
+]
 
-[tool.poetry.extras]
-gpu = ["faiss-gpu"]
-
-[tool.poetry.dev-dependencies]
-jupyter = "*"
-jupyterlab_server = "*"
-jupyterlab = "*"
-black = { extras = ["jupyter"], version = "*" }
-flake8 = "*"
-ipython = "*"
-isort = "*"
-mypy = "*"
-types-pyyaml = "*"
-pylint = "*"
-pytest = "*"
-pytest-cov = "*"
-pytest-mock = "*"
-pytest-pylint = "*"
-pytest-mypy = "*"
-pytest-testmon = "*"
-pytest-xdist = "^3.6.1"
-nbmake = "*"
-virtualenv = "*"
-seleniumbase = "^4.33.11"
-
-# ----------------------
-# Black
-# ----------------------
 [tool.black]
 line-length = 110
 
-# ----------------------
-# Coverage
-# ----------------------
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
@@ -103,11 +105,7 @@ exclude_lines = [
     "logger.debug",
     "logger.trace",
 ]
-# omit = ["src/svsvllm/utils/logger.py"]
 
-# ----------------------
-# PyTest
-# ----------------------
 [tool.pytest.ini_options]
 minversion = "6.0"
 log_cli = true
@@ -124,9 +122,6 @@ addopts = [
     "term-missing",
 ]
 
-# ----------------------
-# Mypy
-# ----------------------
 [tool.mypy]
 mypy_path = ["src"]
 exclude = ["tests/conftest.py"]
@@ -151,9 +146,6 @@ init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
 
-# ----------------------
-# Pylint
-# ----------------------
 [tool.pylint.main]
 # Specify a score threshold under which the program will exit with error.
 fail-under = 9.0
@@ -319,13 +311,6 @@ max-line-length = 1000
 
 # Maximum number of lines in a module.
 max-module-lines = 1000
-
-# Allow the body of a class to be on the same line as the declaration if body
-# contains single statement.
-# single-line-class-stmt =
-
-# Allow the body of an if to be on the same line as the test if there is no else.
-# single-line-if-stmt =
 
 [tool.pylint.imports]
 # Force import order to recognize a module as part of a third party library.
