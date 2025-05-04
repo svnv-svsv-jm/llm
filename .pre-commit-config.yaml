@@ -21,6 +21,13 @@ repos:
         language: system
         files: \.py$
         types: [python]
+      
+      - id: unit-test
+        name: unit-test
+        entry: uv run just unit-test
+        language: system
+        files: \.py$
+        types: [python]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.7.2
