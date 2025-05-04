@@ -23,11 +23,14 @@ IMAGE := PROJECT_NAME
 init-directories:
 	mkdir -p {{LOGS_DIR}}
 
+pre-commit-install:
+	{{PYTHON_EXEC}} pre-commit install
+
 
 # -----------
 # install project's dependencies
 # -----------
-install:
+install: pre-commit-install
 	uv sync
 
 lock:
@@ -37,7 +40,15 @@ lock:
 # -----------
 # testing
 # -----------
-init-tests: init-directories
+init-tests: init-directories pre-commit-install
+
+ruff:
+	{{PYTHON_EXEC}} ruff check --fix .
+	{{PYTHON_EXEC}} ruff format .
+
+black:
+	{{PYTHON_EXEC}} black --check src
+	{{PYTHON_EXEC}} black --check tests
 
 mypy:
 	{{PYTHON_EXEC}} mypy --cache-fine-grained tests
@@ -61,7 +72,15 @@ tests: test
 
 
 # -----------
+# Git
+# -----------
+# Run pre-commits manually
+pre-commit:
+	{{PYTHON_EXEC}} pre-commit run --all-files
+
+
+# -----------
 # UI
 # -----------
 ui:
-	uv run python -m svsvllm
+	{{PYTHON_EXEC}} python -m svsv

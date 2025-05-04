@@ -21,11 +21,7 @@ authors = [{ name = "Gianmarco", email = "janmail1990@gmail.com" }]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
 license = { file = "LICENSE" }
-dependencies = [
-    "loguru>=0.7.3",
-    "pydantic>=2.11.4",
-    "pydantic-settings>=2.9.1",
-]
+dependencies = ["loguru>=0.7.3", "pydantic>=2.11.4", "pydantic-settings>=2.9.1"]
 
 [project.urls]
 repository = "https://github.com/svnv-svsv-jm/llm"
@@ -53,6 +49,7 @@ dev = [
     "pytest-testmon",
     "pytest-xdist>=3.6.1,<4",
     "nbmake",
+    "ruff>=0.11.8",
 ]
 
 [tool.black]
@@ -87,8 +84,21 @@ addopts = [
     "term-missing",
 ]
 
+[tool.ruff]
+exclude = ["notebooks/*.py"] # Skip Jupyter notebooks
+select = [
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "I",  # isort
+    "UP", # pyupgrade
+    "N",  # pep8-naming
+]
+ignore = ["E402"] # Allow imports not at top for ML scripts
+
 [tool.mypy]
-mypy_path = ["src"]
+strict = true
+files = ["src", "tests"]
+mypy_path = ["src", "tests"]
 exclude = ["tests/conftest.py"]
 plugins = ["pydantic.mypy"]
 no_implicit_optional = false
