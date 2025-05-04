@@ -46,9 +46,11 @@ ruff:
 	{{PYTHON_EXEC}} ruff check --fix .
 	{{PYTHON_EXEC}} ruff format .
 
-black:
-	{{PYTHON_EXEC}} black --check src
-	{{PYTHON_EXEC}} black --check tests
+black-check:
+	{{PYTHON_EXEC}} black --check src tests
+
+black-fix:
+	{{PYTHON_EXEC}} black src tests
 
 mypy:
 	{{PYTHON_EXEC}} mypy --cache-fine-grained tests
@@ -66,7 +68,7 @@ integ-test: init-tests
 nbmake: init-tests
 	{{PYTHON_EXEC}} pytest --nbmake --overwrite {{EXAMPLE_DIR}}
 
-test: pylint mypy unit-test nbmake
+test: black-check pylint mypy unit-test nbmake
 
 tests: test
 

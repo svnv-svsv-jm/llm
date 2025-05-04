@@ -3,10 +3,11 @@ repos:
     hooks:
       - id: black
         name: black
-        entry: uv run just black
+        entry: uv run just black-fix
         language: system
         files: \.py$
         types: [python]
+        pass_filenames: false
 
       - id: mypy
         name: mypy
@@ -14,6 +15,7 @@ repos:
         language: system
         files: \.py$
         types: [python]
+        pass_filenames: false
 
       - id: pylint
         name: pylint
@@ -21,6 +23,7 @@ repos:
         language: system
         files: \.py$
         types: [python]
+        pass_filenames: false
       
       - id: unit-test
         name: unit-test
@@ -28,10 +31,10 @@ repos:
         language: system
         files: \.py$
         types: [python]
+        pass_filenames: false
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.7.2
     hooks:
       - id: uv-lock
         name: Update uv lockfile
-        args: ["--locked", "--all-packages"]

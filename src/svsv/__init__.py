@@ -1,9 +1,12 @@
-__all__ = ["configure_logger", "settings", "Settings"]
+__all__ = ["configure_logger", "settings", "Settings", "run_ui"]
 
 import os
-from loguru import logger
 from importlib import metadata
-from ._settings import settings, Settings
+
+from loguru import logger
+
+from ._settings import Settings, settings
+from .ui import run_ui
 
 package_name = os.path.basename(os.path.dirname(__file__))
 logger.disable(package_name)
