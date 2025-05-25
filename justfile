@@ -86,3 +86,16 @@ pre-commit:
 # -----------
 ui:
 	{{PYTHON_EXEC}} python -m svsv
+
+
+# -----------
+# Ollama
+# -----------
+ollama-clone:
+	git clone https://github.com/ggerganov/llama.cpp
+
+mlx-convert path="mlx-community/Mistral-7B-Instruct-v0.3":
+	rm -rf mlx_model || echo "no dir"
+	{{PYTHON_EXEC}} python -m mlx_lm convert --hf-path {{path}}
+	mkdir -p "$(dirname ./llms/"{{path}}")"
+	mv mlx_model ./llms/{{path}}

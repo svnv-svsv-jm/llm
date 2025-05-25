@@ -419,6 +419,9 @@ changelog = "https://github.com/svnv-svsv-jm/llm/main/changelog.md"
 [project.scripts]
 runner = "svsv.__main__:main"
 
+[project.optional-dependencies]
+mlx = ["mlx-lm>=0.24.1"]
+
 [dependency-groups]
 dev = [
   "jupyter",
