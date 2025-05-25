@@ -16,7 +16,8 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
         runs-on: ["ubuntu-latest"] # "macos-latest"
-        cmd: ["black", "pylint", "mypy", "unit-test", "nbmake"]
+        cmd:
+          ["pre-commit", "black-check", "pylint", "mypy", "unit-test", "nbmake"]
 
     runs-on: ${{ matrix.runs-on }}
 
@@ -30,13 +31,13 @@ jobs:
 
       - name: Install dependencies and test
         run: |
-          curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
           pip install --upgrade pip
           pip install uv
           uv venv .venv
           source .venv/bin/activate
           uv sync
-          just ${{ matrix.cmd }}
+          uv tool install just
+          uv tool run just ${{ matrix.cmd }}
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
