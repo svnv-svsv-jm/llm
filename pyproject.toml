@@ -12,6 +12,54 @@ exclude = ["tests/*"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src/svsv" = "svsv"
+[project]
+name = "svsv"
+version = "0.1.0"
+description = "RAG system for LLMs, and more."
+authors = [{ name = "Gianmarco", email = "janmail1990@gmail.com" }]
+requires-python = ">=3.10,<3.13"
+readme = "README.md"
+license = { file = "LICENSE" }
+dependencies = [
+  "llama-index-llms-ollama>=0.5.6",
+  "loguru>=0.7.3",
+  "pydantic>=2.11.4",
+  "pydantic-settings>=2.9.1",
+  "streamlit>=1.45.0",
+  "typer>=0.15.3",
+]
+
+[project.urls]
+repository = "https://github.com/svnv-svsv-jm/llm"
+changelog = "https://github.com/svnv-svsv-jm/llm/main/changelog.md"
+
+[project.scripts]
+runner = "svsv.__main__:main"
+
+[project.optional-dependencies]
+mlx = ["mlx-lm>=0.24.1"]
+
+[dependency-groups]
+dev = [
+  "jupyter",
+  "jupyterlab_server",
+  "jupyterlab",
+  "black[jupyter]",
+  "flake8",
+  "ipython",
+  "isort",
+  "mypy",
+  "pylint",
+  "pytest",
+  "pytest-cov",
+  "pytest-mock",
+  "pytest-pylint",
+  "pytest-mypy",
+  "pytest-testmon",
+  "pytest-xdist>=3.6.1,<4",
+  "nbmake",
+  "ruff>=0.11.8",
+]
 
 [tool.black]
 line-length = 110
@@ -26,7 +74,7 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "logger.info",
   "logger.debug",
-  "logger.trace"
+  "logger.trace",
 ]
 
 [tool.pytest.ini_options]
@@ -42,26 +90,26 @@ addopts = [
   "--durations=5",
   "--cov=src/",
   "--cov-report",
-  "term-missing"
+  "term-missing",
 ]
 
 [tool.ruff]
-exclude = ["notebooks/*.py"]  # Skip Jupyter notebooks
+exclude = ["notebooks/*.py"] # Skip Jupyter notebooks
 select = [
   "E",  # pycodestyle errors
   "F",  # pyflakes
   "I",  # isort
-  "UP",  # pyupgrade
-  "N"  # pep8-naming
+  "UP", # pyupgrade
+  "N",  # pep8-naming
 ]
 ignore = [
-  "E402",  # Allow imports not at top for ML scripts
-  "E501"
+  "E402", # Allow imports not at top for ML scripts
+  "E501",
 ]
 line-length = 110
 
 [tool.ruff.format]
-quote-style = "double"  # Optional: prefer single quotes
+quote-style = "double" # Optional: prefer single quotes
 
 [tool.mypy]
 files = ["src", "tests"]
@@ -277,7 +325,7 @@ disable = [
   "too-many-positional-arguments",
   "unknown-option-value",
   "astroid-error",
-  "ungrouped-imports"
+  "ungrouped-imports",
 ]
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -296,7 +344,7 @@ timeout-methods = [
   "requests.api.patch",
   "requests.api.post",
   "requests.api.put",
-  "requests.api.request"
+  "requests.api.request",
 ]
 
 [tool.pylint.miscellaneous]
@@ -362,7 +410,7 @@ ignored-checks-for-mixins = [
   "no-member",
   "not-async-context-manager",
   "not-context-manager",
-  "attribute-defined-outside-init"
+  "attribute-defined-outside-init",
 ]
 # List of class names for which member attributes should not be checked (useful
 # for classes with dynamically set attributes). This supports the use of
@@ -394,52 +442,3 @@ ignored-argument-names = "_.*|^ignored_|^unused_"
 # List of qualified module names which can have objects that can redefine
 # builtins.
 redefining-builtins-modules = ["six.moves", "past.builtins", "future.builtins", "builtins", "io"]
-
-[project]
-name = "svsv"
-version = "0.1.0"
-description = "RAG system for LLMs, and more."
-authors = [{name = "Gianmarco", email = "janmail1990@gmail.com"}]
-requires-python = ">=3.10,<3.13"
-readme = "README.md"
-license = {file = "LICENSE"}
-dependencies = [
-  "llama-index-llms-ollama>=0.5.6",
-  "loguru>=0.7.3",
-  "pydantic>=2.11.4",
-  "pydantic-settings>=2.9.1",
-  "streamlit>=1.45.0",
-  "typer>=0.15.3"
-]
-
-[project.urls]
-repository = "https://github.com/svnv-svsv-jm/llm"
-changelog = "https://github.com/svnv-svsv-jm/llm/main/changelog.md"
-
-[project.scripts]
-runner = "svsv.__main__:main"
-
-[project.optional-dependencies]
-mlx = ["mlx-lm>=0.24.1"]
-
-[dependency-groups]
-dev = [
-  "jupyter",
-  "jupyterlab_server",
-  "jupyterlab",
-  "black[jupyter]",
-  "flake8",
-  "ipython",
-  "isort",
-  "mypy",
-  "pylint",
-  "pytest",
-  "pytest-cov",
-  "pytest-mock",
-  "pytest-pylint",
-  "pytest-mypy",
-  "pytest-testmon",
-  "pytest-xdist>=3.6.1,<4",
-  "nbmake",
-  "ruff>=0.11.8"
-]
