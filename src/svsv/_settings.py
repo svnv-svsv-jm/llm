@@ -20,6 +20,10 @@ class Settings(pydantic_settings.BaseSettings):
 
     debug_mode: bool = pydantic.Field(False, description="Whether to run in debug mode or not.")
     log_level: str = pydantic.Field("INFO", description="Logging level.")
+    default_response: str = pydantic.Field(
+        "Hello! How can I assist you today?",
+        description="Default response for the assistant.",
+    )
 
 
 settings = Settings()
