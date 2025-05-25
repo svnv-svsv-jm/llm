@@ -1,11 +1,19 @@
-__all__ = ["configure_logger", "settings", "Settings", "session_state", "run_ui", "set_up_logging"]
+__all__ = [
+    "configure_logger",
+    "settings",
+    "Settings",
+    "session_state",
+    "SessionState",
+    "run_ui",
+    "set_up_logging",
+]
 
 import os
 from importlib import metadata
 
 from loguru import logger
 
-from ._session_state import session_state
+from ._session_state import SessionState, session_state
 from ._settings import Settings, settings
 from .ui import run_ui
 from .utils import set_up_logging

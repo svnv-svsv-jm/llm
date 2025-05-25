@@ -3,6 +3,7 @@ import typing as ty
 import pydantic
 import streamlit as st
 from llama_index.core.llms import ChatMessage
+from llama_index.core.llms.function_calling import FunctionCallingLLM
 
 from svsv.types import StateType
 
@@ -27,6 +28,10 @@ class SessionState(pydantic.BaseModel):
         [],
         description="Chat messages.",
         json_schema_extra=JsonSchemaExtra(is_synced=True).model_dump(),
+    )
+    llm: FunctionCallingLLM | None = pydantic.Field(
+        None,
+        description="LLM instance.",
     )
 
     @property
