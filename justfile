@@ -68,7 +68,7 @@ integ-test: init-tests
 nbmake: init-tests
 	{{PYTHON_EXEC}} pytest --nbmake --overwrite {{EXAMPLE_DIR}}
 
-test: black-check pylint mypy unit-test nbmake
+test: ruff mypy unit-test nbmake
 
 tests: test
 

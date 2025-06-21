@@ -1,7 +1,7 @@
 # [ ] mlx-llm & mlx-lm
 
-**Status:** To do  
-**Priority:** Medium  
+**Status:** To do
+**Priority:** Medium
 **Description:**
 
 Check this one out:

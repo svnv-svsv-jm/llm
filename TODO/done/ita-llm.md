@@ -1,7 +1,7 @@
 # Italian LLms
 
-**Status:** In progress  
-**Priority:** High  
+**Status:** In progress
+**Priority:** High
 **Description:**
 
 Show we can set up a RAG+LLM to answer questions about legal stuff, loading the database from [here](https://bancadatigiurisprudenza.giustiziatributaria.gov.it/ricerca).

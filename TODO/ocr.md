@@ -1,7 +1,7 @@
 # [ ] OCR
 
-**Status:** To do  
-**Priority:** Low  
+**Status:** To do
+**Priority:** Low
 **Description:**
 
 A RAG that supports OCR for images.

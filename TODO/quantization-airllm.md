@@ -1,7 +1,7 @@
 # [ ] Airllm
 
-**Status:** To do  
-**Priority:** Medium  
+**Status:** To do
+**Priority:** Medium
 **Description:**
 
 Check this one out: [here](https://github.com/lyogavin/airllm?tab=readme-ov-file).

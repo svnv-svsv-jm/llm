@@ -1,5 +1,6 @@
-import pytest
 import typing as ty
+
+import pytest
 
 import svsv
 

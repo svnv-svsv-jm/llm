@@ -8,7 +8,7 @@ import svsv
 
 
 def set_up_logging(log_level: int | str | None = None) -> int:
-    """Sets up logging
+    """Sets up logging.
 
     Args:
         log_level (int | str, optional):

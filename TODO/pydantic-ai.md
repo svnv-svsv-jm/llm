@@ -1,7 +1,7 @@
 # [ ] Pydantic-AI
 
-**Status:** To do  
-**Priority:** Medium  
+**Status:** To do
+**Priority:** Medium
 **Description:**
 
 Check [this](https://ai.pydantic.dev/api/agent/#pydantic_ai.Agent.__init__) out.

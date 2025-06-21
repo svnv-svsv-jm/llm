@@ -1,7 +1,7 @@
 # [ ] Small LLMs to try
 
-**Status:** To do  
-**Priority:** Medium  
+**Status:** To do
+**Priority:** Medium
 **Description:**
 
 Here's the list:

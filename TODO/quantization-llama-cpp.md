@@ -1,7 +1,7 @@
 # [ ] Llama.cpp + Quantization
 
-**Status:** To do  
-**Priority:** Medium  
+**Status:** To do
+**Priority:** Medium
 **Description:**
 
 Check this one out: [here](https://www.theregister.com/2024/07/14/quantization_llm_feature/).

@@ -21,14 +21,8 @@ class Settings(pydantic_settings.BaseSettings):
 
     debug_mode: bool = pydantic.Field(False, description="Whether to run in debug mode or not.")
     log_level: str = pydantic.Field("INFO", description="Logging level.")
-    default_response: str = pydantic.Field(
-        "",
-        description="Default response for the assistant.",
-    )
-    default_llm_id: str = pydantic.Field(
-        "TinyLlama/TinyLlama_v1.1",
-        description="Default LLM.",
-    )
+    default_response: str = pydantic.Field("", description="Default response for the assistant.")
+    default_llm_id: str = pydantic.Field("TinyLlama/TinyLlama_v1.1", description="Default LLM.")
     default_llm_mlx_id: str = pydantic.Field(
         "mlx-community/Mistral-7B-Instruct-v0.3",
         description="Default LLM MLX.",

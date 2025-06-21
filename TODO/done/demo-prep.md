@@ -1,7 +1,7 @@
 # Preparation for demo
 
-**Status:** Done  
-**Priority:** High  
+**Status:** Done
+**Priority:** High
 **Description:**
 
 Create Colab for the others.

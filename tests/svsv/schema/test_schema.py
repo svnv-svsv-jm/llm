@@ -7,7 +7,7 @@ from svsv.schema._base import BaseModelWithValidation
 
 
 def test_schema() -> None:
-    """TODO"""
+    """TODO."""
     assert BaseModelWithValidation.is_valid({})
 
     def raise_error(*args, **kwargs) -> None:  # type: ignore

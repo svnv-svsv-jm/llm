@@ -94,7 +94,18 @@ addopts = [
 ]
 
 [tool.ruff]
-exclude = ["notebooks/*.py"] # Skip Jupyter notebooks
+extend-include = ["*.ipynb"]
+line-length = 110
+
+[tool.ruff.lint]
+# Add the `line-too-long` rule to the enforced rule set. By default, Ruff omits rules that
+# overlap with the use of a formatter, like Black, but we can override this behavior by
+# explicitly adding the rule.
+extend-select = [
+  "E501",
+  "UP",  # pyupgrade
+  "D",   # pydocstyle
+]
 select = [
   "E",  # pycodestyle errors
   "F",  # pyflakes
@@ -105,8 +116,12 @@ select = [
 ignore = [
   "E402", # Allow imports not at top for ML scripts
   "E501",
+  "D104", # Missing docstring in public package
+  "D100", # Missing docstring in public module
 ]
-line-length = 110
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.format]
 quote-style = "double" # Optional: prefer single quotes
